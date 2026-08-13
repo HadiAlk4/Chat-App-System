@@ -1,0 +1,23 @@
+{
+  "name": "chat-app-system",
+  "version": "1.0.0",
+  "description": "chat app system with smthn ig",
+  "homepage": "https://github.com/HadiAlk4/Chat-App-System#readme",
+  "bugs": {
+    "url": "https://github.com/HadiAlk4/Chat-App-System/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HadiAlk4/Chat-App-System.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
