@@ -5,6 +5,19 @@
 --line-blue: #94b8b8;
 --line-pink: #f18d9e;
 --spacing: 2rem;
+--text-ink: #2c3e50;
+
+--accent-yellow: #fdfd96;
+--accent-blue: #a1c9f2;
+--accent-green: #b8e0d2;
+--bg-white: #ffffff;
+
+--sketch-border: 2px solid var(--text-ink);
+--sketch-radius: 15px 225px 255px 15px / 255px 15px 225px 15px;
+--sketch-radius-alt: 255px 15px 225px 15px / 15px 225px 15px 255px;
+--sketch-shadow: 4px 4px 0px var(--text-ink);
+
+--spacing: 2rem;
 }
 
 body 
@@ -19,4 +32,31 @@ background-attachment: local;
 /* remove tiny gap around edges */
 margin: 0; 
 padding: 0;
+}
+
+.centered-layout 
+{
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 100vh;
+padding: 4rem 2rem 4rem 6rem; /* Offset for pink line */
+}
+
+
+.torn-notepad 
+{
+background: var(--bg-white);
+border: var(--sketch-border);
+border-radius: var(--sketch-radius-alt);
+padding: 3rem 4rem;
+box-shadow: var(--sketch-shadow);
+width: 100%;
+max-width: 550px;
+position: relative;
+/* Sketchy horizontal lines inside notepad */
+background-image: linear-gradient(transparent calc(var(--spacing) - 1px), #ebebeb calc(var(--spacing) - 1px), #ebebeb var(--spacing));
+background-size: 100% var(--spacing);
+background-position: 0 1rem;
+margin-top: 2rem;
 }

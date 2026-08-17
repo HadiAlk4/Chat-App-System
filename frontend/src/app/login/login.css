@@ -1,0 +1,19 @@
+input::placeholder
+{
+font-size: 0.9rem; 
+}
+
+label 
+{
+font-weight: bold;
+}
+
+
+.centered-layout 
+{
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 70vh;
+padding: 1rem 2rem 4rem 6rem; /* Offset for pink line */
+}
