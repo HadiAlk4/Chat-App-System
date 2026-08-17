@@ -1,1 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
+:root 
+{
+--bg-paper: #fdfaf6;
+--line-blue: #94b8b8;
+--line-pink: #f18d9e;
+--spacing: 2rem;
+}
+
+body 
+{
+background-color: var(--bg-paper);
+background-image: 
+linear-gradient(90deg, transparent 4.8rem, var(--line-pink) 4.8rem, var(--line-pink) 5rem, transparent 5rem),
+linear-gradient(transparent calc(var(--spacing) - 1px), var(--line-blue) calc(var(--spacing) - 1px), var(--line-blue) var(--spacing));
+background-size: 100% var(--spacing);
+/* when it grows long enough to scroll  */
+background-attachment: local; 
+/* remove tiny gap around edges */
+margin: 0; 
+padding: 0;
+}
