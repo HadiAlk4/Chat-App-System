@@ -1,0 +1,46 @@
+input::placeholder
+{
+font-size: 0.9rem; 
+}
+
+label 
+{
+font-weight: bold;
+}
+
+
+.centered-layout 
+{
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 50vh;
+padding: 1rem 2rem 4rem 6rem; /* Offset for pink line */
+}
+
+
+.form-label {
+    font-family: 'Neucha', cursive;
+    font-size: 1.5rem;
+    margin-bottom: 0.2rem;
+    font-weight: bold;
+}
+
+/* check this later  */
+.file-upload {
+    border: 3px dotted var(--text-ink);
+    border-radius: var(--sketch-radius);
+    padding: 2.5rem;
+    text-align: center;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.7);
+    transition: background 0.2s, transform 0.1s;
+    font-size: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.file-upload:hover {
+    background: var(--accent-yellow);
+    transform: translateY(-2px);
+    box-shadow: 2px 2px 0px var(--text-ink);
+}
