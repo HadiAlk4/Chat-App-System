@@ -42,11 +42,62 @@
     </div>
     </div>
 
-    <div class="content" id="content2">
-
-
+<!-- Rooms Tab -->
+<div class="content" id="content2">
+  <div class="paper container container-md" style="padding: 2rem; margin-top: 1rem;">
+    
+    <!-- Header with Action Button -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h2 style="margin: 0;">Manage Rooms</h2>
+      <button (click)="addRoom()" class="btn-success-outline" style="padding: 0.4rem 1.2rem;">
+        + Add Room
+      </button>
     </div>
 
+    <!-- PaperCSS Table -->
+    <table class="table-hover" style="width: 100%;">
+      <thead>
+        <tr>
+          <th style="font-size: 1.1rem; width: 45%;">Room Name</th>
+          <th style="font-size: 1.1rem; width: 55%; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (room of rooms; track room; let i = $index) {
+          <tr>
+            <td style="font-size: 1.1rem; font-weight: 500; vertical-align: middle;">
+              #{{ room }}
+            </td>
+            
+            <td style="text-align: right; vertical-align: middle;">
+              <div style="display: inline-flex; gap: 0.6rem;">
+                <button 
+                  (click)="editRoom(i)" 
+                  class="btn-small" 
+                  style="border-style: dashed;">
+                  ✏️ Edit Name
+                </button>
+                <button 
+                  (click)="deleteRoom(i)" 
+                  class="btn-small btn-danger-outline" 
+                  style="border-style: dashed; color: #d9534f;">
+                  🗑️ Delete Room
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="2" style="text-align: center; color: #777; font-style: italic;">
+              No rooms created yet.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+  </div>
+</div>
 
     <div class="content" id="content3">
     <p>

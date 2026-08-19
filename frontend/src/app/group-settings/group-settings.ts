@@ -18,7 +18,37 @@ export class GroupSettings
 
   groupDescription: string = 'when ts not just intersteller and chess videos';
 
-  groupMinAge: number = 0;
+  groupMinAge: number = 10;
 
   groupThemeColor: string = 'blue'; 
+
+
+  rooms: string[] = ['announcements', 'general-chat', 'wednesday larps'];
+
+  addRoom(): void{
+    const roomName = prompt("Enter New Room Name: ");
+    if(roomName)
+    {
+    this.rooms.push(roomName);
+    }
+  }
+
+  editRoom(index: number): void 
+  {
+    const currName = this.rooms[index];
+    const newName = prompt('Edit Room Name: ', currName);
+    if(newName)
+    {
+      this.rooms[index] = newName;
+    }
+  }
+
+  deleteRoom(index: number): void
+  {
+    const targetRoom = this.rooms[index];
+    if(confirm(`Are you sure you want to delete #${targetRoom}?`))
+    {
+      this.rooms.splice(index, 1);
+    }
+  }
 }
