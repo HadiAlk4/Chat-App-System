@@ -16,3 +16,11 @@ aside .torn-notepad p {
   font-weight: bold;
   line-height: 1;
 }
+
+
+
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+}
+

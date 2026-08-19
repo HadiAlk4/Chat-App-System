@@ -24,6 +24,34 @@ export class Dashboard
       name: 'Digital Artists Collab',
       minAge: '13+',
       description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.'
-    }
+    },
+    {
+      name: 'Sci-Fi Writers',
+      minAge: '16+',
+      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.'
+    },
+    {
+      name: 'Digital Artists Collab',
+      minAge: '13+',
+      description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.'
+    },{
+      name: 'Sci-Fi Writers',
+      minAge: '16+',
+      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.'
+    },
+    {
+      name: 'Digital Artists Collab',
+      minAge: '13+',
+      description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.'
+    },{
+      name: 'Sci-Fi Writers',
+      minAge: '16+',
+      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.'
+    },
+    {
+      name: 'Digital Artists Collab',
+      minAge: '13+',
+      description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.'
+    },
   ];
 }
