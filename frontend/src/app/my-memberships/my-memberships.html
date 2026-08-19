@@ -1,1 +1,49 @@
-<p>my-memberships works!</p>
+<div style="align-items: center; width: 100%; display: flex; flex-direction: column;">
+<h1 style="margin-bottom: 0%;"> My Memberships </h1>
+<p> Current User: {{currentUsername}} | Role: {{currentUserRole}} </p>
+
+    <div class="row" style="gap: 1.5rem; justify-content: center; flex-wrap: wrap;">        
+        @for (group of joinedGroups; track group.name) 
+        {
+            <div class="card" style="width: 20rem; color: grey; background-color: rgb(245, 242, 242); " >
+                  <div class="card-body">
+                    <h4 class="card-title"> {{ group.name }}</h4>
+                    @if (group.role === 'group-admin') 
+                    {
+                    <span class="badge secondary" style="font-size: 0.75rem; width: 4rem;"> GA </span>
+                    }
+                    @else
+                    {
+                    <span class="badge secondary" style="font-size: 0.75rem; width: 4rem;"> U </span>
+                    }
+
+                    <p class="card-text" style="padding-top: 1rem;"> {{ group.description }} </p>
+
+                    <div style="display: flex; gap: 0.8rem;"> 
+                    <button class="btn-warning">View Rooms</button>
+                    @if(group.isSoleAdmin)
+                    {
+                    <button 
+                    class="btn-danger" 
+                    [disabled]="group.isSoleAdmin"
+                    popover-bottom="Sole Admin"
+                    >
+                    Leave
+                    </button>
+                    } @else
+                    {
+                    <button 
+                    class="btn-danger" 
+                    popover-bottom="cannot be undone"
+                    >
+                    Leave
+                    </button>
+                    }
+                    </div>
+                  </div>
+            </div>
+        }
+    </div>
+
+
+</div>
