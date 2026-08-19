@@ -51,4 +51,69 @@ export class GroupSettings
       this.rooms.splice(index, 1);
     }
   }
+  joinRequests = 
+  [
+    { username: 'NewbieDrawer123', requestedOn: 'July 30, 2026', rejectReason: '' }
+  ];
+
+  allowedMembers = 
+  [
+    { username: 'DaveAcs', role: 'user' },
+    { username: 'Yo', role: 'user' }
+  ];
+
+  bannedMembers = 
+  [
+    { username: 'Tough Mudder' },
+    { username: 'JFofh'}
+  ];
+
+  approveRequest(index: number): void 
+  {
+    const user = this.joinRequests[index];
+    this.allowedMembers.push( { username: user.username, role: 'user'});
+    this.joinRequests.splice(index, 1);
+  }
+
+  rejectRequest(index: number): void
+  {
+  const user = this.joinRequests[index]; 
+  alert(`Rejected ${user.username}`);
+  this.joinRequests.splice(index, 1);
+  }
+
+  promoteToGA(index: number): void
+  {
+  const user = this.allowedMembers[index].role = 'group-admin';
+  }
+
+  banMember(index: number): void
+  {
+  const user = this.allowedMembers[index];
+  this.bannedMembers.push({ username: user.username });
+  this.allowedMembers.splice(index, 1);
+  }
+
+  unBanMember(index: number): void
+  {
+  const user = this.bannedMembers[index];
+  this.allowedMembers.push({ username: user.username, role: 'user' });
+  this.bannedMembers.splice(index, 1);
+  }
+
+  stepDownAsGA(): void {
+    if (confirm('Are you sure you want to step down as Group Admin?')) {
+      alert('You have stepped down.');
+    }
+  }
+
+  requestGroupDeletion(): void 
+  {
+    const reason = prompt('Please enter a reason for the Super Admin:');
+    if (reason) 
+    {
+      alert('Deletion request submitted to Super Admin.');
+    }
+  }
+  
 }
