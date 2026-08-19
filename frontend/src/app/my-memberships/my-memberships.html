@@ -39,6 +39,16 @@
                     Leave
                     </button>
                     }
+                    @if(group.role === 'group-admin')
+                    {
+                    <button
+                    routerLink="/group-settings"
+                    class="btn-secondary" 
+                    style="width: 100%;"
+                    >
+                        Group Settings
+                    </button>
+                    }
                     </div>
                   </div>
             </div>
