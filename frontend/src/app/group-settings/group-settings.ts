@@ -20,5 +20,5 @@ export class GroupSettings
 
   groupMinAge: number = 0;
 
-  groupThemeColor: string = 'blue';
+  groupThemeColor: string = 'blue'; 
 }
