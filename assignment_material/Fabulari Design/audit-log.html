@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Log - Fabulari</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Neucha&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-layout">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="profile-snapshot">
+                <div class="avatar">
+                    <span style="font-family: 'Neucha'; font-weight: bold; font-size: 3rem; color: #cc2936;">S</span>
+                </div>
+                <h2 style="margin-bottom: 0;">Admin_God</h2>
+                <div class="form-hint" style="color: #cc2936; font-weight: bold;">Role: Super Admin</div>
+            </div>
+            
+            <nav class="nav-links">
+                <a href="super-admin.html" class="nav-link">Dashboard</a>
+                <a href="#" class="nav-link active">Audit Log</a>
+                <a href="login.html" class="nav-link" style="margin-top: 2rem; color: #888;">Log Out</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="torn-notepad" style="max-width: 100%; border: 4px solid var(--text-ink); box-shadow: 6px 6px 0px var(--text-ink);">
+                
+                <div class="action-bar" style="border-bottom: 3px double var(--text-ink); margin-bottom: 3rem;">
+                    <h1 style="margin: 0; font-size: 3rem;">AUDIT LOGBOOK</h1>
+                </div>
+
+                <!-- Filters -->
+                <div style="display: flex; gap: 2rem; margin-bottom: 2rem; background: var(--bg-paper); padding: 1.5rem; border: var(--sketch-border); border-radius: var(--sketch-radius-alt);">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Filter by Date Range</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <input type="date" class="input-field"> 
+                            <span style="font-family: 'Neucha';">to</span> 
+                            <input type="date" class="input-field">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label">Filter by Action Type</label>
+                        <select class="input-field" style="width: 250px; cursor: pointer;">
+                            <option>All Actions</option>
+                            <option>Group Creation</option>
+                            <option>Group Deletion</option>
+                            <option>Global User Ban</option>
+                            <option>Account Deletion</option>
+                        </select>
+                    </div>
+                    
+                    <div style="align-self: flex-end;">
+                        <button class="btn btn-accent-blue">Apply Filters</button>
+                    </div>
+                </div>
+
+                <!-- Ledger Table -->
+                <table class="ledger-table">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Action Performed</th>
+                        <th>User / Target ID</th>
+                        <th>Status</th>
+                    </tr>
+                    <tr>
+                        <td><span class="typewriter-text" style="transform: rotate(-1deg);">2026-07-30 08:30:12</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(1deg);">Global User Ban</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(0deg);">usr_spam993</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(-2deg); color: green; font-weight: bold;">SUCCESS</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="typewriter-text" style="transform: rotate(2deg);">2026-07-29 14:15:00</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(-1deg);">Group Creation</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(1deg);">grp_retro_gamers</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(0deg); color: green; font-weight: bold;">SUCCESS</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="typewriter-text" style="transform: rotate(-1deg);">2026-07-28 09:42:55</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(0deg);">Group Deletion</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(-1deg);">grp_inactive_12</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(1deg); color: #cc2936; font-weight: bold;">FAILED</span></td>
+                    </tr>
+                    <tr>
+                        <td><span class="typewriter-text" style="transform: rotate(1deg);">2026-07-28 09:10:22</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(-2deg);">Account Deletion</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(1deg);">usr_oldacc01</span></td>
+                        <td><span class="typewriter-text" style="transform: rotate(0deg); color: green; font-weight: bold;">SUCCESS</span></td>
+                    </tr>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room - Fabulari</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Neucha&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <!-- Toast Overlay -->
+    <div class="toast-notification">
+        <span>SketchyArtist99 joined the room</span>
+        <span class="toast-close">X</span>
+    </div>
+
+    <div class="chat-layout">
+        
+        <!-- Left Sidebar: Room List -->
+        <div class="chat-panel">
+            <div class="chat-panel-header">
+                Digital Artists Collab
+            </div>
+            <div class="chat-panel-content">
+                <div class="room-link"># announcements</div>
+                <div class="room-link"># general-chat</div>
+                <div class="room-link active"># WIP-feedback</div>
+                <div class="room-link"># resources</div>
+                <div class="room-link"># off-topic</div>
+            </div>
+        </div>
+
+        <!-- Middle Column: Chat Feed -->
+        <div class="chat-feed-area">
+            <div class="action-bar" style="margin-bottom: 0;">
+                <h2 style="margin-bottom: 0; padding-left: 1rem;"># WIP-feedback</h2>
+            </div>
+            
+            <div class="chat-messages">
+                
+                <!-- Message 1 -->
+                <div class="chat-bubble">
+                    <div class="chat-meta">
+                        <strong>DoodleMaster</strong> <span>10:41 AM</span>
+                    </div>
+                    <div class="chat-text">
+                        Hey everyone! I'm struggling with the shading on this character's jacket. Any tips?
+                    </div>
+                </div>
+
+                <!-- Message 2 -->
+                <div class="chat-bubble">
+                    <div class="chat-meta">
+                        <strong>DoodleMaster</strong> <span>10:41 AM</span>
+                    </div>
+                    <div class="chat-attachment">
+                        [ 🖼️ jacket_wip_v2.png (1.4 MB) ]
+                    </div>
+                </div>
+
+                <!-- Message 3 -->
+                <div class="chat-bubble">
+                    <div class="chat-meta">
+                        <strong>LineArtNinja (Admin)</strong> <span>10:45 AM</span>
+                    </div>
+                    <div class="chat-text">
+                        Looking good so far! I think you need a deeper shadow under the collar. Try using a multiply layer with a cool purple tone.
+                    </div>
+                </div>
+
+                <!-- Message 4 -->
+                <div class="chat-bubble">
+                    <div class="chat-meta">
+                        <strong>ColorPalettePro</strong> <span>10:48 AM</span>
+                    </div>
+                    <div class="chat-text">
+                        Agreed with LineArtNinja! Also, maybe add a slight highlight on the shoulder pad to make it pop.
+                    </div>
+                </div>
+
+                <!-- Message 5 (User's own message) -->
+                <div class="chat-bubble mine" style="position: relative;">
+                    <div class="chat-meta">
+                        <strong>SketchyArtist99</strong> <span>10:50 AM</span>
+                    </div>
+                    <div class="chat-text">
+                        Wow, that purple shading trick really worked. I never would have thought of that!
+                    </div>
+
+                    <!-- Context Menu Hovering over own message -->
+                    <div class="context-menu">
+                        <div class="context-menu-item">🗑️ Delete Message</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-area">
+                <button class="btn-icon" title="Attach Image (PNG/JPEG/GIF)">📎</button>
+                <textarea class="input-field" placeholder="Type your message..." style="height: 50px;"></textarea>
+                <button class="btn btn-accent-blue" style="padding: 0.5rem 1rem;">Send</button>
+            </div>
+        </div>
+
+        <!-- Right Sidebar: Participants -->
+        <div class="chat-panel">
+            <div class="chat-panel-header">
+                Currently in Room (4)
+            </div>
+            <div class="chat-panel-content">
+                <div class="participant-item">
+                    <div class="participant-avatar">L</div>
+                    <span>LineArtNinja <strong style="color: #d4af37;">⭐</strong></span>
+                </div>
+                <div class="participant-item">
+                    <div class="participant-avatar">D</div>
+                    <span>DoodleMaster</span>
+                </div>
+                <div class="participant-item">
+                    <div class="participant-avatar">C</div>
+                    <span>ColorPalettePro</span>
+                </div>
+                <div class="participant-item" style="font-weight: bold;">
+                    <div class="participant-avatar" style="background: var(--accent-yellow);">S</div>
+                    <span>SketchyArtist99</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

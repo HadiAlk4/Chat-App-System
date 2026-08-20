@@ -1,0 +1,101 @@
+Here are your compiled, cleaned, and deduplicated notes, formatted to be easily pasted into Notion.
+
+# System Architecture & Tech Stack
+
+* **Tech Stack**: The application will be built using the MEAN stack (MongoDB, Express, Angular 20+, Node.js).
+
+
+* **Real-Time Communication**: Socket.io will be used for real-time chat and functionality.
+
+
+* **Frontend**: Angular and TypeScript will be used for frontend development.
+
+
+* **UI Frameworks**: CSS frameworks like Bootstrap are allowed to simplify design.
+* **Responsiveness**: The application must be primarily desktop-based but responsive for tablet sizes.
+* **Authentication**: Basic authentication will be implemented using encrypted passwords (e.g., bcrypt hashing). OAuth (like GitHub OAuth) is not permitted.
+* **Security**: Passwords must be at least 8 characters, contain one uppercase letter, and be standard alphanumeric.
+* **Network**: User messages will run on HTTPS for final client-server communication.
+* **Version Control**: Git (GitHub) must be used, with frequent commits demonstrating progress.
+
+
+
+---
+
+# Phase Breakdown
+
+* **Phase 1 (Prototyping)**: Focuses on design, planning, and UI prototyping. Data is stored in a JSON file locally on the server. Backend services are limited to user management functions.
+
+
+* **Phase 2 (Full Development)**: Focuses on full application implementation, integrating MongoDB for the database and Socket.io for real-time features.
+
+
+
+---
+
+# User Roles & Permissions
+
+### Super Administrator
+
+* **Quantity**: There is only one Super Admin, generated via a bootstrap process on system startup.
+* **Role**: Action requests only; they do not have access to chat functions or old chat history.
+* **Group Management**: Creates groups based on user requests and assigns the initial Group Admin. Cannot create groups directly without a request.
+* **User Management**: The only role that can completely remove/hard ban a user from the entire system. Banned email addresses can never be used again.
+* **Restrictions**: Cannot delete themselves. Does not require a separate dashboard (integrated into the main app).
+* **Visibility**: Has access to a filterable audit log page (by date and type) and can see permanently banned accounts.
+
+### Group Administrator (GA)
+
+* **Quantity**: A group must always have at least one GA, but can have multiple.
+* **Identification**: Must have a visual indicator showing their GA status when chatting.
+* **Group Management**: Can freely edit the group name, description (up to 250 characters), age limit, and theme color without Super Admin permission.
+* **Room Management**: Can create, rename, edit, and delete chat rooms.
+* **User Management**: Can ban a user from their specific group (banned forever, no un-ban system). Can see all allowed and banned members for their group.
+* **Promotions/Demotions**: Can promote regular users to GA. Can step down and demote themselves, but must ensure at least one GA remains.
+* **Restrictions**: Cannot self-approve bans (must request via Super Admin). Cannot step down if they have pending requests queued with the Super Admin. If a GA wants to delete the group, they must request the Super Admin to do so (the GA is then demoted to a regular user).
+
+### Regular Users
+
+* **Registration**: Users register themselves and start as general users.
+* **Visibility**: Can view a list of all existing groups to potentially join.
+* **Actions**: Can request to join groups, propose new chat rooms, and request the GA to ban a specific user.
+* **Messaging**: Can delete their own messages after sending (e.g., via a right-click UI).
+
+---
+
+# Groups & Chat Rooms
+
+* **Group Limits**: No limit on the number of groups a user can join or administer. Groups have unique names.
+* **Age Limits**: GAs set a minimum age limit based on Birth Year. This applies to all rooms in the group. If the limit is modified, existing members below the new threshold are automatically booted.
+* **Room Limits**: Groups can have 0 to unlimited chat rooms. Rooms have unlimited user capacity.
+* **Themes**: GAs can set a default background color theme for the group, which extends to the chat rooms. Users can either use this default or customize their own unified theme across all their groups.
+
+---
+
+# Messaging & Data Retention
+
+* **Format**: Single-channel, single-thread communication. No one-on-one private chatting, voice chat, video, markup tags (e.g., @someone), or typing indicators.
+* **Content Restrictions**: Only text, PNGs, JPEGs, and GIFs are allowed. File uploads are limited to 2MB.
+* **Hyperlinks & Censors**: No external hyperlinks (no malicious link detection required) and no automatic parental censoring.
+* **Message Details**: Messages display the timestamp and the sender's name (not the unique ID). No text size limit.
+* **Data Retention & Visibility**: Only the last 5 messages are stored locally. There are no unread indications. If you are not in the room when a message is sent, you will not see it (aside from the last 5 saved messages when you rejoin).
+* **Account Deletion (Special Rule)**: When a user deletes their account (subject to Super Admin approval), all their messages are immediately deleted across all channels via WebSockets. If their messages were part of the last 5 saved messages in any room, they are removed (resulting in fewer than 5 messages displaying, or a completely blank chat if all 5 belonged to them).
+* **New Users (Special Rule)**: If a new user joins a completely fresh chat room with no prior history, they will start with a blank chat interface.
+
+---
+
+# UI / UX & Profiles
+
+* **Profile Fields**: Username (changeable), email (unchangeable unique ID), password (changeable with old password verification), age/DOB, screen preference (light/dark mode), role, profile picture, and group memberships.
+* **Privacy**: Profiles are completely private to the user. Other users cannot view them (though hovering for basic info is an optional aesthetic choice).
+* **Participant List**: A sidebar in the chat room dynamically displays the members currently in the room (not required on the main group page).
+* **Notifications**: Implemented as lightweight toast messages (with an 'X' to close early). They trigger when users join/leave a room, or when GAs verify a user.
+
+---
+
+# Requests & Audit Logs
+
+* **Join Requests**: Users submit requests to join groups. The GA must verify and accept/deny. Rejected requests must include a reason. Pending requests cannot be cancelled.
+* **Room Requests**: Users propose rooms; GAs approve or reject (with a reason).
+* **Historical Logs**: Users can see their pending and previously rejected requests.
+* **Audit Logging**: The Super Admin has a dedicated page to view and filter all system audit logs.
