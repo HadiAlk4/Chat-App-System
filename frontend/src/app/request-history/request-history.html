@@ -26,7 +26,7 @@
 
         <div class="row flex-spaces tabs">
             <input id="tab1" type="radio" name="tabs" checked>
-            <label for="tab1"> Join Requests</label>
+            <label for="tab1"> Pending Requests</label>
 
             <input id="tab2" type="radio" name="tabs">
             <label for="tab2"> Rejected Requests </label>
@@ -36,13 +36,61 @@
 
             <div class="content" id="content1">
                 <div class="paper container container-sm">
-                    <p>Bacon ipsum dolor sit amet beef venison beef ribs kielbasa...</p>
+                    <div>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th> Date </th>
+                                <th> Group Name </th>
+                                <th style="text-align: right;"> Actions </th>
+                            </tr>
+                            </thead>
+                            <tbody >
+                                @for (req of pendingJoinRequestGroups; track req.requestedGroupName; let i = $index)
+                                {
+                                    <tr > 
+                                        <td> {{ req.requestDate }}</td>
+                                        <td> {{ req.requestedGroupName }}</td>
+                                        <td style="text-align: right;"> <button (click)="cancelJoinRequest(i)" class="btn-danger-outline btn-small" style="border-style: dashed;"> 
+                                            Cancel Request 
+                                        </button> </td>
+                                    </tr>
+                                } @empty 
+                                {
+                                    <tr><td colspan="3" style="text-align: center;">No pending requests.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             
             <div class="content" id="content2">
                 <div class="paper container container-sm">
-                    <p>Bacon ipsum dolor sit amet beef venison beef ribs kielbasa...</p>
+                    <div>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th> Date </th>
+                                <th> Group Name </th>
+                                <th> Reason </th>
+                            </tr>
+                            </thead>
+                            <tbody >
+                                @for (req of rejectedRequestGroups; track req.rejectedRquestGroupName;)
+                                {
+                                    <tr > 
+                                        <td> {{ req.rejectedRequestDate }}</td>
+                                        <td> {{ req.rejectedRquestGroupName }}</td>
+                                        <td> {{ req.rejectedRquestGroupNameReason}} </td>
+                                    </tr>
+                                } @empty 
+                                {
+                                    <tr><td colspan="3" style="text-align: center;">No Rejected requests.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             
