@@ -1,0 +1,57 @@
+<div class="row" style="gap: 2rem;">
+    
+    <aside style="flex: 1; padding-top: 3rem; padding-left: 2rem;">
+        <div class="torn-notepad">
+            @if ( userRole === 'super-admin') {
+                <p style="font-size: 2rem; text-align: center; margin: 0;">S</p>
+            } @else if (userRole === 'group-admin') {
+                <p style="font-size: 2rem; text-align: center; margin: 0;">A</p>
+            } @else if (userRole === 'user') {
+                <p style="font-size: 2rem; text-align: center; margin: 0;">U</p>
+            }
+        </div>
+        
+        <div style="text-align: center;">
+            <h3 style="margin: 1rem 0 0 0; font-size: 1.5rem;"> Name: {{userName}} </h3>
+            <p style="margin: 0.2rem 0 1.5rem 0; font-size: 1.2rem; color: #555;">Role: {{ userRole }}</p>
+                <button routerLink="/dashboard" class="btn-block btn-success-outline">Back To Dashboard</button>
+        </div>
+    </aside>
+
+    <div style="flex: 3; padding-top: 2rem;">
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h2 style="margin: 0;"> Request History & Status </h2>
+        </div>
+
+        <div class="row flex-spaces tabs">
+            <input id="tab1" type="radio" name="tabs" checked>
+            <label for="tab1"> Join Requests</label>
+
+            <input id="tab2" type="radio" name="tabs">
+            <label for="tab2"> Rejected Requests </label>
+
+            <input id="tab3" type="radio" name="tabs">
+            <label for="tab3"> Propose Room </label>
+
+            <div class="content" id="content1">
+                <div class="paper container container-sm">
+                    <p>Bacon ipsum dolor sit amet beef venison beef ribs kielbasa...</p>
+                </div>
+            </div>
+            
+            <div class="content" id="content2">
+                <div class="paper container container-sm">
+                    <p>Bacon ipsum dolor sit amet beef venison beef ribs kielbasa...</p>
+                </div>
+            </div>
+            
+            <div class="content" id="content3">
+                <div class="paper container container-sm">
+                    <p>Bacon ipsum dolor sit amet beef venison beef ribs kielbasa...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
