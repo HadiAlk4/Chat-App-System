@@ -13,6 +13,12 @@ export class RequestHistory
   userRole: string = 'user';
   userName: string = 'hadialk04';
 
+  availableGroups: string[] = 
+  [
+    'FSD Larp',
+    'Tough Mudder Bullying Chat Room',
+    'Sci-Fi Larpers'
+  ];
 
   pendingJoinRequestGroups =
   [

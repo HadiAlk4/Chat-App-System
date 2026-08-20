@@ -37,7 +37,7 @@
             <div class="content" id="content1">
                 <div class="paper container container-sm">
                     <div>
-                        <table>
+                        <table class="table-hover">
                             <thead>
                             <tr>
                                 <th> Date </th>
@@ -66,14 +66,14 @@
             </div>
             
             <div class="content" id="content2">
-                <div class="paper container container-sm">
+                <div class="paper container container-sm ">
                     <div>
-                        <table>
+                        <table class="table-alternating">
                             <thead>
                             <tr>
                                 <th> Date </th>
                                 <th> Group Name </th>
-                                <th> Reason </th>
+                                <!-- <th> Reason </th> -->
                             </tr>
                             </thead>
                             <tbody >
@@ -82,7 +82,7 @@
                                     <tr > 
                                         <td> {{ req.rejectedRequestDate }}</td>
                                         <td> {{ req.rejectedRquestGroupName }}</td>
-                                        <td> {{ req.rejectedRquestGroupNameReason}} </td>
+                                        <!-- <td> {{ req.rejectedRquestGroupNameReason}} </td> -->
                                     </tr>
                                 } @empty 
                                 {
@@ -96,7 +96,51 @@
             
             <div class="content" id="content3">
                 <div class="paper container container-sm">
-                    <p>Bacon ipsum dolor sit amet beef venison beef ribs kielbasa...</p>
+                    <div class="form-group">
+                        <label> Select Group </label> 
+                        <select [(ngModel)] = "selectedGroupForRoom" class="input-block">
+                            <option value="" disabled selected> Choose Group </option>
+                            @for (group of availableGroups; track group)
+                            {
+                                <option [value]="group"> {{ group }}</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row">
+                    <div class="form-group col-9"> 
+                        <label > New Room Name </label>
+                        <input type="text" [(ngModel)]="newRoomNameInput" placeholder="Enter Room Name" class="input-block"> 
+                    </div>
+                    <button (click)="submitRoomProposal()" class="btn-success col-3">
+                        Submit Proposal
+                    </button>
+                    </div>
+                    <div> 
+                        <table>
+                            <thead>
+                            <tr>
+                                <!-- <th> Date </th> -->
+                                <th> Target Group </th>
+                                <th> Proposed Room </th>
+                                <th> Status </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                                @for(prop of proposeNewRoom; track prop.proposedRoomName)
+                                {
+                                    <tr>
+                                        <!-- <td> {{ prop.proposeNewRoomRequestDate }}</td> -->
+                                        <td> {{ prop.proposeNewRoomGroupName }}</td>
+                                        <td> {{ prop.proposedRoomName }}</td>
+                                        <td> Pending </td>
+                                    </tr>
+                                } @empty 
+                                {
+                                    <tr><td colspan="4" style="text-align: center;">No room proposals.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
