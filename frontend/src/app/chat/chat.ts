@@ -52,6 +52,14 @@ export class Chat
       timeStamp: '10:48 AM',
       content: 'sent a reel',
     },
+    {
+      id: 4,
+      senderUserName: 'hadialk04',
+      timeStamp: '10:48 AM',
+      content: 'sent a reel',
+    },
+
+    
   ],
 
   'Main': [

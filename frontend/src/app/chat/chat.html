@@ -20,7 +20,31 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
     </div>
     </div>
 
-    <div style="flex: 10">
+    <div style="flex: 10; display: flex; flex-direction: column; padding: 0 1.5rem;">   
+
+        <div style="border-bottom: 3px solid #222; margin-bottom: 1rem; padding-bottom: 0.3rem;">
+            <h2 style="margin: 0;"> {{currentRoom}} </h2>
+        </div>
+
+        <div style="gap: 1rem; display: flex; flex-direction: column;">
+            @for(msg of activeMessage; track msg.id)
+            {
+                @if(msg.senderUserName === currentUser)
+                {
+                    <div class="card" style="align-self: flex-end; width: fit-content; max-width: 70%; background-color: antiquewhite;"> 
+                        <p> {{ msg.senderUserName }} </p>
+                        <p> {{ msg.content }} </p>
+                    </div>
+                } 
+                @else 
+                {
+                    <div class="card" style="align-self: flex-start; width: fit-content; max-width: 70%; background-color: aqua;">
+                        <p> {{ msg.senderUserName }} </p>
+                        <p> {{ msg.content }} </p>
+                    </div>
+                }
+            }
+        </div>
 
     </div>
 
