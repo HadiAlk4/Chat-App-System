@@ -1,16 +1,54 @@
 <div class="row">
-    <div class="torn-notepad" style="flex: 1">
-    <h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem;"> {{ currGroupName }} </h3>
-    <hr>
-
+<div class="torn-notepad" 
+style="width: 230px; min-width: 230px; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: 
+column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-left: 2rem;">    
+<h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> {{ currGroupName }} </h3>
+    <hr >
+    <div>
+        @for ( room of rooms; track room)
+        {
+            <button
+            (click)="switchRooms(room)"
+            class="btn-block"
+            [style.background-color]="room === currentRoom ? '#a8d1ff' : 'transparent'"
+            [style.border-style]="room === currentRoom ? 'solid' : 'dashed'"
+            style="text-align: left; white-space: nowrap; margin-bottom: 0.5rem;;"
+            >
+            # {{ room }}
+            </button>
+        }
+    </div>
     </div>
 
     <div style="flex: 10">
 
     </div>
 
-    <div class="torn-notepad" style="flex: 1">
-
+<div class="torn-notepad" 
+style="width: 230px; min-width: 230px; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: 
+column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-right: 2rem;">    
+<h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> Group Members </h3>
+    <hr >
+    <div>
+        @for ( member of groupMembers; track member)
+        {
+        @if(member.isAdmin)
+        {
+            <p 
+            class="text-warning"
+            > 
+                Admin: {{ member.userName }}
+            </p>
+        } @else 
+        {
+            <p 
+            class="text-secondary"
+            > 
+                User: {{ member.userName }}
+            </p>
+        }
+        }
+    </div>
     </div>
 
     

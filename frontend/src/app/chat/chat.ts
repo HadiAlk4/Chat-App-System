@@ -24,10 +24,10 @@ export class Chat
 
   groupMembers = 
   [
-    { name: 'hadialk04', isAdmin: true},
-    { name: 'ChronicDuke', isAdmin: false},
-    { name: 'alpaMale', isAdmin: false},
-    { name: 'BigAl', isAdmin: true},
+    { userName: 'hadialk04', isAdmin: true},
+    { userName: 'ChronicDuke', isAdmin: false},
+    { userName: 'alpaMale', isAdmin: false},
+    { userName: 'BigAl_', isAdmin: true},
   ];
 
 
