@@ -25,36 +25,63 @@ export class Chat
   groupMembers = 
   [
     { name: 'hadialk04', isAdmin: true},
-    { name: 'ChroncsOfDuke', isAdmin: false},
+    { name: 'ChronicDuke', isAdmin: false},
     { name: 'alpaMale', isAdmin: false},
     { name: 'BigAl', isAdmin: true},
   ];
 
 
-  messages = [
+  roomMessages: {[roomName: string]: any []} = {
+  'Wednesday Lab': 
+  [
     {
-      id: '1',
+      id: 1,
       senderUserName: 'alpaMale',
       timeStamp: '10:48 AM',
-      content: 'sent a reel'
+      content: 'sent a reel',
     },
     {
-      id: '2',
-      senderUserName: 'ChroncsOfDuke',
+      id: 2,
+      senderUserName: 'alpaMale',
       timeStamp: '10:48 AM',
-      content: 'sent a reel'
+      content: 'sent a reel',
     },
     {
-      id: '3',
-      senderUserName: 'hadialk04',
-      timeStamp: '10:50 AM',
-      content: 'sent a reel'
+      id: 3,
+      senderUserName: 'alpaMale',
+      timeStamp: '10:48 AM',
+      content: 'sent a reel',
     },
-  ];
+  ],
+
+  'Main': [
+    {
+      id: 4,
+      senderUserName: 'ChronicDuke',
+      timeStamp: '10:48 AM',
+      content: 'sent a reel',
+    },
+  ],  
+  
+    'Firday Lab': [
+    {
+      id: 5,
+      senderUserName: 'ChronicDuke',
+      timeStamp: '10:48 AM',
+      content: 'sent a reel',
+    },
+  ],   
+
+  };
 
   displayNotification = true;
   notificationMessage = 'bigAL joined'; // maybe have a fixed + joind and before it {username} for phase two
   newMessageContent = '';
+
+  get activeMessage()
+  {
+    return this.roomMessages[this.currentRoom];
+  }
 
   switchRooms(room: string)
   {
@@ -67,18 +94,23 @@ export class Chat
 
     const newMessage = 
     {
-      id: Date.now().toString(),
+      id: Date.now(),
       timeStamp: Date.now().toString(),
       content: this.newMessageContent,
       senderUserName: this.currentUser,
     }
 
-    this.messages.push(newMessage);
+    this.roomMessages[this.currentRoom].push(newMessage);
+    this.activeMessage.push(newMessage);
+    this.newMessageContent = '';
   }
 
-  deleteContent(messageId: string)
+  deleteContent(messageId: number)
   {
-    this.messages = this.messages.filter(m => m.id !== messageId);
+    const index = this.activeMessage.findIndex(m => m.id === messageId);
+    if (index !== -1) {
+      this.activeMessage.splice(index, 1);
+    }  
   }
 
   dismissToast()
