@@ -63,10 +63,10 @@ export class RequestHistory
   selectedGroupForRoom: string = '';
   newRoomNameInput: string = '';
 
-  cancelJoinRequest(index: number): void
-  {
-    this.pendingJoinRequestGroups.splice(index, 1);
-  }
+  // cancelJoinRequest(index: number): void
+  // {
+  //   this.pendingJoinRequestGroups.splice(index, 1);
+  // }
 
   submitRoomProposal(): void {
     if (this.selectedGroupForRoom && this.newRoomNameInput) {

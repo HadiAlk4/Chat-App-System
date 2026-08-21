@@ -42,7 +42,7 @@
                             <tr>
                                 <th> Date </th>
                                 <th> Group Name </th>
-                                <th style="text-align: right;"> Actions </th>
+                                <!-- <th style="text-align: right;"> Actions </th> -->
                             </tr>
                             </thead>
                             <tbody >
@@ -51,9 +51,10 @@
                                     <tr > 
                                         <td> {{ req.requestDate }}</td>
                                         <td> {{ req.requestedGroupName }}</td>
-                                        <td style="text-align: right;"> <button (click)="cancelJoinRequest(i)" class="btn-danger-outline btn-small" style="border-style: dashed;"> 
+                                        <!-- <td style="text-align: right;"> 
+                                            <button (click)="cancelJoinRequest(i)" class="btn-danger-outline btn-small" style="border-style: dashed;"> 
                                             Cancel Request 
-                                        </button> </td>
+                                        </button> </td> -->
                                     </tr>
                                 } @empty 
                                 {
@@ -73,7 +74,7 @@
                             <tr>
                                 <th> Date </th>
                                 <th> Group Name </th>
-                                <!-- <th> Reason </th> -->
+                                <th> Reason </th>
                             </tr>
                             </thead>
                             <tbody >
@@ -82,7 +83,7 @@
                                     <tr > 
                                         <td> {{ req.rejectedRequestDate }}</td>
                                         <td> {{ req.rejectedRquestGroupName }}</td>
-                                        <!-- <td> {{ req.rejectedRquestGroupNameReason}} </td> -->
+                                        <td> {{ req.rejectedRquestGroupNameReason}} </td>
                                     </tr>
                                 } @empty 
                                 {
@@ -107,9 +108,9 @@
                         </select>
                     </div>
                     <div class="row">
-                    <div class="form-group col-9"> 
-                        <label > New Room Name </label>
-                        <input type="text" [(ngModel)]="newRoomNameInput" placeholder="Enter Room Name" class="input-block"> 
+                    <div class="form-group col-10"> 
+                        <!-- <label > New Room Name </label> -->
+                        <textarea type="text" [(ngModel)]="newRoomNameInput" placeholder="Enter Room Name" class="input-block"> </textarea>
                     </div>
                     <button (click)="submitRoomProposal()" class="btn-success col-3">
                         Submit Proposal

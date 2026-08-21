@@ -5,6 +5,7 @@ import { Dashboard } from './dashboard/dashboard'
 import { MyMemberships } from './my-memberships/my-memberships'
 import { GroupSettings } from './group-settings/group-settings';
 import { RequestHistory } from './request-history/request-history';
+import { Chat } from './chat/chat';
 
 
 export const routes: Routes = [
@@ -15,5 +16,7 @@ export const routes: Routes = [
     { path: 'my-memberships', component: MyMemberships},
     { path: 'group-settings', component: GroupSettings},
     { path: 'request-history', component: RequestHistory},
+    { path: 'chat', component: Chat},
+    
     
 ];
