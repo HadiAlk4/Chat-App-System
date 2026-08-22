@@ -3,7 +3,7 @@
 style="width: 230px; min-width: 230px; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: 
 column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-left: 2rem;">    
 <h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> {{ currGroupName }}</h3>
-    <hr >
+    <hr>
     <div>
         @for ( room of rooms; track room)
         {
@@ -43,7 +43,6 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
                         </button>
                         </div>
                         <p style="margin: 0.2rem 0 0 0;"> {{ msg.content }} </p>
-                        
                     </div>
                 } 
                 @else 
@@ -93,11 +92,23 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
         } @else 
         {
             <p 
-            class="text-secondary"
+            class="text-success"
             > 
                 User: {{ member.userName }}
             </p>
         }
+        }
+    </div>
+    <hr>
+    <h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> Online Members </h3>
+    <div>
+        @for ( member of onlineGroupMembers; track member)
+        {
+            <p 
+            class="text-secondary"
+            > 
+                {{ member.userName }}
+            </p>
         }
     </div>
     </div>

@@ -17,6 +17,7 @@ export class Chat
   currentRoom = 'Wednesday Lab';
   currentUser = 'hadialk04';
 
+
   rooms: string[] = 
   [
     'Wednesday Lab',
@@ -30,6 +31,14 @@ export class Chat
     { userName: 'ChronicDuke', isAdmin: false},
     { userName: 'alpaMale', isAdmin: false},
     { userName: 'BigAl_', isAdmin: true},
+    { userName: 'togaChan', isAdmin: false},
+  ];
+
+  onlineGroupMembers = 
+  [
+    { userName: 'hadialk04', isAdmin: true},
+    { userName: 'ChronicDuke', isAdmin: false},
+    { userName: 'alpaMale', isAdmin: false},
   ];
 
 
