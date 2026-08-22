@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -11,6 +11,8 @@ import { FormsModule } from '@angular/forms';
 
 export class Chat 
 {
+
+  @ViewChild('scroll') private messageScrollContainer!: ElementRef;
   currGroupName = 'FSD Larps';
   currentRoom = 'Wednesday Lab';
   currentUser = 'hadialk04';
@@ -94,6 +96,7 @@ export class Chat
   switchRooms(room: string)
   {
     this.currentRoom = room;
+    this.scrollToBottom();
   }
 
   sendContent()
@@ -103,14 +106,14 @@ export class Chat
     const newMessage = 
     {
       id: Date.now(),
-      timeStamp: Date.now().toString(),
+      timeStamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       content: this.newMessageContent,
       senderUserName: this.currentUser,
     }
 
-    this.roomMessages[this.currentRoom].push(newMessage);
     this.activeMessage.push(newMessage);
     this.newMessageContent = '';
+    this.scrollToBottom();
   }
 
   deleteContent(messageId: number)
@@ -124,5 +127,14 @@ export class Chat
   dismissToast()
   {
     this.displayNotification = false;
+  }
+
+  private scrollToBottom() {
+    setTimeout(() => {
+      if (this.messageScrollContainer) {
+        this.messageScrollContainer.nativeElement.scrollTop = 
+          this.messageScrollContainer.nativeElement.scrollHeight;
+      }
+    }, 0);
   }
 }

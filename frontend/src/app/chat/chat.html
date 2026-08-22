@@ -2,7 +2,7 @@
 <div class="torn-notepad" 
 style="width: 230px; min-width: 230px; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: 
 column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-left: 2rem;">    
-<h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> {{ currGroupName }} </h3>
+<h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> {{ currGroupName }}</h3>
     <hr >
     <div>
         @for ( room of rooms; track room)
@@ -20,20 +20,30 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
     </div>
     </div>
 
-    <div style="flex: 10; display: flex; flex-direction: column; padding: 0 1.5rem;">   
+    <div style="flex: 10; display: flex; flex-direction: column; padding: 0 1.5rem; height: 95vh;">   
 
         <div style="border-bottom: 3px solid #222; margin-bottom: 1rem; padding-bottom: 0.3rem;">
-            <h2 style="margin: 0;"> {{currentRoom}} </h2>
+            <h2 style="margin: 0;"> {{currentRoom}} - {{currentUser}}</h2>
         </div>
 
-        <div style="gap: 1rem; display: flex; flex-direction: column;">
+        <div #scroll style="gap: 1rem; display: flex; flex-direction: column; overflow-y: auto; flex: 1; min-height: 0;">
             @for(msg of activeMessage; track msg.id)
             {
                 @if(msg.senderUserName === currentUser)
                 {
                     <div class="card" style="align-self: flex-end; width: fit-content; max-width: 70%; background-color: antiquewhite; min-width: 280px; padding: 0.6rem 1rem; margin: 0;"> 
-                        <p style="margin: 0; font-weight: bold; font-size: 1rem;"> {{ msg.senderUserName }} - {{msg.timeStamp}} </p>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                        <p 
+                        style="margin: 0; font-weight: bold; font-size: 1rem;"> 
+                        {{ msg.senderUserName }} - {{msg.timeStamp}} 
+                        </p>
+                        <button 
+                        (click)="deleteContent(msg.id)" class="btn-danger btn-small" style="height: 1%; align-items: center; display: flex; font-size: small;">
+                        🙈
+                        </button>
+                        </div>
                         <p style="margin: 0.2rem 0 0 0;"> {{ msg.content }} </p>
+                        
                     </div>
                 } 
                 @else 
@@ -44,6 +54,23 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
                     </div>
                 }
             }
+        </div>
+
+        <div style="display: flex; padding-top: 5%; align-items: center;"> 
+            <input type="text"
+            [(ngModel)]="newMessageContent"
+            (keyup.enter)="sendContent()"
+            placeholder="Type a Message"
+            style="width: 70%; height: 3rem; background-color:rgb(255, 254, 255); border: #a56969;"
+            class="card"
+            >
+            <button
+            (click)="sendContent()"
+            class="button-secondary"
+            style="width: 10%;"
+            >
+            Send
+            </button>
         </div>
 
     </div>
