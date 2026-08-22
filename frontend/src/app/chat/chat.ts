@@ -50,7 +50,7 @@ export class Chat
       id: 3,
       senderUserName: 'alpaMale',
       timeStamp: '10:48 AM',
-      content: 'sent a reel',
+      content: 'sent a reel. sent a reelsent a reelsent a reelsent a reelsent a reelsent a reelsent a reelsent a reelsent a reelsent a reelsent a reel sent a reelsent a reelsent a reelsent a reelsent a reelsent a reelsent a reelsent a reelsent a reel',
     },
     {
       id: 4,
