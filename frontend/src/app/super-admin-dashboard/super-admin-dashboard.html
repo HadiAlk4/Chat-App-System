@@ -24,44 +24,45 @@
 
     <div class="paper container container-lg" >
         <h4 style="margin-top: 0%;"> Group Creation Request </h4>
-        <table>
+<table>
   <thead>
     <tr>
       <th>#</th>
       <th>Group Title</th>
       <th>Requested By</th>
+      <th> User Role </th>
       <th>Min Age</th>
       <th>Theme</th>
       <th>Actions</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <td>1</td>
-      <td>Bob Dylan</td>
-      <td>Musician</td>
-      <td>California, USA</td>
-      <td>California, USA</td>
-      <td> 
-        <div>
-        <button> Accept</button>
-        <button> Reject </button>
-        <button> Description </button>
-        </div>
-      </td>
+    @for(req of groupCreationRequests; track $index)
+    {
+        <td> {{ $index + 1}} </td>
+        <td> {{ req.groupCreationRequestName }} </td>
+        <td> {{ req.groupCreationRequestByUser }} </td>
+        <td> {{ req.groupCreationRequestByUserRole }}</td>
+        <td> {{req.groupCreationRequestMinAge }}</td>
+        <td> {{req.groupCreationRequestTheme }}</td>
+        <td> 
+            <div> 
+            <button class="btn-success-outline btn-small">Accept</button>
+            <button class="btn-danger-outline btn-small">Reject</button>
+            <label class="paper-btn btn-small" for="modal-1">Description</label>
+            </div>
+            <input class="modal-state" [id]="'modal-' + $index" type="checkbox">
+            <div class="modal">
+            <label class="modal-bg" [attr.for]="'modal-' + $index"></label>
+            <div class="modal-body">
+            <label class="btn-close" [attr.for]="'modal-' + $index">X</label>
+            <p class="modal-text">{{ req.groupCreationRequestDescription }}</p>
+            </div>
+            </div>
+        </td>
+    <tr>      
     </tr>
-    <tr>
-      <td>2</td>
-      <td>Eric Clapton</td>
-      <td>Musician</td>
-      <td>Ohio, USA</td>
-    </tr>
-    <tr>
-      <td>3</td>
-      <td>Daniel Kahneman</td>
-      <td>Psychologist</td>
-      <td>California, USA</td>
-    </tr>
+    }
   </tbody>
 </table>
 
@@ -70,6 +71,32 @@
 
     <div class="paper container container-lg" >
         <h4 style="margin-top: 0%;"> Group Deletion Request </h4>
+        <table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Group Title</th>
+      <th>Requested By</th>
+      <th>User Role</th>
+    </tr>
+  <tbody>
+    @for(req of groupDeletionRequests; track $index)
+    {
+        <td> {{ $index + 1}} </td>
+        <td> {{ req.groupDeletionRequestName }} </td>
+        <td> {{ req.groupDeletionRequestByUser }} </td>
+        <td> {{ req.groupDeletionRequestByUserRole }}</td>
+        <td> 
+            <div> 
+            <button class="btn-success-outline btn-small">Accept</button>
+            <button class="btn-danger-outline btn-small">Reject</button>
+            </div>
+        </td>
+    <tr>      
+    </tr>
+    }
+  </tbody>
+</table>
 
 
     </div>

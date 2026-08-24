@@ -15,20 +15,26 @@ export class SuperAdminDashboard
     {
     groupCreationRequestName: 'sm ts idk name',
     groupCreationRequestByUser: ' sm user',
+    groupCreationRequestByUserRole: ' sm role',
     groupCreationRequestMinAge: '18',
     groupCreationRequestTheme: 'sm blue',
+    groupCreationRequestDescription: '111 groupCreationRequestDescription groupCreationRequestDescriptiongroupCreationRequestDescriptiongroupCreationRequestDescription'
     },
     {
     groupCreationRequestName: 'sm ts idk name',
     groupCreationRequestByUser: ' sm user',
+    groupCreationRequestByUserRole: ' sm role',
     groupCreationRequestMinAge: '18',
     groupCreationRequestTheme: 'sm blue',
+    groupCreationRequestDescription: '100000 groupCreationRequestDescription groupCreationRequestDescriptiongroupCreationRequestDescriptiongroupCreationRequestDescription'
     },
     {
     groupCreationRequestName: 'sm ts idk name',
     groupCreationRequestByUser: ' sm user',
+    groupCreationRequestByUserRole: ' sm role',
     groupCreationRequestMinAge: '18',
     groupCreationRequestTheme: 'sm blue',
+    groupCreationRequestDescription: '1111 groupCreationRequestDescription groupCreationRequestDescriptiongroupCreationRequestDescriptiongroupCreationRequestDescription'
     },
   ]
 
@@ -37,14 +43,19 @@ export class SuperAdminDashboard
     {
     groupDeletionRequestName: 'sm ts idk name',
     groupDeletionRequestByUser: ' sm user',
+    groupDeletionRequestByUserRole: 'sm role'
+
     },
     {
     groupDeletionRequestName: 'sm ts idk name',
     groupDeletionRequestByUser: ' sm user',
+    groupDeletionRequestByUserRole: 'sm role'
+
     },
     {
     groupDeletionRequestName: 'sm ts idk name',
     groupDeletionRequestByUser: ' sm user',
+    groupDeletionRequestByUserRole: 'sm role'
     },
   ]
 
@@ -59,7 +70,7 @@ export class SuperAdminDashboard
   ]
 
 
-  permamBannedEmails = 
+  permaBannedEmails = 
   [
     'ban@ban.ban', 'ban@ban.ban', 'ban@ban.ban'
   ]
