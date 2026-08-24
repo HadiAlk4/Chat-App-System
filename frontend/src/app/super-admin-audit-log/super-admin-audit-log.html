@@ -22,7 +22,24 @@
     <h2 style="margin: 0"> Super Admin Audit Log </h2>
     </div>
 
-<table>
+    <div style="display: flex; gap: 1rem; align-items: center; width: 100%;">
+        <input type="date" [(ngModel)]="startDate">
+        <span> to </span>
+        <input type="date" [(ngModel)]="endDate">
+        
+        <select [(ngModel)]="selectedAction" style="flex: 1;">
+            @for(action of actionTypes; track action)
+            {
+                <option [value]="action">{{action}} </option>
+            }
+        </select>
+        <button (click)="applyFilters()"> Apply </button>
+    </div>
+
+
+
+
+<table class="table-hover">
   <thead>
     <tr>
       <th>#</th>
@@ -32,7 +49,7 @@
     </tr>
     </thead>
   <tbody>
-    @for(req of auditLogBook; track req.target)
+    @for(req of displayedAuditLog; track req.target)
     {
     <tr>      
         <td> {{ $index + 1}} </td>
