@@ -6,7 +6,7 @@ import { MyMemberships } from './my-memberships/my-memberships'
 import { GroupSettings } from './group-settings/group-settings';
 import { RequestHistory } from './request-history/request-history';
 import { Chat } from './chat/chat';
-
+import { SuperAdminDashboard } from './super-admin-dashboard/super-admin-dashboard';
 
 export const routes: Routes = [
     { path: 'login', component: Login},
@@ -17,6 +17,7 @@ export const routes: Routes = [
     { path: 'group-settings', component: GroupSettings},
     { path: 'request-history', component: RequestHistory},
     { path: 'chat', component: Chat},
+    { path: 'super-admin-dashboard', component: SuperAdminDashboard},
     
     
 ];
