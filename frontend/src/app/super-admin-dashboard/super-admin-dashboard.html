@@ -37,8 +37,9 @@
     </tr>
   </thead>
   <tbody>
-    @for(req of groupCreationRequests; track $index)
+    @for(req of groupCreationRequests; track req.groupCreationRequestName)
     {
+        <tr>
         <td> {{ $index + 1}} </td>
         <td> {{ req.groupCreationRequestName }} </td>
         <td> {{ req.groupCreationRequestByUser }} </td>
@@ -48,7 +49,7 @@
         <td> 
             <div> 
             <button class="btn-success-outline btn-small">Accept</button>
-            <button class="btn-danger-outline btn-small">Reject</button>
+            <button (click)="rejectGroupCreationRequest($index)" class="btn-danger-outline btn-small">Reject</button>
             <label class="paper-btn btn-small" [attr.for]="'modal-' + $index">Description</label>
             </div>
             <input class="modal-state" [id]="'modal-' + $index" type="checkbox">
@@ -59,8 +60,7 @@
             <p class="modal-text">{{ req.groupCreationRequestDescription }}</p>
             </div>
             </div>
-        </td>
-    <tr>      
+        </td>    
     </tr>
     }
   </tbody>
@@ -80,19 +80,21 @@
       <th>User Role</th>
     </tr>
   <tbody>
-    @for(req of groupDeletionRequests; track $index)
+    
+    @for(req of groupDeletionRequests; track req.groupDeletionRequestName)
     {
+    <tr>      
+
         <td> {{ $index + 1}} </td>
         <td> {{ req.groupDeletionRequestName }} </td>
         <td> {{ req.groupDeletionRequestByUser }} </td>
         <td> {{ req.groupDeletionRequestByUserRole }}</td>
         <td> 
             <div> 
-            <button class="btn-success-outline btn-small">Accept</button>
-            <button class="btn-danger-outline btn-small">Reject</button>
+            <button (click)="acceptGroupDeletionRequest($index)" class="btn-success-outline btn-small">Accept</button>
+            <button class="btn-danger-outline btn-small" >Reject</button>
             </div>
         </td>
-    <tr>      
     </tr>
     }
   </tbody>
@@ -112,11 +114,13 @@
       <th>User Role</th>
       <th>Requested By </th>
       <th>Requested By Role </th>
-
+      <th> Actions </th>
     </tr>
+    </thead>
   <tbody>
-    @for(req of userBanRequest; track $index)
+    @for(req of userBanRequest; track req.userBanRequestUsername)
     {
+    <tr>      
         <td> {{ $index + 1}} </td>
         <td> {{ req.userBanRequestUsername }} </td>
         <td> {{ req.userBanRequestEmail }} </td>
@@ -125,11 +129,10 @@
         <td> {{ req.userBanRequestByUserRole }}</td>
         <td> 
             <div> 
-            <button class="btn-success-outline btn-small">Accept</button>
+            <button (click)="acceptUserBanRequest($index)" class="btn-success-outline btn-small">Accept</button>
             <button class="btn-danger-outline btn-small">Reject</button>
             </div>
         </td>
-    <tr>      
     </tr>
     }
   </tbody>

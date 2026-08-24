@@ -14,7 +14,7 @@ export class SuperAdminDashboard
   groupCreationRequests = 
   [
     {
-    groupCreationRequestName: 'sm ts idk name',
+    groupCreationRequestName: 'sm ts idk name 1',
     groupCreationRequestByUser: ' sm user',
     groupCreationRequestByUserRole: ' sm role',
     groupCreationRequestMinAge: '18',
@@ -22,7 +22,7 @@ export class SuperAdminDashboard
     groupCreationRequestDescription: '111 groupCreationRequestDescription groupCreationRequestDescriptiongroupCreationRequestDescriptiongroupCreationRequestDescription'
     },
     {
-    groupCreationRequestName: 'sm ts idk name',
+    groupCreationRequestName: 'sm ts idk name 3 ',
     groupCreationRequestByUser: ' sm user',
     groupCreationRequestByUserRole: ' sm role',
     groupCreationRequestMinAge: '18',
@@ -30,7 +30,7 @@ export class SuperAdminDashboard
     groupCreationRequestDescription: '100000 groupCreationRequestDescription groupCreationRequestDescriptiongroupCreationRequestDescriptiongroupCreationRequestDescription'
     },
     {
-    groupCreationRequestName: 'sm ts idk name',
+    groupCreationRequestName: 'sm ts idk name 2',
     groupCreationRequestByUser: ' sm user',
     groupCreationRequestByUserRole: ' sm role',
     groupCreationRequestMinAge: '18',
@@ -42,19 +42,19 @@ export class SuperAdminDashboard
   groupDeletionRequests = 
   [
     {
-    groupDeletionRequestName: 'sm ts idk name',
+    groupDeletionRequestName: 'sm ts idk name gg',
     groupDeletionRequestByUser: ' sm user',
     groupDeletionRequestByUserRole: 'sm role'
 
     },
     {
-    groupDeletionRequestName: 'sm ts idk name',
+    groupDeletionRequestName: 'sm ts idk name hhh',
     groupDeletionRequestByUser: ' sm user',
     groupDeletionRequestByUserRole: 'sm role'
 
     },
     {
-    groupDeletionRequestName: 'sm ts idk name',
+    groupDeletionRequestName: 'sm ts idk nameeeee',
     groupDeletionRequestByUser: ' sm user',
     groupDeletionRequestByUserRole: 'sm role'
     },
@@ -72,8 +72,29 @@ export class SuperAdminDashboard
   ]
 
 
-  permaBannedEmails = 
+  permaBannedEmails: string[] = 
   [
     'ban@ban.ban', 'ban@ban.ban', 'ban@ban.ban'
   ]
+
+
+  rejectGroupCreationRequest(index: number): void
+  {
+    this.groupCreationRequests.splice(index, 1);
+  }
+
+  acceptGroupCreationRequest(index: number): void
+  {
+    //this.groupCreationRequests.splice(index, 1);
+  }
+
+  acceptGroupDeletionRequest(index: number): void
+  {
+    this.groupDeletionRequests.splice(index, 1);
+  }
+
+  acceptUserBanRequest(index: number): void
+  {
+    this.userBanRequest.splice(index, 1);
+  }
 }
