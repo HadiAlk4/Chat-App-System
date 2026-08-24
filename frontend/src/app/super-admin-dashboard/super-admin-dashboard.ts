@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
-  imports: [],
+  imports: [RouterLink],
   selector: 'app-super-admin-dashboard',
   styleUrl: './super-admin-dashboard.css',
   templateUrl: './super-admin-dashboard.html',
@@ -66,6 +67,7 @@ export class SuperAdminDashboard
       userBanRequestEmail: 'ban@ban.ban',
       userBanRequestRole: 'sm banned role',
       userBanRequestByUser: 'sm  name',
+      userBanRequestByUserRole: 'sm  role',
     },
   ]
 
