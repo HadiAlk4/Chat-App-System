@@ -6,7 +6,7 @@
                 <p class="text-danger"> S </p>
             </div>
             <h3 style=" font-size: 1.5rem;"> Name :  {{userName}} </h3>
-            <p style="font-size: 1.5rem">Role: Super-Admin</p>
+            <p style="font-size: 1.5rem;" class="text-danger">Role: Super-Admin</p>
 
             <div style="display: flex; flex-direction: column; gap: 0.8rem; ">
                 <!-- <button class="btn-block btn-warning-outline">Explore Groups</button> -->
@@ -17,15 +17,74 @@
         </div>
 </aside>
 
-<div style="display: flex; flex: 9; margin-top: 0%; flex-direction: column; ">
-    <div class="row" style="gap: 3rem; text-align: center; margin-bottom: 1rem; flex: 1; justify-content: center;">
+<div style="display: flex; flex: 9; margin-top: 0%; flex-direction: column; align-items: center; gap: 1rem; padding-left: 1rem; padding-right: 1rem;">
+    <div style="gap: 3rem; text-align: center; margin-bottom: 1rem; ">
     <h2 style="margin: 1"> Super Admin Dashboard </h2>
     </div>
 
-    <div class="paper container container-sm" >
+    <div class="paper container container-lg" >
+        <h4 style="margin-top: 0%;"> Group Creation Request </h4>
+        <table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Group Title</th>
+      <th>Requested By</th>
+      <th>Min Age</th>
+      <th>Theme</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>Bob Dylan</td>
+      <td>Musician</td>
+      <td>California, USA</td>
+      <td>California, USA</td>
+      <td> 
+        <div>
+        <button> Accept</button>
+        <button> Reject </button>
+        <button> Description </button>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Eric Clapton</td>
+      <td>Musician</td>
+      <td>Ohio, USA</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Daniel Kahneman</td>
+      <td>Psychologist</td>
+      <td>California, USA</td>
+    </tr>
+  </tbody>
+</table>
+
 
     </div>
 
+    <div class="paper container container-lg" >
+        <h4 style="margin-top: 0%;"> Group Deletion Request </h4>
+
+
+    </div>
+
+    <div class="paper container container-lg" >
+        <h4 style="margin-top: 0%;"> User Ban Request </h4>
+
+
+    </div>
+    
+    <div class="paper container container-lg" >
+        <h4 style="margin-top: 0%;"> Permanently Banned Emails </h4>
+
+
+    </div>
 
     
 </div>

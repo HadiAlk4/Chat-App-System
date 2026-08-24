@@ -8,5 +8,59 @@ import { Component } from '@angular/core';
 })
 export class SuperAdminDashboard 
 {
-  userName: string = 'SU_AL'
+  userName: string = 'Super_mAllen'
+
+  groupCreationRequests = 
+  [
+    {
+    groupCreationRequestName: 'sm ts idk name',
+    groupCreationRequestByUser: ' sm user',
+    groupCreationRequestMinAge: '18',
+    groupCreationRequestTheme: 'sm blue',
+    },
+    {
+    groupCreationRequestName: 'sm ts idk name',
+    groupCreationRequestByUser: ' sm user',
+    groupCreationRequestMinAge: '18',
+    groupCreationRequestTheme: 'sm blue',
+    },
+    {
+    groupCreationRequestName: 'sm ts idk name',
+    groupCreationRequestByUser: ' sm user',
+    groupCreationRequestMinAge: '18',
+    groupCreationRequestTheme: 'sm blue',
+    },
+  ]
+
+  groupDeletionRequests = 
+  [
+    {
+    groupDeletionRequestName: 'sm ts idk name',
+    groupDeletionRequestByUser: ' sm user',
+    },
+    {
+    groupDeletionRequestName: 'sm ts idk name',
+    groupDeletionRequestByUser: ' sm user',
+    },
+    {
+    groupDeletionRequestName: 'sm ts idk name',
+    groupDeletionRequestByUser: ' sm user',
+    },
+  ]
+
+  userBanRequest = 
+  [
+    {
+      userBanRequestUsername: 'sm banned name',
+      userBanRequestEmail: 'ban@ban.ban',
+      userBanRequestRole: 'sm banned role',
+      userBanRequestByUser: 'sm  name',
+    },
+  ]
+
+
+  permamBannedEmails = 
+  [
+    'ban@ban.ban', 'ban@ban.ban', 'ban@ban.ban'
+  ]
 }
