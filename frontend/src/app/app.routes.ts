@@ -7,6 +7,7 @@ import { GroupSettings } from './group-settings/group-settings';
 import { RequestHistory } from './request-history/request-history';
 import { Chat } from './chat/chat';
 import { SuperAdminDashboard } from './super-admin-dashboard/super-admin-dashboard';
+import { SuperAdminAuditLog } from './super-admin-audit-log/super-admin-audit-log';
 
 export const routes: Routes = [
     { path: 'login', component: Login},
@@ -18,6 +19,5 @@ export const routes: Routes = [
     { path: 'request-history', component: RequestHistory},
     { path: 'chat', component: Chat},
     { path: 'super-admin-dashboard', component: SuperAdminDashboard},
-    
-    
+    { path: 'super-admin-audit-log', component: SuperAdminAuditLog},
 ];
