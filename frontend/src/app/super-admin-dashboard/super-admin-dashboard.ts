@@ -81,7 +81,7 @@ export class SuperAdminDashboard
   rejectGroupCreationRequest(index: number): void
   {
     this.groupCreationRequests.splice(index, 1);
-    const reason = prompt(`Enter Reason for Rejecting: `);
+    //const reason = prompt(`Enter Reason for Rejecting: `);
   }
 
   acceptGroupCreationRequest(index: number): void

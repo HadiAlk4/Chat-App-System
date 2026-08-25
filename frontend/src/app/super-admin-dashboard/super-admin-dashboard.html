@@ -104,6 +104,40 @@
     </div>
 
     <div class="paper container container-lg" >
+        <h4 style="margin-top: 0%;"> Account Deletion Request </h4>
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>UserName</th>
+      <th>Email</th>
+      <th>User Role</th>
+    </tr>
+  <tbody>
+    
+    @for(req of groupDeletionRequests; track req.groupDeletionRequestName)
+    {
+    <tr>      
+
+        <td> {{ $index + 1}} </td>
+        <td> {{ req.groupDeletionRequestName }} </td>
+        <td> {{ req.groupDeletionRequestByUser }} </td>
+        <td> {{ req.groupDeletionRequestByUserRole }}</td>
+        <td> 
+            <div> 
+            <button (click)="acceptGroupDeletionRequest($index)" class="btn-success-outline btn-small">Accept</button>
+            <button class="btn-danger-outline btn-small" >Reject</button>
+            </div>
+        </td>
+    </tr>
+    }
+  </tbody>
+</table>
+
+
+    </div>
+
+    <div class="paper container container-lg" >
         <h4 style="margin-top: 0%;"> User Ban Request </h4>
 <table>
   <thead>
