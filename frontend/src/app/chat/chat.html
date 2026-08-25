@@ -42,14 +42,14 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
                         🙈
                         </button>
                         </div>
-                        <p style="margin: 0.2rem 0 0 0;"> {{ msg.content }} </p>
+                        <p style="margin: 0.2rem 0 0 0; word-break: break-word;"> {{ msg.content }} </p>
                     </div>
                 } 
                 @else 
                 {
                     <div class="card" style="align-self: flex-start; width: fit-content; max-width: 70%; background-color: aqua; min-width: 280px; padding: 0.6rem 1rem; margin: 0;">
                         <p style="margin: 0; font-weight: bold; font-size: 1rem;"> {{ msg.senderUserName }} - {{msg.timeStamp}} </p>
-                        <p style="margin: 0.2rem 0 0 0;"> {{ msg.content }} </p>
+                        <p style="margin: 0.2rem 0 0 0; word-break: break-word;"> {{ msg.content }} </p>
                     </div>
                 }
             }
