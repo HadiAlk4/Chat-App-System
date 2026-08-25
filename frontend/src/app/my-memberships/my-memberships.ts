@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-my-memberships',
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './my-memberships.html',
   styleUrl: './my-memberships.css',
 })
@@ -78,4 +79,35 @@ joinedGroups = [
     },
 
   ];
+
+
+  displayedGroups: any[] = [];
+    searchQuery: string = '';
+    roleFilter: string = 'All Roles';
+
+    roleOptions = 
+    [
+        { label: 'All Roles', value: 'All Roles' },
+        { label: 'Admin Only', value: 'group-admin' },
+        { label: 'Member Only', value: 'member' }
+    ];
+
+    ngOnInit() 
+    {
+        this.displayedGroups = [...this.joinedGroups];
+    }
+
+    applyFilters() {
+        const lowerCaseQuery = this.searchQuery.toLowerCase().trim();
+
+        this.displayedGroups = this.joinedGroups.filter(group => 
+          {
+            const matchesName = group.name.toLowerCase().includes(lowerCaseQuery);
+            let matchesRole = true;
+            if (this.roleFilter !== 'All Roles') {
+                matchesRole = group.role === this.roleFilter;
+            }
+            return matchesName && matchesRole;
+        });
+    }
 }
