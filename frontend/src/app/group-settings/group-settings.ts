@@ -92,6 +92,7 @@ export class GroupSettings
   const user = this.allowedMembers[index];
   this.bannedMembers.push({ username: user.username });
   this.allowedMembers.splice(index, 1);
+  const reason = prompt(`Enter ban reason for ${user.username} (sent to Super Admin):`);
   }
 
   unBanMember(index: number): void
