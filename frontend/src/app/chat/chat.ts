@@ -146,4 +146,12 @@ export class Chat
       }
     }, 0);
   }
+
+// Add this property to your class
+  isDarkMode: boolean = false;
+
+  // Update the toggle function
+  toggleDarkMode(event: Event): void {
+    this.isDarkMode = (event.target as HTMLInputElement).checked;
+  }
 }

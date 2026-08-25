@@ -1,0 +1,110 @@
+/* --- PaperCSS 3D Tile Fix --- */
+.paper-switch-tile {
+    display: block;
+    width: 80px;
+    height: 80px;
+    perspective: 600px; /* Gives the 3D depth */
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Hide the ugly default checkbox */
+.paper-switch-tile input[type="checkbox"] {
+    display: none !important;
+}
+
+/* The card wrapper that rotates */
+.paper-switch-tile-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.4s ease-in-out;
+}
+
+/* Stack the front and back faces exactly on top of each other */
+.paper-switch-tile-card-front,
+.paper-switch-tile-card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden; /* Hides the backside when flipped */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Pre-rotate the back face so it's backwards to start */
+.paper-switch-tile-card-back {
+    transform: rotateY(180deg);
+}
+
+/* The magic: Flip the card when the hidden checkbox is checked */
+.paper-switch-tile input[type="checkbox"]:checked + .paper-switch-tile-card {
+    transform: rotateY(180deg);
+}
+
+
+/* =========================================
+   LIGHT MODE DEFAULTS (Component Scoped)
+========================================= */
+.sender-bubble { background-color: antiquewhite; border: 2px solid #222; color: #222;}
+.receiver-bubble { background-color: aqua; border: 2px solid #222; color: #222;}
+.chat-input { background-color: rgb(255, 254, 255); color: #222;}
+
+
+/* =========================================
+   DARK MODE OVERRIDES (Component Scoped)
+========================================= */
+.dark-theme {
+    /* 1. Redefine the sketch variables locally */
+    --bg-white: #25262b;
+    --text-ink: #e4e5e8;
+    --sketch-border: 2px solid #e4e5e8;
+    --sketch-shadow: 4px 4px 0px #000000;
+    --notepad-line: #333333;
+    
+    /* 2. Cover the global body background with a dark one for this screen */
+    background-color: #1a1b1e;
+    
+    /* 3. Make all standard text use the light ink */
+    color: var(--text-ink);
+}
+
+/* 4. Update text elements to use the new ink color */
+.dark-theme h2, 
+.dark-theme h3, 
+.dark-theme p, 
+.dark-theme span {
+    color: var(--text-ink);
+}
+
+/* 5. Update the notebook lines inside the torn-notepad */
+.dark-theme .torn-notepad {
+    background-image: linear-gradient(
+        transparent calc(2rem - 1px), 
+        var(--notepad-line) calc(2rem - 1px), 
+        var(--notepad-line) 2rem
+    );
+}
+
+/* 6. Dark mode chat bubbles */
+.dark-theme .sender-bubble {
+    background-color: #3b3024;
+    border-color: #666;
+    color: #e4e5e8;
+}
+
+.dark-theme .receiver-bubble {
+    background-color: #1a4d4d;
+    border-color: #666;
+    color: #e4e5e8;
+}
+
+.dark-theme .chat-input {
+    background-color: #1f1f1f;
+    border-color: #666;
+    color: #e4e5e8;
+}
