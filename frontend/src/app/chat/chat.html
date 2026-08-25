@@ -76,7 +76,7 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
 
 <div class="torn-notepad" 
 style="width: 230px; min-width: 230px; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: 
-column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-right: 2rem;">    
+column; align-items: stretch; justify-content: flex-start; height: 90vh; margin-right: 2rem;">    
 <h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> Group Members </h3>
     <hr >
     <div>
@@ -100,7 +100,7 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
         }
     </div>
     <hr>
-    <h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> Online Members </h3>
+    <h3 style="margin: 0; white-space: nowrap; font-size: 1.2rem; text-align: center;"> Online Room Members </h3>
     <div>
         @for ( member of onlineGroupMembers; track member)
         {
@@ -110,8 +110,19 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
                 {{ member.userName }}
             </p>
         }
+    <div class="row flex-spaces">
+    <input class="alert-state" id="alert-2" type="checkbox">
+    <div class="alert alert-secondary dismissible">
+    ChronicDuke Joined the Room 
+    <label class="btn-close" for="alert-2">X</label>
     </div>
     </div>
-
-    
+    <div class="row flex-spaces">
+    <input class="alert-state" id="alert-1" type="checkbox">
+    <div class="alert alert-primary dismissible">
+    BigAl_ Left the Room
+    <label class="btn-close" for="alert-1">X</label>
+    </div>
+    </div>
+    </div>
 </div>
