@@ -35,8 +35,18 @@
     <button class="btn-success">Propose New Chat Room</button>
     </div>
 
+    <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem; width: 100%;">
+            <input 
+                type="text" 
+                [(ngModel)]="searchQuery" 
+                (keyup)="applySearch()" 
+                placeholder="Search by Group Name..." 
+                style="width: 300px; margin: 0;"
+            >
+    </div>
+
     <div class="row" style="gap: 1.5rem;">
-        @for (group of availableGroups; track group.name) 
+        @for (group of displayedGroups; track group.name) 
         {
             <div class="card" style="width: 20rem; color: grey; background-color: rgb(245, 242, 242); " >
                   <div class="card-body">
