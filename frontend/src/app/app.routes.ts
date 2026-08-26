@@ -8,8 +8,10 @@ import { RequestHistory } from './request-history/request-history';
 import { Chat } from './chat/chat';
 import { SuperAdminDashboard } from './super-admin-dashboard/super-admin-dashboard';
 import { SuperAdminAuditLog } from './super-admin-audit-log/super-admin-audit-log';
+import { UserProfileSettings } from './user-profile-settings/user-profile-settings';
 
-export const routes: Routes = [
+export const routes: Routes = 
+[
     { path: 'login', component: Login},
     { path: 'signup', component: Signup},
     { path: '', component: Login },
@@ -20,4 +22,5 @@ export const routes: Routes = [
     { path: 'chat', component: Chat},
     { path: 'super-admin-dashboard', component: SuperAdminDashboard},
     { path: 'super-admin-audit-log', component: SuperAdminAuditLog},
+    {path: 'user-profile-settings', component: UserProfileSettings},
 ];
