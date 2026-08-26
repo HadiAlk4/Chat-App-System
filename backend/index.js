@@ -1,7 +1,7 @@
 import express from "express";
 import http from "node:http";
 import cors from "cors";
-import { testroute } from "./routes.js"; 
+import { route } from "./routes.js"; 
 
 const APP = express();
 
@@ -9,7 +9,7 @@ APP.use(cors());
 
 APP.use(express.json()); 
 
-testroute(APP);
+route(APP);
 
 const httpServer = http.createServer(APP);
 

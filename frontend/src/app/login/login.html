@@ -1,26 +1,42 @@
-
-
-<div class="centered-layout"> 
-    <div class="torn-notepad" >
+<div class="centered-layout">      
+    <div class="torn-notepad">
         <h1 class="text-center" style="font-size: 3.5rem; margin-bottom: 2rem;">Log In</h1>
+        
+        @if (errorMessage) {
+            <div class="alert alert-danger" style="margin-bottom: 1rem;">
+                {{ errorMessage }}
+            </div>
+        }
 
-        <div class="form-group"> 
-        <label for="paperInputs1"> Email </label>
-        <input class="input-block" type="text" placeholder="your@email.com" id="paperInputs1"> 
+        <div class="form-group">
+            <label for="emailInput">Email</label>
+            <input 
+                class="input-block" 
+                type="text" 
+                id="emailInput" 
+                placeholder="your@email.com" 
+                [(ngModel)]="emailInput"
+            >
         </div>
 
-        <div class="form-group"> 
-        <label for="paperInputs1"> Password </label>
-        <input class="input-block" type="text" placeholder="your secret password" id="paperInputs1"> 
+        <div class="form-group">
+            <label for="passwordInput">Password</label>
+            <input 
+                class="input-block" 
+                type="password" 
+                id="passwordInput" 
+                placeholder="your secret password" 
+                [(ngModel)]="passwordInput"
+                (keyup.enter)="loginfunc()"
+            >
         </div>
 
-        <button class="btn-warning btn-block">Login</button>
+        <button class="btn-warning btn-block" (click)="loginfunc()">Login</button>
 
-        <div class="text-center " style="margin-top: 2rem;">
-        <a routerLink="/signup" style="color: rgb(144, 144, 242); text-decoration: none; background-image: none;"> Not a Faburi? Sign up here.</a>
+        <div class="text-center" style="margin-top: 2rem;">
+            <a routerLink="/signup" style="color: rgb(144, 144, 242); text-decoration: none;">
+                Not a Faburi? Sign up here.
+            </a>
         </div>
-
-
-    </div>
-
+    </div> 
 </div>
