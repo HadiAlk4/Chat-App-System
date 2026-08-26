@@ -40,7 +40,7 @@
                     <p class="card-text" style="padding-top: 1rem;"> {{ group.description }} </p>
 
                     <div style="display: flex; gap: 0.8rem;"> 
-                    <button class="btn-warning">View Rooms</button>
+                    <button routerLink="/chat" class="btn-warning">View Rooms</button>
                     @if(group.isSoleAdmin)
                     {
                     <button 

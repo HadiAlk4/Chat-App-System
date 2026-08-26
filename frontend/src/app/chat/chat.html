@@ -2,7 +2,7 @@
     <div class="torn-notepad" 
 style="width: 230px; min-width: 230px; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: 
 column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-left: 2rem;">    
-<h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> {{ currGroupName }}</h3>
+<h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> {{ currGroupName }} </h3>
     <hr>
     <div>
         @for ( room of rooms; track room)
@@ -23,16 +23,14 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
     <div style="flex: 10; display: flex; flex-direction: column; padding: 0 1.5rem; height: 95vh;">   
 
         
-<!-- HEADER CONTAINER -->
         <div style="border-bottom: 3px solid #222; margin-bottom: 1rem; padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
             
-            <!-- COLUMN STYLING -->
             <div style="display: flex; flex-direction: column; gap: 0.2rem;">
-                <h2 style="margin: 0;">{{currentRoom}}</h2>
-                <span style="font-size: 1.1rem; font-weight: bold;">User: {{currentUser}}</span>
+                <h2 style="margin: 0;">{{currentRoom}} </h2>
+                <span style="font-size: 1.1rem; font-weight: bold;">User: {{currentUser}} <button routerLink="/dashboard" class="btn-warning">Back to Dashboard</button></span>
             </div>
 
-            <!-- THE TILE SWITCH -->
+            
             <label for="paperSwitch1" class="paper-switch-tile">
                 <input id="paperSwitch1" type="checkbox"  (change)="toggleDarkMode($event)"/>
                 <div class="paper-switch-tile-card border">
@@ -40,6 +38,7 @@ column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-
                     <div class="paper-switch-tile-card-back " >Dark</div>
                 </div>
             </label>
+            
 
         </div>        
         <div #scroll style="gap: 1rem; display: flex; flex-direction: column; overflow-y: auto; flex: 1; min-height: 0;">
