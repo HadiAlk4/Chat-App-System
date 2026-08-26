@@ -39,6 +39,16 @@
       "age": 26,
       "role": "user",
       "valid": true
+    },
+    {
+      "id": 1787758795290,
+      "username": "h",
+      "email": "h",
+      "password": "Password123",
+      "birthdate": "",
+      "age": 18,
+      "role": "user",
+      "valid": true
     }
   ],
   "groups": [
