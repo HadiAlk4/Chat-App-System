@@ -20,7 +20,7 @@ export class GroupSettings
 
   groupMinAge: number = 10;
 
-  groupThemeColor: string = 'blue'; 
+  groupThemeColor: string = 'Light'; 
 
 
   rooms: string[] = ['announcements', 'general-chat', 'wednesday larps'];
