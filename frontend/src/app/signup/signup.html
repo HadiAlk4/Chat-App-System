@@ -1,44 +1,46 @@
-
-
-<div class="centered-layout"> 
-    <div class="torn-notepad" >
+<div class="centered-layout">      
+    <div class="torn-notepad">
         <h1 class="text-center" style="font-size: 3.5rem; margin-bottom: 2rem;">Join Fabulari</h1>
 
-        <div class="form-group"> 
-        <label for="paperInputs1"> Username </label>
-        <input class="input-block" type="text" placeholder="e.g. hadialk04" id="paperInputs1"> 
-        </div>
+        <div class="form-group">          
+        <label for="regUsername"> Username </label>         
+        <input class="input-block" type="text" placeholder="e.g. hadialk04" id="regUsername" [(ngModel)]="usernameInput">          
+        </div>         
 
-        <div class="form-group"> 
-        <label for="paperInputs1"> Email </label>
-        <div>
-        <small> Cannot be changed later</small>
-        </div>
-        <input class="input-block" type="text" placeholder="your@email.com" id="paperInputs1"> 
-        </div>
+        <div class="form-group">          
+        <label for="regEmail"> Email </label>         
+        <div>         
+        <small> Cannot be changed later</small>         
+        </div>         
+        <input class="input-block" type="email" placeholder="your@email.com" id="regEmail" [(ngModel)]="emailInput">          
+        </div>         
 
-        <div class="form-group"> 
-        <label for="paperInputs1"> Password </label>
-        <div>
-        <small> Min 8 chars, 1 uppercase, alphanumeric</small>
-        </div>
-        <input class="input-block" type="text" placeholder="your secret password" id="paperInputs1"> 
-        </div>
+        <div class="form-group">          
+        <label for="regPassword"> Password </label>         
+        <div>         
+        <small> Min 8 chars, 1 uppercase, alphanumeric</small>         
+        </div>         
+        <input class="input-block" type="password" placeholder="your secret password" id="regPassword" [(ngModel)]="passwordInput">          
+        </div>         
 
-        <div class="form-group">
-        <label for="dob">Age/Date of Birth</label>
-        <input type="date" id="dob" class="input-block" required>
+        <div class="form-group">         
+        <label for="dob">Age/Date of Birth</label>         
+        <input type="date" id="dob" class="input-block" [(ngModel)]="dobInput" required>         
+        </div>         
+
+        <div class="form-group">         
+        <label class="form-label">Profile Doodle</label>         
+        <div class="file-upload">         
+        Attach Profile Doodle <br>         
+        </div>         
+        </div>         
+
+        <button class="btn-secondary btn-block" (click)="registerUser()">Sign Up</button>     
+
+        <div class="text-center" style="margin-top: 1.5rem;">
+        <a routerLink="/login" style="color: rgb(144, 144, 242); text-decoration: none;">
+        Already a Member?
+        </a>
         </div>
-
-        <div class="form-group">
-        <label class="form-label">Profile Doodle</label>
-        <div class="file-upload">
-        Attach Profile Doodle <br>
-        </div>
-        </div>
-
-        <button class="btn-secondary btn-block">Sign Up</button>
-
-    </div>
-
+    </div> 
 </div>
