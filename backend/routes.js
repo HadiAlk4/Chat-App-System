@@ -1,6 +1,6 @@
 import fs from "fs";
 
-export function testroute(app) 
+export function route(app) 
 {
   app.post("/api/auth", (req, res) => {
     let email = req.body.email;
