@@ -1,7 +1,6 @@
 import fs from "fs";
 
 export function testroute(app) {
-  // 1. AUTHENTICATION (LOGIN)
   app.post("/api/auth", (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
@@ -27,7 +26,6 @@ export function testroute(app) {
     });
   });
 
-  // 2. GET ALL GROUPS
   app.get("/api/groups", (req, res) => {
     fs.readFile("./fakeData.json", "utf8", (err, data) => {
       if (err) throw err;
@@ -37,7 +35,6 @@ export function testroute(app) {
     });
   });
 
-  // 3. USER SIGNUP (CREATE USER)
   app.post("/api/signup", (req, res) => {
     let newUser = {
       id: Date.now(),
@@ -55,7 +52,6 @@ export function testroute(app) {
 
       let database = JSON.parse(data);
 
-      // Check if email already exists
       let existing = database.users.find((u) => u.email == newUser.email);
       if (existing) {
         return res.send({ ok: false, message: "Email already registered" });
@@ -70,7 +66,6 @@ export function testroute(app) {
     });
   });
 
-  // 4. CREATE GROUP
   app.post("/api/groups", (req, res) => {
     let newGroup = {
       id: "g_" + Date.now(),
@@ -96,7 +91,6 @@ export function testroute(app) {
     });
   });
 
-  // 5. CREATE ROOM / CHANNEL
   app.post("/api/rooms", (req, res) => {
     let groupName = req.body.groupName;
     let roomName = req.body.roomName;
