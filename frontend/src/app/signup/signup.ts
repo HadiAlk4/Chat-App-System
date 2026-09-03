@@ -31,7 +31,7 @@ export class Signup
   }
 
   registerUser(): void {
-    if (!this.usernameInput || !this.emailInput || !this.passwordInput) {
+    if (!this.usernameInput || !this.emailInput || !this.passwordInput || !this.dobInput) {
       alert('Please fill in all required fields.');
       return;
     }
@@ -40,15 +40,26 @@ export class Signup
       username: this.usernameInput,
       email: this.emailInput,
       password: this.passwordInput,
-      birthdate: this.dobInput,
+      dob: this.dobInput,
       age: this.calculateAge(this.dobInput),
     };
 
     this.http.post<any>('http://localhost:3000/api/signup', payload).subscribe({
       next: (res) => {
         if (res.ok) {
-          alert('Signup successful! Please log in.');
-          this.router.navigateByUrl('/login');
+
+          // store the user data in the session storage so that each page will have access to the user data
+          sessionStorage.setItem('user', JSON.stringify(res.user));
+          sessionStorage.setItem('username', res.user.username);
+          sessionStorage.setItem('role', res.user.role);
+
+          if (res.user.role === 'super-admin') 
+          {
+            this.router.navigateByUrl('/super-admin-dashboard');
+          } else 
+          {
+            this.router.navigateByUrl('/dashboard');
+          }
         } else {
           alert(res.message || 'Signup failed.');
         }
