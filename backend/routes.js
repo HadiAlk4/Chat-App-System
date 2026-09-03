@@ -1,3 +1,5 @@
+import bcrypt from "bcrypt";
+
 export function testroute(APP, db) 
 {
   const usersCollection = db.collection("users");
@@ -7,17 +9,32 @@ export function testroute(APP, db)
   // authenticate user
   APP.post("/api/auth", async (req, res) => 
   {
-    const { email, password } = req.body;
-    const user = await usersCollection.findOne({ email, password });
+    try
+    {
+      const { email, password } = req.body;
+      if(!email || !password)
+      {
+        return res.send({ ok: false, valid: false, message: "Email and password are required" });
+      }
+      const user = await usersCollection.findOne({ email });
 
-    if (!user)
-    {
-      return res.send({ ok: false, valid: false, message: "Invalid Credentials" });
+      if (!user)
+      {
+        return res.send({ ok: false, valid: false, message: "Invalid Credentials" });
+      }
+
+      const passwordMatches = await bcrypt.compare(password, user.password);
+      if (!passwordMatches)
+      {
+        return res.send({ ok: false, valid: false, message: "Invalid Credentials" });
+      }
+
+      // strip res sensitive data from the response
+      const userResponse = { ...user };
+      delete userResponse.password;
+      res.send({ ok: true, valid: true, message: "Login Successful", user: userResponse });
     }
-    try 
-    {
-      res.send({ ok: true, valid: true, message: "Login Successful", user: user });
-    } catch (err) 
+    catch (err) 
     {
       res.status(500).send({ ok: false, message: err.message });
     }
@@ -41,23 +58,43 @@ export function testroute(APP, db)
   // sign up users
   APP.post("/api/signup", async (req, res) => {
     try{
-      const newUser = {
-        username: req.body.username,
-        email: req.body.email,
-        password: req.body.password,
-        dob: req.body.dob,
-        age: req.body.age,
-        role: "user",
-        valid: true,
+
+      const { username, email, password, dob, age } = req.body;
+
+      if(!username || !email || !password || !dob || !age)
+      {
+        return res.send({ ok: false, valid: false, message: "All fields are required" });
       }
-      const exists = await usersCollection.findOne({ email: newUser.email });
+
+      const passwordRegex = /^(?=.*[A-Z])[a-zA-Z0-9]{8,}$/;
+
+      if(!passwordRegex.test(password))
+      {
+        return res.send({ ok: false, valid: false, message: "Password must be at least 8 characters long and contain at least one uppercase letter" });
+      }      
+      const exists = await usersCollection.findOne({ email });
       if (exists)
       {
         return res.send({ ok: false, valid: false, message: "Email already exists" });
       }
 
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      const newUser = {
+        username,
+        email,
+        password: hashedPassword,
+        dob,
+        age,
+        role: "user",
+        valid: true,
+      }
       await usersCollection.insertOne(newUser);
-      res.send({ ok: true, valid: true, message: "Signup Successful", user: newUser });
+
+      const userResponse = { ...newUser };
+      delete userResponse.password;
+      res.send({ ok: true, valid: true, message: "Signup Successful", user: userResponse });
     }
     catch (err)
     {
@@ -101,7 +138,7 @@ export function testroute(APP, db)
   {
     const { groupName, roomName } = req.body;
 
-    const result = await roomsCollection.updateOne({ name: groupName}, { $push: { rooms: roomName } });
+    const result = await groupsCollection.updateOne({ groupName }, { $addToSet: { rooms: roomName } });
     if (result.matchedCount === 0)
     {
       return res.send({ ok: false, valid: false, message: "Group not found" });
