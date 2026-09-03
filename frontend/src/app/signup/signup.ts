@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../services/auth';
 
 @Component({
   selector: 'app-signup',
@@ -16,7 +17,7 @@ export class Signup
   passwordInput: string = '';
   dobInput: string = '';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private authService: AuthService) {}
 
   calculateAge(dob: string): number {
     if (!dob) return 18;
@@ -50,6 +51,7 @@ export class Signup
         {
         if (res.ok) 
           {
+          this.authService.setUser(res.user);
           // store the user data in the session storage so that each page will have access to the user data
           sessionStorage.setItem('user', JSON.stringify(res.user));
           sessionStorage.setItem('username', res.user.username);
