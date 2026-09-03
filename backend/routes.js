@@ -78,16 +78,21 @@ export function testroute(APP, db)
         return res.send({ ok: false, valid: false, message: "Email already exists" });
       }
 
+      // determine the role of the user for super admin bootstrapping
+      const userCount = await usersCollection.countDocuments();
+      const role = userCount === 0 ? "super-admin" : "user";
+
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      const newUser = {
+      const newUser = 
+      {
         username,
         email,
         password: hashedPassword,
         dob,
         age,
-        role: "user",
+        role,
         valid: true,
       }
       await usersCollection.insertOne(newUser);
