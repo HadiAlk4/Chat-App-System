@@ -1,120 +1,41 @@
-import fs from "fs";
+export function testroute(APP, db) 
+{
+  const usersCollection = db.collection("users");
+  const groupsCollection = db.collection("groups");
+  const roomsCollection = db.collection("rooms");
 
-export function testroute(app) {
-  app.post("/api/auth", (req, res) => {
-    let email = req.body.email;
-    let password = req.body.password;
+  // authenticate user
+  APP.post("/api/auth", async (req, res) => 
+  {
+    const { email, password } = req.body;
+    const user = await usersCollection.findOne({ email });
 
-    fs.readFile("./fakeData.json", "utf8", (err, data) => {
-      if (err) throw err;
-
-      let database = JSON.parse(data);
-      let user = database.users.find(
-        (u) => u.email == email && u.password == password
-      );
-
-      if (!user) {
-        res.send({ ok: false, valid: false, message: "Invalid credentials" });
-      } else {
-        res.send({
-          ok: true,
-          valid: true,
-          message: "successful login",
-          user: user,
-        });
-      }
-    });
+    if (!user)
+    {
+      return res.send({ ok: false, valid: false, message: "Invalid Credentials" });
+    }
+    try 
+    {
+      res.send({ ok: true, valid: true, message: "Login Successful", user: user });
+    } catch (err) 
+    {
+      res.status(500).send({ ok: false, message: err.message });
+    }
   });
 
-  app.get("/api/groups", (req, res) => {
-    fs.readFile("./fakeData.json", "utf8", (err, data) => {
-      if (err) throw err;
-
-      let database = JSON.parse(data);
-      res.send(database.groups || []);
-    });
+  // get all groups
+  APP.get("/api/groups", async (req, res) => 
+  {
+    try
+    {
+      const groups = await groupsCollection.find({}).toArray();
+      res.send(groups);
+    }
+    catch (err)
+    {
+      res.status(500).send({ ok: false, message: err.message });
+    }
   });
 
-  app.post("/api/signup", (req, res) => {
-    let newUser = {
-      id: Date.now(),
-      username: req.body.username,
-      email: req.body.email,
-      password: req.body.password,
-      birthdate: req.body.birthdate,
-      age: Number(req.body.age) || 18,
-      role: "user",
-      valid: true,
-    };
 
-    fs.readFile("./fakeData.json", "utf8", (err, data) => {
-      if (err) throw err;
-
-      let database = JSON.parse(data);
-
-      let existing = database.users.find((u) => u.email == newUser.email);
-      if (existing) {
-        return res.send({ ok: false, message: "Email already registered" });
-      }
-
-      database.users.push(newUser);
-
-      fs.writeFile("./fakeData.json", JSON.stringify(database, null, 2), "utf8", (err) => {
-        if (err) throw err;
-        res.send({ ok: true, message: "User registered successfully", user: newUser });
-      });
-    });
-  });
-
-  app.post("/api/groups", (req, res) => {
-    let newGroup = {
-      id: "g_" + Date.now(),
-      name: req.body.name,
-      description: req.body.description || "",
-      minAge: Number(req.body.minAge) || 0,
-      themeColor: req.body.themeColor || "blue",
-      admins: [req.body.creatorUsername],
-      members: [req.body.creatorUsername],
-      rooms: ["General"],
-    };
-
-    fs.readFile("./fakeData.json", "utf8", (err, data) => {
-      if (err) throw err;
-
-      let database = JSON.parse(data);
-      database.groups.push(newGroup);
-
-      fs.writeFile("./fakeData.json", JSON.stringify(database, null, 2), "utf8", (err) => {
-        if (err) throw err;
-        res.send({ ok: true, group: newGroup });
-      });
-    });
-  });
-
-  app.post("/api/rooms", (req, res) => {
-    let groupName = req.body.groupName;
-    let roomName = req.body.roomName;
-
-    fs.readFile("./fakeData.json", "utf8", (err, data) => {
-      if (err) throw err;
-
-      let database = JSON.parse(data);
-      let group = database.groups.find((g) => g.name == groupName);
-
-      if (!group) {
-        return res.send({ ok: false, message: "Group not found" });
-      }
-
-      if (!group.rooms) {
-        group.rooms = [];
-      }
-
-      group.rooms.push(roomName);
-
-      fs.writeFile("./fakeData.json", JSON.stringify(database, null, 2), "utf8", (err) => {
-        if (err) throw err;
-        res.send({ ok: true, rooms: group.rooms });
-      });
-    });
-  });
 }
