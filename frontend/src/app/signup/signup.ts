@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../services/auth';
 
 @Component({
   selector: 'app-signup',
@@ -16,11 +17,12 @@ export class Signup
   passwordInput: string = '';
   dobInput: string = '';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private authService: AuthService) {}
 
   calculateAge(dob: string): number {
-    if (!dob) return 18;
+    if (!dob) return -1;
     const birthDate = new Date(dob);
+    if (isNaN(birthDate.getTime())) return -1;
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -36,18 +38,27 @@ export class Signup
       return;
     }
 
+    const calculatedAge = this.calculateAge(this.dobInput);
+    if (calculatedAge < 0) 
+    {
+      alert('Please enter a valid Date of Birth (cannot be in the future).');
+      return;
+    }
+
     const payload = {
       username: this.usernameInput,
       email: this.emailInput,
       password: this.passwordInput,
       dob: this.dobInput,
-      age: this.calculateAge(this.dobInput),
+      age: calculatedAge,
     };
 
     this.http.post<any>('http://localhost:3000/api/signup', payload).subscribe({
-      next: (res) => {
-        if (res.ok) {
-
+      next: (res) => 
+        {
+        if (res.ok) 
+          {
+          this.authService.setUser(res.user);
           // store the user data in the session storage so that each page will have access to the user data
           sessionStorage.setItem('user', JSON.stringify(res.user));
           sessionStorage.setItem('username', res.user.username);

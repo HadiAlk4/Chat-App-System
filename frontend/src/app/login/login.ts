@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../services/auth';
 
 const BACKEND_URL = 'http://localhost:3000';
 
@@ -17,7 +18,7 @@ export class Login
   passwordInput: string = '';
   errorMessage: string = '';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private authService: AuthService) {}
 
   loginfunc(): void {
     if (!this.emailInput || !this.passwordInput) {
@@ -33,6 +34,8 @@ export class Login
     this.http.post<any>(`${BACKEND_URL}/api/auth`, payload).subscribe({
       next: (res) => {
         if (res.ok && res.valid) {
+          this.authService.setUser(res.user);
+          
           sessionStorage.setItem('user', JSON.stringify(res.user));
           sessionStorage.setItem('username', res.user.username);
           sessionStorage.setItem('role', res.user.role);

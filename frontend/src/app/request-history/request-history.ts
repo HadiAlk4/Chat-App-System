@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth';
 
 @Component({
   selector: 'app-request-history',
@@ -12,6 +13,13 @@ export class RequestHistory
 {
   userRole: string = 'user';
   userName: string = 'hadialk04';
+
+  constructor(private authService: AuthService) {}
+
+  onLogout(): void
+  {
+    this.authService.logout();
+  }
 
   availableGroups: string[] = 
   [

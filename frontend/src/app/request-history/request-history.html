@@ -15,7 +15,7 @@
             <h3 style="margin: 1rem 0 0 0; font-size: 1.5rem;"> Name: {{userName}} </h3>
             <p style="margin: 0.2rem 0 1.5rem 0; font-size: 1.2rem; color: #555;">Role: {{ userRole }}</p>
                 <button routerLink="/dashboard" class="btn-block btn-success-outline">Back To Dashboard</button>
-                <button class="btn-danger btn-block" style="margin-top: 2rem;"> Log Out </button>
+                <button (click)="onLogout()" class="btn-danger btn-block" style="margin-top: 2rem;"> Log Out </button>
         </div>
     </aside>
 
