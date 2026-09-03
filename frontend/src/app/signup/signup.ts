@@ -30,7 +30,8 @@ export class Signup
     return age;
   }
 
-  registerUser(): void {
+  registerUser(): void 
+    {
     if (!this.usernameInput || !this.emailInput || !this.passwordInput || !this.dobInput) {
       alert('Please fill in all required fields.');
       return;
@@ -45,9 +46,10 @@ export class Signup
     };
 
     this.http.post<any>('http://localhost:3000/api/signup', payload).subscribe({
-      next: (res) => {
-        if (res.ok) {
-
+      next: (res) => 
+        {
+        if (res.ok) 
+          {
           // store the user data in the session storage so that each page will have access to the user data
           sessionStorage.setItem('user', JSON.stringify(res.user));
           sessionStorage.setItem('username', res.user.username);
