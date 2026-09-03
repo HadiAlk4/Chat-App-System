@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth';
 
 @Component({
   selector: 'app-dashboard',
@@ -59,8 +60,16 @@ export class Dashboard
   displayedGroups: any[] = [];
   searchQuery: string = '';
 
+  constructor(private authService: AuthService) {}
+
   ngOnInit() 
   {
+    const user = this.authService.getUser();
+    if(user)
+    {
+      this.userRole = user.role;
+      this.username = user.username;
+    } 
     this.displayedGroups = [...this.availableGroups];
   }
 
@@ -76,4 +85,8 @@ export class Dashboard
       group.name.toLowerCase().includes(lowerCaseQuery)
     );
   }
+  onLogout(): void
+  {
+    this.authService.logout();
+  } 
 }

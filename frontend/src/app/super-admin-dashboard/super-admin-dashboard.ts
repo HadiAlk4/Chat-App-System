@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth';
 
 @Component({
   imports: [RouterLink],
@@ -10,6 +11,22 @@ import { RouterLink } from '@angular/router';
 export class SuperAdminDashboard 
 {
   userName: string = 'Super_mAllen'
+  userRole: string = 'super-admin';
+
+  constructor(private authService: AuthService) {}
+  ngOnInit(): void
+  {
+    const user = this.authService.getUser();
+    if(user)
+    {
+      this.userName = user.username;
+    }
+  }
+
+  onLogout(): void
+  {
+    this.authService.logout();
+  }
 
   groupCreationRequests = 
   [

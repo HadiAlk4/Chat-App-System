@@ -29,6 +29,9 @@ export class AuthService
         if(typeof window !== 'undefined')
         {
             localStorage.removeItem('currentUser');
+            sessionStorage.removeItem('user');
+            sessionStorage.removeItem('username');
+            sessionStorage.removeItem('role');
         }
     }
 

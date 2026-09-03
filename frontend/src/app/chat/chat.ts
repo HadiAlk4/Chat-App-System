@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth';
 
 @Component({
   imports: [RouterLink, FormsModule],
@@ -16,6 +17,18 @@ export class Chat
   currGroupName = 'FSD Larps';
   currentRoom = 'Wednesday Lab';
   currentUser = 'hadialk04';
+  currentUserRole = 'user';
+  constructor(private authService: AuthService) {}
+
+  ngOnInit(): void
+  {
+    const user = this.authService.getUser();
+    if(user)
+    {
+      this.currentUser = user.username;
+    }
+  }
+
 
 
   rooms: string[] = 
@@ -101,6 +114,7 @@ export class Chat
   {
     return this.roomMessages[this.currentRoom];
   }
+
 
   switchRooms(room: string)
   {

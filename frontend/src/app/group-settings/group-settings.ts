@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth';
 
 @Component({
   selector: 'app-group-settings',
@@ -14,6 +15,8 @@ export class GroupSettings
   userRole: string = 'group-admin';
   username: string = 'hadialk04';
 
+  constructor(private authService: AuthService) {}
+
   groupName: string = 'Sci-Fi Larpers';
 
   groupDescription: string = 'when ts not just intersteller and chess videos';
@@ -24,6 +27,11 @@ export class GroupSettings
 
 
   rooms: string[] = ['announcements', 'general-chat', 'wednesday larps'];
+
+  onLogout(): void
+  {
+    this.authService.logout();
+  }
 
   addRoom(): void{
     const roomName = prompt("Enter New Room Name: ");

@@ -20,8 +20,9 @@ export class Signup
   constructor(private http: HttpClient, private router: Router, private authService: AuthService) {}
 
   calculateAge(dob: string): number {
-    if (!dob) return 18;
+    if (!dob) return -1;
     const birthDate = new Date(dob);
+    if (isNaN(birthDate.getTime())) return -1;
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -31,10 +32,16 @@ export class Signup
     return age;
   }
 
-  registerUser(): void 
-    {
+  registerUser(): void {
     if (!this.usernameInput || !this.emailInput || !this.passwordInput || !this.dobInput) {
       alert('Please fill in all required fields.');
+      return;
+    }
+
+    const calculatedAge = this.calculateAge(this.dobInput);
+    if (calculatedAge < 0) 
+    {
+      alert('Please enter a valid Date of Birth (cannot be in the future).');
       return;
     }
 
@@ -43,7 +50,7 @@ export class Signup
       email: this.emailInput,
       password: this.passwordInput,
       dob: this.dobInput,
-      age: this.calculateAge(this.dobInput),
+      age: calculatedAge,
     };
 
     this.http.post<any>('http://localhost:3000/api/signup', payload).subscribe({

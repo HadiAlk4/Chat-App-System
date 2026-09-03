@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../services/auth';
 
 @Component({
   imports: [RouterLink, FormsModule],
@@ -11,6 +12,13 @@ import { RouterLink } from '@angular/router';
 export class SuperAdminAuditLog 
 {
     userName: string = 'Super_mAllen'
+
+    constructor(private authService: AuthService) {}
+
+    onLogout(): void
+    {
+      this.authService.logout();
+    }
 
     auditLogBook = 
     [
