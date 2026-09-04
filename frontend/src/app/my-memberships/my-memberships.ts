@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { AuthService } from '../services/auth';
+
 @Component({
   selector: 'app-my-memberships',
   imports: [RouterLink, FormsModule],
@@ -11,8 +13,9 @@ import { RouterLink } from '@angular/router';
 export class MyMemberships 
 {
 
-currentUsername: string = 'hadialk04';
-currentUserRole: string = 'admin';
+  currentUserRole: string = '';
+  currentUsername: string = '';
+  constructor(private authService: AuthService) {}
 
 joinedGroups = [
     {
@@ -92,9 +95,20 @@ joinedGroups = [
         { label: 'Member Only', value: 'member' }
     ];
 
-    ngOnInit() 
+    ngOnInit(): void
     {
+        const user = this.authService.getUser();
+        if(user)
+        {
+          this.currentUserRole = user.role;
+          this.currentUsername = user.username;
+        }
         this.displayedGroups = [...this.joinedGroups];
+    }
+
+    onLogout(): void
+    {
+      this.authService.logout();
     }
 
     applyFilters() {

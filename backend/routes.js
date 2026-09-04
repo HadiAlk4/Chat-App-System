@@ -94,6 +94,8 @@ export function testroute(APP, db)
         age,
         role,
         valid: true,
+        isDarkMode: false,
+        profilePictureUrl: '/pfp.png',
       }
       await usersCollection.insertOne(newUser);
 

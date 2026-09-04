@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms'; 
 
+import { AuthService } from '../services/auth';
+
 @Component({
   imports: [RouterLink, FormsModule],
   selector: 'app-user-profile-settings',
@@ -10,11 +12,27 @@ import { FormsModule } from '@angular/forms';
 })
 export class UserProfileSettings 
 {
+  constructor(private authService: AuthService) {}
+
+  ngOnInit(): void
+  {
+    const user = this.authService.getUser();
+    if(user)
+    {
+      this.userProfile.username = user.username;
+      this.userProfile.email = user.email;
+      this.userProfile.dob = user.dob;
+      this.userProfile.role = user.role;
+      this.userProfile.isDarkMode = user.isDarkMode;
+      this.userProfile.profilePictureUrl = user.profilePictureUrl;
+      }
+    }
+
     userProfile = {
-        username: 'hadialk04',
-        email: 'hadialk04@fabulari.com',
-        dob: '2004-10-12', 
-        role: 'User',
+        username: '',
+        email: '',
+        dob: '', 
+        role: '',
         isDarkMode: false,
         profilePictureUrl: '/pfp.png' 
     };
