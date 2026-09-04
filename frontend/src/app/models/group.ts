@@ -1,6 +1,6 @@
 export interface Group 
 {
-    id: number;
+    _id?: string;
     groupName: string;
     groupDescription:string;
     minAge: number;
