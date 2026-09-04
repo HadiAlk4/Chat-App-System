@@ -1,11 +1,12 @@
 import bcrypt from "bcrypt";
+import { ObjectId } from "mongodb";
 
 export function testroute(APP, db) 
 {
   const usersCollection = db.collection("users");
   const groupsCollection = db.collection("groups");
   const roomsCollection = db.collection("rooms");
-
+  const groupRequestsCollection = db.collection("groupRequests");
   // authenticate user
   APP.post("/api/auth", async (req, res) => 
   {
@@ -158,5 +159,144 @@ export function testroute(APP, db)
   {
     res.status(500).send({ ok: false, message: err.message });
   }
+  });
+
+  APP.post("/api/group-requests", async (req, res) =>
+  {
+  try
+  {
+    const 
+    {
+      groupName,
+      groupDescription,
+      minAge,
+      themeColor,
+      creatorUserName,
+      creatorEmail,
+    } = req.body;
+
+    if(!groupName || !groupDescription || !minAge || !themeColor || !creatorUserName || !creatorEmail)
+    {
+      return res.send({ ok: false, valid: false, message: "All fields are required" });
+    }
+
+    const exists = await groupRequestsCollection.findOne({ groupName });
+
+    if(exists)
+    {
+      return res.send({ ok: false, valid: false, message: "Group request already exists" });
+    }
+
+    const pendingRequests = await groupRequestsCollection.findOne({ groupName, status: "pending" });
+    if(pendingRequests)
+    {
+      return res.send({ ok: false, valid: false, message: "Group request already exists" });
+    }
+
+    await groupRequestsCollection.insertOne({
+      groupName,
+      groupDescription,
+      minAge,
+      themeColor,
+      creatorUserName,
+      creatorEmail,
+      status: "pending",
+      createdAt: new Date(),
+    });
+
+    res.send({ ok: true, valid: true, message: "Group request submitted successfully" });
+  }
+  catch (err)
+  {
+    res.status(500).send({ ok: false, message: err.message });
+  }
+  });
+
+  APP.get("/api/group-requests", async (req, res) =>
+  {
+    try
+    {
+      const filter = req.query.status ? { status: req.query.status } : {};
+      const requests = await groupRequestsCollection.find(filter).toArray();
+      res.send(requests);
+    }
+    catch (err)
+    {
+      res.status(500).send({ ok: false, message: err.message });
+    }
+  });
+
+  APP.patch("/api/group-requests/:id/approve", async (req, res) =>
+  {
+    try
+    {
+      const request = await groupRequestsCollection.findOne({ _id: new ObjectId(req.params.id), status: "pending" });
+      if(!request)
+      {
+        return res.send({ ok: false, valid: false, message: "Request not found" });
+      }
+
+      const groupExists = await groupsCollection.findOne({ groupName: request.groupName });
+      if(groupExists)
+      {
+        return res.send({ ok: false, valid: false, message: "Group already exists" });
+      }
+
+      await groupsCollection.insertOne({
+        groupName: request.groupName,
+        groupDescription: request.groupDescription,
+        minAge: request.minAge,
+        themeColor: request.themeColor,
+        admins: [request.creatorUserName],
+        members: [request.creatorUserName],
+        rooms: ["Main Room"],
+      });
+
+      await groupRequestsCollection.updateOne({ _id: new ObjectId(req.params.id) }, { $set: { status: "approved", reviewedAt: new Date() } });
+
+      res.send({ ok: true, valid: true, message: "Group request approved successfully" });
+    }
+    catch (err)
+    {
+      res.status(500).send({ ok: false, message: err.message });
+    }
+  });
+
+  APP.patch("/api/group-requests/:id/reject", async (req, res) => {
+    try {
+      const reason = req.body.reason?.trim();
+
+      if (!reason) {
+        return res.status(400).send({
+          ok: false,
+          message: "A rejection reason is required"
+        });
+      }
+
+      const result = await groupRequestsCollection.updateOne(
+        {
+          _id: new ObjectId(req.params.id),
+          status: "pending"
+        },
+        {
+          $set: {
+            status: "rejected",
+            rejectionReason: reason,
+            reviewedAt: new Date()
+          }
+        }
+      );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).send({
+          ok: false,
+          message: "Pending proposal not found"
+        });
+      }
+
+      res.send({ ok: true, message: "Proposal rejected" });
+    } catch (err) {
+      res.status(500).send({ ok: false, message: err.message });
+    }
   });
 }

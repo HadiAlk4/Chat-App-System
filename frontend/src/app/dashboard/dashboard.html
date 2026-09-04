@@ -47,16 +47,19 @@
     </div>
 
     <div class="row" style="gap: 1.5rem;">
-        @for (group of displayedGroups; track group.name) 
+        @for (group of displayedGroups; track group._id ?? group.groupName) 
         {
-            <div class="card" style="width: 20rem; color: grey; background-color: rgb(245, 242, 242); " >
-                  <div class="card-body">
-                    <h4 class="card-title"> {{ group.name }}</h4>
-                    <h5 class="card-subtitle"> Minimum Age: {{ group.minAge }}</h5>
-                    <p class="card-text"> {{ group.description }} </p>
+            <div class="card" style="width: 20rem; color: grey; background-color: rgb(245, 242, 242);">
+                <div class="card-body">
+                    <h4 class="card-title">{{ group.groupName }}</h4>
+                    <h5 class="card-subtitle">Minimum Age: {{ group.minAge }}</h5>
+                    <p class="card-text">{{ group.groupDescription }}</p>
                     <button class="btn-primary">Request to Join</button>
-                  </div>
+                </div>
             </div>
+        } @empty 
+        {
+            <p style="padding: 1rem; color: #777;">No available groups found.</p>
         }
     </div>
     </div>
@@ -72,17 +75,17 @@
         
         <div class="form-group">
             <label for="grpName">Group Name</label>
-            <input class="input-block" type="text" id="grpName" [(ngModel)]="newGroupName" placeholder="e.g. Jroub Name">
+            <input class="input-block" type="text" id="grpName" [(ngModel)]="newGroup.groupName" placeholder="e.g. Writers Guild">
         </div>
 
         <div class="form-group">
             <label for="grpAge">Minimum Age Limit</label>
-            <input class="input-block" type="number" id="grpAge" [(ngModel)]="newGroupMinAge" placeholder="18">
+            <input class="input-block" type="number" id="grpAge" [(ngModel)]="newGroup.minAge">
         </div>
 
         <div class="form-group">
             <label for="grpTheme">Theme Color</label>
-            <select id="grpTheme" class="input-block" [(ngModel)]="newGroupTheme">
+            <select id="grpTheme" class="input-block" [(ngModel)]="newGroup.themeColor">
                 <option value="light">Light</option>
                 <option value="dark">Dark</option>
             </select>
@@ -90,7 +93,7 @@
 
         <div class="form-group">
             <label for="grpDesc">Description</label>
-            <textarea id="grpDesc" class="input-block" [(ngModel)]="newGroupDescription" placeholder="What is this group about?"></textarea>
+            <textarea id="grpDesc" class="input-block" [(ngModel)]="newGroup.groupDescription" placeholder="What is this group about?"></textarea>
         </div>
 
         <label class="paper-btn btn-success btn-block" for="modal-propose-group" (click)="proposeGroup()" style="text-align: center; margin-top: 1rem;">

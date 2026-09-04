@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
-import { HttpClient } from '@angular/common/http';
+import { GroupService } from '../services/group';
+import { Group } from '../models/group';
 
-const API_URL = 'http://localhost:3000/api';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,16 +19,20 @@ export class Dashboard implements OnInit
   username: string = '';
 
 
-  availableGroups: any[] = [];
-  displayedGroups: any[] = [];
+  email: string = '';
+
+  availableGroups: Group[] = [];
+  displayedGroups: Group[] = [];
   searchQuery: string = '';
 
-  newGroupName: string = '';
-  newGroupDescription: string = '';
-  newGroupTheme: string = 'light';
-  newGroupMinAge: number = 18;
+  newGroup: Group = {
+    groupName: '',
+    groupDescription: '',
+    minAge: 18,
+    themeColor: 'light'
+  };
 
-  constructor(private authService: AuthService, private http: HttpClient) {}
+  constructor(private authService: AuthService, private groupService: GroupService) {}
 
 
   ngOnInit(): void
@@ -38,70 +42,61 @@ export class Dashboard implements OnInit
     {
       this.userRole = user.role;
       this.username = user.username;
+      this.email = user.email;
     } 
-    this.fetchGroups();
+    this.loadGroups();
   }
 
-  fetchGroups(): void
+  loadGroups(): void
   {
-    this.http.get<any[]>(`${API_URL}/groups`).subscribe(
-      (groups) => {
-        this.availableGroups = groups.map((group) => ({
-          ...group,
-          name: group.groupName ?? group.name,
-          description: group.groupDescription ?? group.description,
-        }));
-        this.displayedGroups = [...this.availableGroups];
+    this.groupService.getGroups().subscribe({
+      next: (groups) => {
+        this.availableGroups = groups;
+        this.applySearch();
       },
-      (error) => {
-        console.error('Error fetching groups:', error);
+      error: (error) => {
+        console.error('Error loading groups:', error);
       }
-    );
+    });
   }
 
-  proposeGroup(): void
-  {
-    if (!this.newGroupName.trim()) {
+  proposeGroup(): void {
+    if (!this.newGroup.groupName.trim()) {
       alert('Group name is required.');
       return;
     }
 
-    const payload = {
-      groupName: this.newGroupName,
-      groupDescription: this.newGroupDescription,
-      themeColor: this.newGroupTheme,
-      minAge: this.newGroupMinAge,
-      creatorUserName: this.username,
-    };
+    this.groupService
+      .submitProposal(this.newGroup, this.username, this.email)
+      .subscribe({
+        next: response => {
+          alert(response.message);
 
-    this.http.post<any>(`${API_URL}/groups`, payload).subscribe({
-      next: (res) => {
-        if (res.ok) {
-          alert('Group created successfully!');
-          this.fetchGroups();
-          // Reset form fields
-          this.newGroupName = '';
-          this.newGroupDescription = '';
-          this.newGroupTheme = 'light';
-          this.newGroupMinAge = 18;
-        } else {
-          alert(res.message || 'Error creating group');
+          if (response.ok) {
+            this.newGroup = {
+              groupName: '',
+              groupDescription: '',
+              minAge: 18,
+              themeColor: 'light'
+            };
+          }
+        },
+        error: () => {
+          alert('Cannot connect to backend server.');
         }
-      },
-      error: () => alert('Failed to connect to backend.')
-    });
+      });
   }
 
-  applySearch() 
-  {
-    if (!this.searchQuery.trim()) 
-    {
+  applySearch(): void {
+    const query = this.searchQuery.trim().toLowerCase();
+  
+    if (!query) {
       this.displayedGroups = [...this.availableGroups];
       return;
     }
-    const lowerCaseQuery = this.searchQuery.trim().toLowerCase();
-    this.displayedGroups = this.availableGroups.filter(group => 
-      (group.name ?? '').toLowerCase().includes(lowerCaseQuery)
+  
+    this.displayedGroups = this.availableGroups.filter(group =>
+      group.groupName.toLowerCase().includes(query)
     );
   }
   onLogout(): void

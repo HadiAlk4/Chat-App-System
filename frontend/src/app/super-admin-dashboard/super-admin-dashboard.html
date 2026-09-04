@@ -30,38 +30,43 @@
       <th>#</th>
       <th>Group Title</th>
       <th>Requested By</th>
-      <th> User Role </th>
+      <th>Email</th>
       <th>Min Age</th>
       <th>Theme</th>
       <th>Actions</th>
     </tr>
   </thead>
   <tbody>
-    @for(req of groupCreationRequests; track req.groupCreationRequestName)
+    @for(req of groupCreationRequests(); track req._id ?? req.groupName) 
     {
         <tr>
         <td> {{ $index + 1}} </td>
-        <td> {{ req.groupCreationRequestName }} </td>
-        <td> {{ req.groupCreationRequestByUser }} </td>
-        <td> {{ req.groupCreationRequestByUserRole }}</td>
-        <td> {{req.groupCreationRequestMinAge }}</td>
-        <td> {{req.groupCreationRequestTheme }}</td>
+        <td> {{ req.groupName }} </td>
+        <td> {{ req.creatorUserName }} </td>
+        <td> {{ req.creatorEmail }}</td>
+        <td> {{ req.minAge }}</td>
+        <td> {{ req.themeColor }}</td>
         <td> 
             <div> 
-            <button class="btn-success-outline btn-small">Accept</button>
-            <button (click)="rejectGroupCreationRequest($index)" class="btn-danger-outline btn-small">Reject</button>
-            <label class="paper-btn btn-small" [attr.for]="'modal-' + $index">Description</label>
+            <button (click)="acceptGroupCreationRequest(req)" class="btn-success-outline btn-small">Accept</button>
+            <button (click)="rejectGroupCreationRequest(req)" class="btn-danger-outline btn-small">Reject</button>
+            <label class="paper-btn btn-small" [attr.for]="'creation-modal-' + $index">Description</label>
             </div>
-            <input class="modal-state" [id]="'modal-' + $index" type="checkbox">
+            <input class="modal-state" [id]="'creation-modal-' + $index" type="checkbox">
             <div class="modal">
-            <label class="modal-bg" [attr.for]="'modal-' + $index"></label>
+            <label class="modal-bg" [attr.for]="'creation-modal-' + $index"></label>
             <div class="modal-body">
-            <label class="btn-close" [attr.for]="'modal-' + $index">X</label>
-            <p class="modal-text">{{ req.groupCreationRequestDescription }}</p>
+            <label class="btn-close" [attr.for]="'creation-modal-' + $index">X</label>
+            <p class="modal-text">{{ req.groupDescription }}</p>
             </div>
             </div>
         </td>    
     </tr>
+    } @empty 
+    {
+        <tr>
+            <td colspan="7">No pending group requests.</td>
+        </tr>
     }
   </tbody>
 </table>
