@@ -33,7 +33,7 @@
     <div style="margin-left: 24rem; margin-top: 0rem; flex: 1;">
     <div class="row" style="gap: 3rem; align-items: center; margin-bottom: 1rem; flex: 1">
     <h2 style="margin: 1"> Available Groups </h2>
-    <label class="paper-btn btn-success" for="modal-propose-group" style="cursor: pointer;">Propose New Group</label>
+    <label class="paper-btn btn-success" for="modal-propose-group" style="cursor: pointer;"  onClick="proposeGroup()">Propose New Group</label>
     </div>
 
     <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 2rem; width: 100%;">
@@ -72,17 +72,17 @@
         
         <div class="form-group">
             <label for="grpName">Group Name</label>
-            <input class="input-block" type="text" id="grpName" placeholder="e.g. Jroub Name">
+            <input class="input-block" type="text" id="grpName" [(ngModel)]="newGroupName" placeholder="e.g. Jroub Name">
         </div>
 
         <div class="form-group">
             <label for="grpAge">Minimum Age Limit</label>
-            <input class="input-block" type="number" id="grpAge" placeholder="18">
+            <input class="input-block" type="number" id="grpAge" [(ngModel)]="newGroupMinAge" placeholder="18">
         </div>
 
         <div class="form-group">
             <label for="grpTheme">Theme Color</label>
-            <select id="grpTheme" class="input-block">
+            <select id="grpTheme" class="input-block" [(ngModel)]="newGroupTheme">
                 <option value="blue">Light</option>
                 <option value="green">Dark</option>
             </select>
@@ -90,7 +90,7 @@
 
         <div class="form-group">
             <label for="grpDesc">Description</label>
-            <textarea id="grpDesc" class="input-block" placeholder="What is this group about?"></textarea>
+            <textarea id="grpDesc" class="input-block" [(ngModel)]="newGroupDescription" placeholder="What is this group about?"></textarea>
         </div>
 
         <label class="paper-btn btn-success btn-block" for="modal-propose-group" style="text-align: center; margin-top: 1rem;">

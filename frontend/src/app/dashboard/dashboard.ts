@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
+import { HttpClient } from '@angular/common/http';
+
+const API_URL = 'http://localhost:3000/api';
 
 @Component({
   selector: 'app-dashboard',
@@ -9,60 +12,26 @@ import { AuthService } from '../services/auth';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard 
+export class Dashboard implements OnInit
 {
 
-  userRole: string = 'user';
-  username: string = 'hadialk04';
+  userRole: string = '';
+  username: string = '';
 
-  availableGroups = 
-  [
-    {
-      name: 'Sci-Fi Writers',
-      minAge: '16+',
-      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.'
-    },
-    {
-      name: 'Digital Artists Collab',
-      minAge: '13+',
-      description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.'
-    },
-    {
-      name: 'Sci-Fi Writers',
-      minAge: '16+',
-      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.'
-    },
-    {
-      name: 'Digital Artists Collab',
-      minAge: '13+',
-      description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.'
-    },{
-      name: 'Sci-Fi Writers',
-      minAge: '16+',
-      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.'
-    },
-    {
-      name: 'Digital Artists Collab',
-      minAge: '13+',
-      description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.'
-    },{
-      name: 'Sci-Fi Writers',
-      minAge: '16+',
-      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.'
-    },
-    {
-      name: 'Digital Artists Collab',
-      minAge: '13+',
-      description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.'
-    },
-  ];
 
+  availableGroups: any[] = [];
   displayedGroups: any[] = [];
   searchQuery: string = '';
 
-  constructor(private authService: AuthService) {}
+  newGroupName: string = '';
+  newGroupDescription: string = '';
+  newGroupTheme: string = 'light';
+  newGroupMinAge: number = 0;
 
-  ngOnInit() 
+  constructor(private authService: AuthService, private http: HttpClient) {}
+
+
+  ngOnInit(): void
   {
     const user = this.authService.getUser();
     if(user)
@@ -70,7 +39,57 @@ export class Dashboard
       this.userRole = user.role;
       this.username = user.username;
     } 
-    this.displayedGroups = [...this.availableGroups];
+    this.fetchGroups();
+  }
+
+  fetchGroups(): void
+  {
+    this.http.get<any[]>(`${API_URL}/groups`).subscribe(
+      (groups) => {
+        this.availableGroups = groups.map((group) => ({
+          ...group,
+          name: group.groupName ?? group.name,
+          description: group.groupDescription ?? group.description,
+        }));
+        this.displayedGroups = [...this.availableGroups];
+      },
+      (error) => {
+        console.error('Error fetching groups:', error);
+      }
+    );
+  }
+
+  proposeGroup(): void
+  {
+    if (!this.newGroupName.trim()) {
+      alert('Group name is required.');
+      return;
+    }
+
+    const payload = {
+      groupName: this.newGroupName,
+      groupDescription: this.newGroupDescription,
+      themeColor: this.newGroupTheme,
+      minAge: this.newGroupMinAge,
+      creatorUserName: this.username,
+    };
+
+    this.http.post<any>(`${API_URL}/groups`, payload).subscribe({
+      next: (res) => {
+        if (res.ok) {
+          alert('Group created successfully!');
+          this.fetchGroups();
+          // Reset form fields
+          this.newGroupName = '';
+          this.newGroupDescription = '';
+          this.newGroupTheme = 'light';
+          this.newGroupMinAge = 0;
+        } else {
+          alert(res.message || 'Error creating group');
+        }
+      },
+      error: () => alert('Failed to connect to backend.')
+    });
   }
 
   applySearch() 
@@ -80,9 +99,9 @@ export class Dashboard
       this.displayedGroups = [...this.availableGroups];
       return;
     }
-    const lowerCaseQuery = this.searchQuery.toLowerCase();
+    const lowerCaseQuery = this.searchQuery.trim().toLowerCase();
     this.displayedGroups = this.availableGroups.filter(group => 
-      group.name.toLowerCase().includes(lowerCaseQuery)
+      (group.name ?? '').toLowerCase().includes(lowerCaseQuery)
     );
   }
   onLogout(): void
