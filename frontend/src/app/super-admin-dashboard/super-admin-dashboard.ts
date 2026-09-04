@@ -1,7 +1,9 @@
-import { Component, signal } from '@angular/core';
+import { Component, DestroyRef, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { GroupService } from '../services/group';
+import { SocketService } from '../services/socket';
 import { GroupRequest } from '../models/group-request';
 
 @Component({
@@ -17,7 +19,9 @@ export class SuperAdminDashboard
 
   constructor(
     private authService: AuthService,
-    private groupService: GroupService
+    private groupService: GroupService,
+    private socketService: SocketService,
+    private destroyRef: DestroyRef
   ) {}
 
   ngOnInit(): void
@@ -28,6 +32,7 @@ export class SuperAdminDashboard
       this.userName = user.username;
     }
     this.loadGroupRequests();
+    this.listenForGroupRequestEvents();
   }
 
   onLogout(): void
@@ -47,6 +52,27 @@ export class SuperAdminDashboard
         console.error('Failed to load group requests:', error);
       }
     });
+  }
+
+  listenForGroupRequestEvents(): void
+  {
+    this.socketService.onGroupRequestCreated()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(request => {
+        this.groupCreationRequests.update(requests =>
+          requests.some(item => item._id === request._id)
+            ? requests
+            : [request, ...requests]
+        );
+      });
+
+    this.socketService.onGroupRequestResolved()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ requestId }) => {
+        this.groupCreationRequests.update(requests =>
+          requests.filter(request => request._id !== requestId)
+        );
+      });
   }
 
   groupDeletionRequests = 

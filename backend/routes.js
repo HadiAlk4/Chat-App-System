@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 
-export function testroute(APP, db) 
+export function testroute(APP, db, io) 
 {
   const usersCollection = db.collection("users");
   const groupsCollection = db.collection("groups");
@@ -193,7 +193,7 @@ export function testroute(APP, db)
       return res.send({ ok: false, valid: false, message: "Group request already exists" });
     }
 
-    await groupRequestsCollection.insertOne({
+    const newRequest = {
       groupName,
       groupDescription,
       minAge,
@@ -202,6 +202,12 @@ export function testroute(APP, db)
       creatorEmail,
       status: "pending",
       createdAt: new Date(),
+    };
+
+    const result = await groupRequestsCollection.insertOne(newRequest);
+    io.emit("group-request-created", {
+      _id: result.insertedId,
+      ...newRequest,
     });
 
     res.send({ ok: true, valid: true, message: "Group request submitted successfully" });
@@ -254,6 +260,11 @@ export function testroute(APP, db)
 
       await groupRequestsCollection.updateOne({ _id: new ObjectId(req.params.id) }, { $set: { status: "approved", reviewedAt: new Date() } });
 
+      io.emit("group-request-resolved", {
+        requestId: req.params.id,
+        status: "approved",
+      });
+
       res.send({ ok: true, valid: true, message: "Group request approved successfully" });
     }
     catch (err)
@@ -293,6 +304,11 @@ export function testroute(APP, db)
           message: "Pending proposal not found"
         });
       }
+
+      io.emit("group-request-resolved", {
+        requestId: req.params.id,
+        status: "rejected",
+      });
 
       res.send({ ok: true, message: "Proposal rejected" });
     } catch (err) {
