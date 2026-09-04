@@ -12,7 +12,7 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
 * [ ] Permanently lock this bootstrapping route once the Super Admin is registered.
 
 ### 2. Group Creation Request Flow (Connecting Modal to Admin)
-* [ ] Connect the "Propose New Group" PaperCSS modal in `dashboard.html` to an API endpoint rather than purely toggling the UI.
+* [x] Connect the "Propose New Group" PaperCSS modal in `dashboard.html` to an API endpoint rather than purely toggling the UI.
 * [ ] Ensure proposals route to the Super Admin's queue.
 * [ ] Allow the Super Admin to accept the proposal, designate the initial Group Admin (GA), and create the group in the database.
 
@@ -48,9 +48,9 @@ This checklist combines the missing and un-mocked Phase 1 features with all new 
 * [ ] Migrate existing seed records into MongoDB collections.
 
 ### 2. Password Encryption & Authentication Hardening
-* [ ] Integrate `bcrypt` into the backend for hashing passwords on user registration.
-* [ ] Enforce password criteria: minimum 8 characters, alphanumeric, and at least one uppercase letter.
-* [ ] Update `/api/auth` to verify hashed credentials with `bcrypt.compare`.
+* [x] Integrate `bcrypt` into the backend for hashing passwords on user registration.
+* [x] Enforce password criteria: minimum 8 characters, alphanumeric, and at least one uppercase letter.
+* [x] Update `/api/auth` to verify hashed credentials with `bcrypt.compare`.
 
 ### 3. Super Admin Bootstrapping
 * [ ] Implement an initial startup check that verifies if the user collection is empty.
