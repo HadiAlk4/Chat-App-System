@@ -10,6 +10,8 @@ import { AuthService } from '../services/auth';
   templateUrl: './signup.html',
   styleUrl: './signup.css',
 })
+
+// adminPass123 - userPass123 - Password123
 export class Signup 
 {
   usernameInput: string = '';
