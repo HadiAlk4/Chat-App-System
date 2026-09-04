@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
+import { GroupService } from '../services/group';
+import { GroupRequest } from '../models/group-request';
 
 @Component({
   imports: [RouterLink],
@@ -13,7 +15,11 @@ export class SuperAdminDashboard
   userName: string = 'Super_mAllen'
   userRole: string = 'super-admin';
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private groupService: GroupService
+  ) {}
+
   ngOnInit(): void
   {
     const user = this.authService.getUser();
@@ -21,6 +27,7 @@ export class SuperAdminDashboard
     {
       this.userName = user.username;
     }
+    this.loadGroupRequests();
   }
 
   onLogout(): void
@@ -28,33 +35,19 @@ export class SuperAdminDashboard
     this.authService.logout();
   }
 
-  groupCreationRequests = 
-  [
-    {
-    groupCreationRequestName: 'sm ts idk name 1',
-    groupCreationRequestByUser: ' sm user',
-    groupCreationRequestByUserRole: ' sm role',
-    groupCreationRequestMinAge: '18',
-    groupCreationRequestTheme: 'sm blue',
-    groupCreationRequestDescription: '111 groupCreationRequestDescription groupCreationRequestDescriptiongroupCreationRequestDescriptiongroupCreationRequestDescription'
-    },
-    {
-    groupCreationRequestName: 'sm ts idk name 3 ',
-    groupCreationRequestByUser: ' sm user',
-    groupCreationRequestByUserRole: ' sm role',
-    groupCreationRequestMinAge: '18',
-    groupCreationRequestTheme: 'sm blue',
-    groupCreationRequestDescription: '100000 groupCreationRequestDescription groupCreationRequestDescriptiongroupCreationRequestDescriptiongroupCreationRequestDescription'
-    },
-    {
-    groupCreationRequestName: 'sm ts idk name 2',
-    groupCreationRequestByUser: ' sm user',
-    groupCreationRequestByUserRole: ' sm role',
-    groupCreationRequestMinAge: '18',
-    groupCreationRequestTheme: 'sm blue',
-    groupCreationRequestDescription: '1111 groupCreationRequestDescription groupCreationRequestDescriptiongroupCreationRequestDescriptiongroupCreationRequestDescription'
-    },
-  ]
+  groupCreationRequests = signal<GroupRequest[]>([]);
+
+  loadGroupRequests(): void
+  {
+    this.groupService.getPendingRequests().subscribe({
+      next: requests => {
+        this.groupCreationRequests.set(requests);
+      },
+      error: error => {
+        console.error('Failed to load group requests:', error);
+      }
+    });
+  }
 
   groupDeletionRequests = 
   [
@@ -95,15 +88,47 @@ export class SuperAdminDashboard
   ]
 
 
-  rejectGroupCreationRequest(index: number): void
+  rejectGroupCreationRequest(request: GroupRequest): void
   {
-    this.groupCreationRequests.splice(index, 1);
-    //const reason = prompt(`Enter Reason for Rejecting: `);
+    if (!request._id) {
+      return;
+    }
+
+    const reason = prompt('Enter a rejection reason:')?.trim();
+    if (!reason) {
+      return;
+    }
+
+    this.groupService.rejectRequest(request._id, reason).subscribe({
+      next: response => {
+        alert(response.message);
+        if (response.ok) {
+          this.loadGroupRequests();
+        }
+      },
+      error: () => {
+        alert('Failed to reject group request.');
+      }
+    });
   }
 
-  acceptGroupCreationRequest(index: number): void
+  acceptGroupCreationRequest(request: GroupRequest): void
   {
-    //this.groupCreationRequests.splice(index, 1);
+    if (!request._id) {
+      return;
+    }
+
+    this.groupService.approveRequest(request._id).subscribe({
+      next: response => {
+        alert(response.message);
+        if (response.ok) {
+          this.loadGroupRequests();
+        }
+      },
+      error: () => {
+        alert('Failed to approve group request.');
+      }
+    });
   }
 
   acceptGroupDeletionRequest(index: number): void

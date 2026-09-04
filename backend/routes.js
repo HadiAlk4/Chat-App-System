@@ -218,7 +218,7 @@ export function testroute(APP, db)
     {
       const filter = req.query.status ? { status: req.query.status } : {};
       const requests = await groupRequestsCollection.find(filter).toArray();
-      res.send({ ok: true, valid: true, requests });
+      res.send(requests);
     }
     catch (err)
     {
