@@ -26,7 +26,7 @@ export class Dashboard implements OnInit
   newGroupName: string = '';
   newGroupDescription: string = '';
   newGroupTheme: string = 'light';
-  newGroupMinAge: number = 0;
+  newGroupMinAge: number = 18;
 
   constructor(private authService: AuthService, private http: HttpClient) {}
 
@@ -83,7 +83,7 @@ export class Dashboard implements OnInit
           this.newGroupName = '';
           this.newGroupDescription = '';
           this.newGroupTheme = 'light';
-          this.newGroupMinAge = 0;
+          this.newGroupMinAge = 18;
         } else {
           alert(res.message || 'Error creating group');
         }
