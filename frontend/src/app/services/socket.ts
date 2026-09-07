@@ -2,12 +2,19 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { GroupRequest } from '../models/group-request';
+import { JoinRequest } from '../models/join-request';
 
 const SOCKET_URL = 'http://localhost:3000';
 
 interface GroupRequestResolved {
   requestId: string;
   status: 'approved' | 'rejected';
+}
+
+interface JoinRequestResolved {
+  requestId: string;
+  status: 'approved' | 'rejected';
+  groupName: string;
 }
 
 @Injectable({
@@ -23,6 +30,14 @@ export class SocketService {
 
   onGroupRequestResolved(): Observable<GroupRequestResolved> {
     return this.listen<GroupRequestResolved>('group-request-resolved');
+  }
+
+  onJoinRequestCreated(): Observable<JoinRequest> {
+    return this.listen<JoinRequest>('join-request-created');
+  }
+
+  onJoinRequestResolved(): Observable<JoinRequestResolved> {
+    return this.listen<JoinRequestResolved>('join-request-resolved');
   }
 
   private listen<T>(eventName: string): Observable<T> {
