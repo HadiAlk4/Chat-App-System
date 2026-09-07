@@ -55,9 +55,8 @@ export class GroupService // why not group
         (`${API_URL}/join-requests`, {groupName, username});
     }
 
-    getJoinRequests(groupName: string): Observable<JoinRequest[]> {
-        return this.http.get<JoinRequest[]>
-        (`${API_URL}/join-requests?groupName=${groupName}`);
+    getJoinRequests(params: { groupName?: string; username?: string; status?: string }): Observable<JoinRequest[]> {
+        return this.http.get<JoinRequest[]>(`${API_URL}/join-requests`, { params });
     }
 
     approveJoinRequest(requestId: string): Observable<{ok: boolean, message: string}> {

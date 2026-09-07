@@ -1,20 +1,47 @@
-import { Component } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
+import { GroupService } from '../services/group';
+import { JoinRequest } from '../models/join-request';
 
 @Component({
   selector: 'app-request-history',
-  imports: [RouterLink, FormsModule],
+  imports: [DatePipe, RouterLink, FormsModule],
   templateUrl: './request-history.html',
   styleUrl: './request-history.css',
 })
-export class RequestHistory 
+export class RequestHistory implements OnInit
 {
   userRole: string = 'user';
   userName: string = 'hadialk04';
 
-  constructor(private authService: AuthService) {}
+  pendingJoinRequestGroups: JoinRequest[] = [];
+  rejectedRequestGroups: JoinRequest[] = [];
+
+  constructor(
+    private authService: AuthService,
+    private groupService: GroupService
+  ) {}
+
+  ngOnInit(): void {
+    const user = this.authService.getUser();
+    if (user) {
+      this.userName = user.username;
+      this.userRole = user.role;
+    }
+    this.loadHistory();
+  }
+
+  loadHistory(): void {
+    this.groupService.getJoinRequests({ username: this.userName }).subscribe({
+      next: requests => {
+        this.pendingJoinRequestGroups = requests.filter(r => r.status === 'pending');
+        this.rejectedRequestGroups = requests.filter(r => r.status === 'rejected');
+      }
+    });
+  }
 
   onLogout(): void
   {
@@ -28,53 +55,22 @@ export class RequestHistory
     'Sci-Fi Larpers'
   ];
 
-  pendingJoinRequestGroups =
-  [
-    {
-      requestDate: '20/08/26',
-      requestedGroupName: 'FSD Larp',
-    },
-    {
-      requestDate: '19/08/26',
-      requestedGroupName: 'Tough Mudder Bullying Chat Room',
-    },
-  ];
-
-  rejectedRequestGroups =
-  [
-    {
-      rejectedRequestDate: '20/08/26',
-      rejectedRquestGroupName: 'FSD Larp',
-      rejectedRquestGroupNameReason: '****************'
-    },
-    {
-      rejectedRequestDate: '19/08/26',
-      rejectedRquestGroupName: 'Tough Mudder Bullying Chat Room',
-      rejectedRquestGroupNameReason: '************'
-    },
-  ];
-
   proposeNewRoom =
   [
     {
-      proposeNewRoomRequestDate: '20/08/26',
-      proposeNewRoomGroupName: 'FSD Larp',
-      proposedRoomName: 'Coe-Ideas'
+    proposeNewRoomRequestDate: '20/08/26',
+    proposeNewRoomGroupName: 'FSD Larp',
+    proposedRoomName: 'Coe-Ideas'
     },
     {
-      proposeNewRoomRequestDate: '19/08/26',
-      proposeNewRoomGroupName: 'Tough Mudder Bullying Chat Room',
-      proposedRoomName: 'Costume-Ideas'
+    proposeNewRoomRequestDate: '19/08/26',
+    proposeNewRoomGroupName: 'Tough Mudder Bullying Chat Room',
+    proposedRoomName: 'Costume-Ideas'
     },
   ];
 
   selectedGroupForRoom: string = '';
   newRoomNameInput: string = '';
-
-  // cancelJoinRequest(index: number): void
-  // {
-  //   this.pendingJoinRequestGroups.splice(index, 1);
-  // }
 
   submitRoomProposal(): void {
     if (this.selectedGroupForRoom && this.newRoomNameInput) {
@@ -88,5 +84,5 @@ export class RequestHistory
     } else {
       alert('Please fill out both fields.');
     }
-}
+  }
 }
