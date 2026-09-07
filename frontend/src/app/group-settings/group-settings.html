@@ -107,10 +107,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (req of joinRequests; track req.username; let i = $index) {
+                            @for (req of joinRequests; track req._id ?? req.username; let i = $index) {
                             <tr>
                                 <td style="vertical-align: middle;">{{ req.username }}</td>
-                                <td style="vertical-align: middle; color: #555;">{{ req.requestedOn }}</td>
+                                <td style="vertical-align: middle; color: #555;">{{ req.requestedOn || (req.createdAt | date:'mediumDate') }}</td>
                                 <td style="text-align: right; vertical-align: middle;">
                                     <div style="display: inline-flex; gap: 0.4rem; align-items: center;">
                                         <button (click)="approveRequest(i)" class="btn-success-outline btn-small">

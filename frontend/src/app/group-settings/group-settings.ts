@@ -1,113 +1,160 @@
-import { Component } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../services/auth';
+import { GroupService } from '../services/group';
+import { SocketService } from '../services/socket';
+import { JoinRequest } from '../models/join-request';
 
 @Component({
   selector: 'app-group-settings',
-  imports: [FormsModule, RouterLink],
+  imports: [DatePipe, FormsModule, RouterLink],
   templateUrl: './group-settings.html',
   styleUrl: './group-settings.css',
 })
-export class GroupSettings 
-{
-
+export class GroupSettings implements OnInit, OnDestroy {
   userRole: string = 'group-admin';
-  username: string = 'hadialk04';
-
-  constructor(private authService: AuthService) {}
-
+  username: string = '';
   groupName: string = 'Sci-Fi Larpers';
-
   groupDescription: string = 'when ts not just intersteller and chess videos';
-
   groupMinAge: number = 10;
+  groupThemeColor: string = 'Light';
 
-  groupThemeColor: string = 'Light'; 
+  joinRequests: any[] = [];
+  private subscriptions: Subscription = new Subscription();
 
+  constructor(
+    private authService: AuthService,
+    private groupService: GroupService,
+    private socketService: SocketService,
+    private route: ActivatedRoute
+  ) {}
 
-  rooms: string[] = ['announcements', 'general-chat', 'wednesday larps'];
+  ngOnInit(): void {
+    
+    const user = this.authService.getUser();
+    if (user) {
+      this.username = user.username;
+      this.userRole = user.role;
+    }
 
-  onLogout(): void
-  {
+    
+    const routeSub = this.route.queryParams.subscribe((params) => {
+      if (params['groupName']) {
+        this.groupName = params['groupName'];
+      }
+      this.loadJoinRequests();
+    });
+    this.subscriptions.add(routeSub);
+
+   
+    this.listenForJoinRequests();
+  }
+
+  loadJoinRequests(): void {
+    this.groupService
+      .getJoinRequests({ groupName: this.groupName, status: 'pending' })
+      .subscribe({
+        next: (requests) => {
+          this.joinRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
+        },
+        error: (err) => console.error('Failed to load join requests:', err),
+      });
+  }
+
+  listenForJoinRequests(): void {
+    const createdSub = this.socketService.onJoinRequestCreated().subscribe((request) => {
+      if (request.groupName !== this.groupName) return;
+      if (this.joinRequests.some((item) => item._id === request._id)) return;
+      this.joinRequests.unshift({ ...request, rejectReason: '' });
+    });
+
+    const resolvedSub = this.socketService.onJoinRequestResolved().subscribe(({ requestId, groupName }) => {
+      if (groupName !== this.groupName) return;
+      this.joinRequests = this.joinRequests.filter((req) => req._id !== requestId);
+    });
+
+    this.subscriptions.add(createdSub);
+    this.subscriptions.add(resolvedSub);
+  }
+
+  approveRequest(index: number): void {
+    const request = this.joinRequests[index];
+    if (!request?._id) return;
+
+    this.groupService.approveJoinRequest(request._id).subscribe({
+      next: (res) => {
+        alert(res.message || 'Request approved');
+        if (res.ok) this.loadJoinRequests();
+      },
+      error: () => alert('Failed to approve request.'),
+    });
+  }
+
+  rejectRequest(index: number): void {
+    const request = this.joinRequests[index];
+    const reason = request?.rejectReason?.trim();
+    if (!request?._id || !reason) {
+      alert('A rejection reason is required');
+      return;
+    }
+
+    this.groupService.rejectJoinRequest(request._id, reason).subscribe({
+      next: (res) => {
+        alert(res.message || 'Request rejected');
+        if (res.ok) this.loadJoinRequests();
+      },
+      error: () => alert('Failed to reject request.'),
+    });
+  }
+
+  onLogout(): void {
     this.authService.logout();
   }
 
-  addRoom(): void{
-    const roomName = prompt("Enter New Room Name: ");
-    if(roomName)
-    {
-    this.rooms.push(roomName);
-    }
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 
-  editRoom(index: number): void 
-  {
-    const currName = this.rooms[index];
-    const newName = prompt('Edit Room Name: ', currName);
-    if(newName)
-    {
-      this.rooms[index] = newName;
-    }
+  rooms: string[] = ['announcements', 'general-chat', 'wednesday larps'];
+  allowedMembers = [
+    { username: 'DaveAcs', role: 'user' },
+    { username: 'Yo', role: 'user' },
+  ];
+  bannedMembers = [{ username: 'Tough Mudder' }, { username: 'JFofh' }];
+
+  addRoom(): void {
+    const roomName = prompt('Enter New Room Name: ');
+    if (roomName) this.rooms.push(roomName);
   }
 
-  deleteRoom(index: number): void
-  {
-    const targetRoom = this.rooms[index];
-    if(confirm(`Are you sure you want to delete #${targetRoom}?`))
-    {
+  editRoom(index: number): void {
+    const newName = prompt('Edit Room Name: ', this.rooms[index]);
+    if (newName) this.rooms[index] = newName;
+  }
+
+  deleteRoom(index: number): void {
+    if (confirm(`Are you sure you want to delete #${this.rooms[index]}?`)) {
       this.rooms.splice(index, 1);
     }
   }
-  joinRequests = 
-  [
-    { username: 'NewbieDrawer123', requestedOn: 'July 30, 2026', rejectReason: '' }
-  ];
 
-  allowedMembers = 
-  [
-    { username: 'DaveAcs', role: 'user' },
-    { username: 'Yo', role: 'user' }
-  ];
-
-  bannedMembers = 
-  [
-    { username: 'Tough Mudder' },
-    { username: 'JFofh'}
-  ];
-
-  approveRequest(index: number): void 
-  {
-    const user = this.joinRequests[index];
-    this.allowedMembers.push( { username: user.username, role: 'user'});
-    this.joinRequests.splice(index, 1);
+  promoteToGA(index: number): void {
+    this.allowedMembers[index].role = 'group-admin';
   }
 
-  rejectRequest(index: number): void
-  {
-  const user = this.joinRequests[index]; 
-  alert(`Rejected ${user.username}`);
-  this.joinRequests.splice(index, 1);
+  banMember(index: number): void {
+    const user = this.allowedMembers[index];
+    this.bannedMembers.push({ username: user.username });
+    this.allowedMembers.splice(index, 1);
   }
 
-  promoteToGA(index: number): void
-  {
-  const user = this.allowedMembers[index].role = 'group-admin';
-  }
-
-  banMember(index: number): void
-  {
-  const user = this.allowedMembers[index];
-  this.bannedMembers.push({ username: user.username });
-  this.allowedMembers.splice(index, 1);
-  const reason = prompt(`Enter ban reason for ${user.username} (sent to Super Admin):`);
-  }
-
-  unBanMember(index: number): void
-  {
-  const user = this.bannedMembers[index];
-  this.allowedMembers.push({ username: user.username, role: 'user' });
-  this.bannedMembers.splice(index, 1);
+  unBanMember(index: number): void {
+    const user = this.bannedMembers[index];
+    this.allowedMembers.push({ username: user.username, role: 'user' });
+    this.bannedMembers.splice(index, 1);
   }
 
   stepDownAsGA(): void {
@@ -116,13 +163,8 @@ export class GroupSettings
     }
   }
 
-  requestGroupDeletion(): void 
-  {
+  requestGroupDeletion(): void {
     const reason = prompt('Please enter a reason for the Super Admin:');
-    if (reason) 
-    {
-      alert('Deletion request submitted to Super Admin.');
-    }
+    if (reason) alert('Deletion request submitted to Super Admin.');
   }
-  
 }

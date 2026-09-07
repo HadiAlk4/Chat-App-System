@@ -47,11 +47,11 @@
                             </tr>
                             </thead>
                             <tbody >
-                                @for (req of pendingJoinRequestGroups; track req.requestedGroupName; let i = $index)
+                                @for (req of pendingJoinRequestGroups; track req._id ?? req.groupName)
                                 {
                                     <tr > 
-                                        <td> {{ req.requestDate }}</td>
-                                        <td> {{ req.requestedGroupName }}</td>
+                                        <td> {{ req.createdAt | date:'dd/MM/yy' }}</td>
+                                        <td> {{ req.groupName }}</td>
                                         <!-- <td style="text-align: right;"> 
                                             <button (click)="cancelJoinRequest(i)" class="btn-danger-outline btn-small" style="border-style: dashed;"> 
                                             Cancel Request 
@@ -79,12 +79,12 @@
                             </tr>
                             </thead>
                             <tbody >
-                                @for (req of rejectedRequestGroups; track req.rejectedRquestGroupName;)
+                                @for (req of rejectedRequestGroups; track req._id ?? req.groupName)
                                 {
                                     <tr > 
-                                        <td> {{ req.rejectedRequestDate }}</td>
-                                        <td> {{ req.rejectedRquestGroupName }}</td>
-                                        <td> {{ req.rejectedRquestGroupNameReason}} </td>
+                                        <td> {{ req.reviewedAt | date:'dd/MM/yy' }}</td>
+                                        <td> {{ req.groupName }}</td>
+                                        <td> {{ req.rejectionReason }}</td>
                                     </tr>
                                 } @empty 
                                 {

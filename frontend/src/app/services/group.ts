@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Group } from '../models/group';
 import { GroupRequest } from '../models/group-request';
 import { Observable } from 'rxjs';
+import { JoinRequest } from '../models/join-request';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -46,5 +47,25 @@ export class GroupService // why not group
 
     rejectRequest(requestId: string, reason: string): Observable<{ok: boolean, message: string}> {
         return this.http.patch<{ok: boolean, message: string}>(`${API_URL}/group-requests/${requestId}/reject`, {reason});
+    }
+
+    submitJoinRequest(groupName: string, username: string)
+    {
+        return this.http.post<{ok: boolean, message: string}>
+        (`${API_URL}/join-requests`, {groupName, username});
+    }
+
+    getJoinRequests(params: { groupName?: string; username?: string; status?: string }): Observable<JoinRequest[]> {
+        return this.http.get<JoinRequest[]>(`${API_URL}/join-requests`, { params });
+    }
+
+    approveJoinRequest(requestId: string): Observable<{ok: boolean, message: string}> {
+        return this.http.patch<{ok: boolean, message: string}>
+        (`${API_URL}/join-requests/${requestId}/approve`, {});
+    }
+
+    rejectJoinRequest(requestId: string, reason: string): Observable<{ok: boolean, message: string}> {
+        return this.http.patch<{ok: boolean, message: string}>
+        (`${API_URL}/join-requests/${requestId}/reject`, {reason});
     }
 }
