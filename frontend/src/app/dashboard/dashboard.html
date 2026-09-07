@@ -54,7 +54,7 @@
                     <h4 class="card-title">{{ group.groupName }}</h4>
                     <h5 class="card-subtitle">Minimum Age: {{ group.minAge }}</h5>
                     <p class="card-text">{{ group.groupDescription }}</p>
-                    <button class="btn-primary">Request to Join</button>
+                    <button class="btn-primary" (click)="requestToJoin(group)">Request to Join</button>
                 </div>
             </div>
         } @empty 

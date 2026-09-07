@@ -99,8 +99,18 @@ export class Dashboard implements OnInit
       group.groupName.toLowerCase().includes(query)
     );
   }
+
+  requestToJoin(group: Group): void {
+    this.groupService.submitJoinRequest(group.groupName, this.username).subscribe({
+      next: response => alert(response.message),
+      error: () => alert('Cannot connect to backend server.')
+    });
+  }
+  
   onLogout(): void
   {
     this.authService.logout();
   } 
+
+
 }

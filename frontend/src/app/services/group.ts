@@ -51,18 +51,22 @@ export class GroupService // why not group
 
     submitJoinRequest(groupName: string, username: string)
     {
-        return this.http.post<{ok: boolean, message: string}>(`${API_URL}/join-requests`, {groupName, username});
+        return this.http.post<{ok: boolean, message: string}>
+        (`${API_URL}/join-requests`, {groupName, username});
     }
 
     getJoinRequests(groupName: string): Observable<JoinRequest[]> {
-        return this.http.get<JoinRequest[]>(`${API_URL}/join-requests?groupName=${groupName}`);
+        return this.http.get<JoinRequest[]>
+        (`${API_URL}/join-requests?groupName=${groupName}`);
     }
 
     approveJoinRequest(requestId: string): Observable<{ok: boolean, message: string}> {
-        return this.http.patch<{ok: boolean, message: string}>(`${API_URL}/join-requests/${requestId}/approve`, {});
+        return this.http.patch<{ok: boolean, message: string}>
+        (`${API_URL}/join-requests/${requestId}/approve`, {});
     }
 
     rejectJoinRequest(requestId: string, reason: string): Observable<{ok: boolean, message: string}> {
-        return this.http.patch<{ok: boolean, message: string}>(`${API_URL}/join-requests/${requestId}/reject`, {reason});
+        return this.http.patch<{ok: boolean, message: string}>
+        (`${API_URL}/join-requests/${requestId}/reject`, {reason});
     }
 }
