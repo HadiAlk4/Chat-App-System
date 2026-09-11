@@ -25,6 +25,7 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
 * Replace local `.splice()` and hardcoded arrays with real API updates:
   * [ ] **Rooms:** Connect "+ Add Room", "Edit Name", and "Delete Room" to backend endpoints.
   * [x] **Join Requests:** Persist approvals and rejections; require and save a rejection reason to be viewed in the user's `request-history`.
+  * [x] **Room Requests:** Persist approvals and rejections; require and save a rejection reason to be viewed in the user's `request-history`.
   * [ ] **Promotions:** Persist regular member promotions to Group Admin.
   * [ ] **Group Bans:** Persist group-level bans and ensure they are permanent (remove the "un-ban" button, as the specification states there is no un-ban system).
   * [ ] **Resignation & Deletion:** Enforce GA step-down rules (cannot step down if sole GA or if pending requests exist) and route group deletion requests to the Super Admin.
@@ -61,12 +62,12 @@ This checklist combines the missing and un-mocked Phase 1 features with all new 
 * [x] Connect the `dashboard.html` proposal modal to a backend endpoint that queues proposals for the Super Admin.
 * [x] Super Admin reviews and approves the proposal, creating the group in MongoDB and assigning the creator as Group Admin (GA).
 * [x] Wire the "Request to Join" button on `dashboard.html` to create a pending join request for the GA, enforcing age validation so users under the group's `minAge` are rejected automatically.
-* [ ] Enable regular users to propose new rooms within a group via `request-history`.
+* [x] Enable regular users to propose new rooms within a group via `request-history`.
 
 ### 5. Un-Mocking Group Admin Controls (`group-settings.ts`)
 * Replace all component array `.splice()` methods with persistent MongoDB updates:
   * [ ] Create, rename, and delete rooms.
-  * [ ] Approve or reject join and room requests, storing a mandatory rejection reason displayed in the user's `request-history`.
+  * [x] Approve or reject join and room requests, storing a mandatory rejection reason displayed in the user's `request-history`.
   * [ ] Promote members to GA.
   * [ ] Enforce GA step-down rules: prevent demotion if the user is the sole GA or has pending requests queued with the Super Admin.
   * [ ] Issue permanent group-level bans (removing the un-ban capability from the UI).
