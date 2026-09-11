@@ -7,24 +7,24 @@
 This ordered checklist covers the missing or mocked Phase 1 features that need to be made fully functional for Phase 2:
 
 ### 1. System Bootstrapping (Initial Super Admin Setup)
-* [ ] Add an initial database check to detect whether any users exist in the system.
+* [x] Add an initial database check to detect whether any users exist in the system.
 * [ ] If empty, display a setup/bootstrap screen prompting the first visitor to register as the single Super Admin.
 * [ ] Permanently lock this bootstrapping route once the Super Admin is registered.
 
 ### 2. Group Creation Request Flow (Connecting Modal to Admin)
 * [x] Connect the "Propose New Group" PaperCSS modal in `dashboard.html` to an API endpoint rather than purely toggling the UI.
-* [ ] Ensure proposals route to the Super Admin's queue.
-* [ ] Allow the Super Admin to accept the proposal, designate the initial Group Admin (GA), and create the group in the database.
+* [x] Ensure proposals route to the Super Admin's queue.
+* [x] Allow the Super Admin to accept the proposal, designate the initial Group Admin (GA), and create the group in the database.
 
 ### 3. Group Join Requests & Age Validation
-* [ ] Bind a click event to the "Request to Join" button in `dashboard.html` to submit a join request to the group's GA.
-* [ ] Add validation blocking any user from requesting to join if their birth year is below the group's `minAge`.
+* [x] Bind a click event to the "Request to Join" button in `dashboard.html` to submit a join request to the group's GA.
+* [x] Add validation blocking any user from requesting to join if their birth year is below the group's `minAge`.
 * [ ] Implement logic in the GA settings where updating `minAge` automatically boots existing members who fall below the new age limit.
 
 ### 4. Group Admin Management (Un-mocking `group-settings.ts`)
 * Replace local `.splice()` and hardcoded arrays with real API updates:
   * [ ] **Rooms:** Connect "+ Add Room", "Edit Name", and "Delete Room" to backend endpoints.
-  * [ ] **Join Requests:** Persist approvals and rejections; require and save a rejection reason to be viewed in the user's `request-history`.
+  * [x] **Join Requests:** Persist approvals and rejections; require and save a rejection reason to be viewed in the user's `request-history`.
   * [ ] **Promotions:** Persist regular member promotions to Group Admin.
   * [ ] **Group Bans:** Persist group-level bans and ensure they are permanent (remove the "un-ban" button, as the specification states there is no un-ban system).
   * [ ] **Resignation & Deletion:** Enforce GA step-down rules (cannot step down if sole GA or if pending requests exist) and route group deletion requests to the Super Admin.
@@ -43,7 +43,7 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
 This checklist combines the missing and un-mocked Phase 1 features with all new Phase 2 requirements, structured in chronological order of implementation:
 
 ### 1. MongoDB Migration & Data Modeling
-* [ ] Set up a MongoDB connection (via Mongoose) and remove all `fakeData.json` file reading/writing logic.
+* [x] Set up a MongoDB connection (via Mongoose) and remove all `fakeData.json` file reading/writing logic.
 * [ ] Define schemas for Users, Groups, Rooms, Messages, Requests (Join, Room, Deletion, Ban), and Audit Logs.
 * [ ] Migrate existing seed records into MongoDB collections.
 
@@ -58,9 +58,9 @@ This checklist combines the missing and un-mocked Phase 1 features with all new 
 * [ ] Permanently lock the bootstrap endpoint once the Super Admin account exists.
 
 ### 4. Group & Room Request Lifecycle
-* [ ] Connect the `dashboard.html` proposal modal to a backend endpoint that queues proposals for the Super Admin.
-* [ ] Super Admin reviews and approves the proposal, creating the group in MongoDB and assigning the creator as Group Admin (GA).
-* [ ] Wire the "Request to Join" button on `dashboard.html` to create a pending join request for the GA, enforcing age validation so users under the group's `minAge` are rejected automatically.
+* [x] Connect the `dashboard.html` proposal modal to a backend endpoint that queues proposals for the Super Admin.
+* [x] Super Admin reviews and approves the proposal, creating the group in MongoDB and assigning the creator as Group Admin (GA).
+* [x] Wire the "Request to Join" button on `dashboard.html` to create a pending join request for the GA, enforcing age validation so users under the group's `minAge` are rejected automatically.
 * [ ] Enable regular users to propose new rooms within a group via `request-history`.
 
 ### 5. Un-Mocking Group Admin Controls (`group-settings.ts`)
@@ -79,7 +79,7 @@ This checklist combines the missing and un-mocked Phase 1 features with all new 
 * [ ] Implement global account deletions and permanent email bans, preventing banned emails from ever re-registering.
 
 ### 7. Real-Time Chat Infrastructure (Socket.io)
-* [ ] Install and configure `socket.io` on the Node.js HTTP server and `socket.io-client` on Angular.
+* [x] Install and configure `socket.io` on the Node.js HTTP server and `socket.io-client` on Angular.
 * [ ] Establish room-based socket channels matching group room IDs to isolate message traffic.
 * [ ] Emit join and leave events to trigger real-time toast notifications.
 * [ ] Dynamically update the online room participants list in the chat sidebar via live socket presence tracking.
