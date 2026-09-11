@@ -7,6 +7,7 @@ import { AuthService } from '../services/auth';
 import { GroupService } from '../services/group';
 import { SocketService } from '../services/socket';
 import { JoinRequest } from '../models/join-request';
+import { RoomRequest } from '../models/room-request';
 
 @Component({
   selector: 'app-group-settings',
@@ -22,8 +23,10 @@ export class GroupSettings implements OnInit, OnDestroy {
   groupMinAge: number = 10;
   groupThemeColor: string = 'Light';
 
-  joinRequests: any[] = [];
-  private subscriptions: Subscription = new Subscription();
+  joinRequests: (JoinRequest & { rejectReason?: string; requestedOn?: string })[] = [];
+  roomRequests: RoomRequest[] = [];
+
+  private subscriptions = new Subscription();
 
   constructor(
     private authService: AuthService,
@@ -46,11 +49,11 @@ export class GroupSettings implements OnInit, OnDestroy {
         this.groupName = params['groupName'];
       }
       this.loadJoinRequests();
+      this.loadRoomRequests();
     });
     this.subscriptions.add(routeSub);
 
-   
-    this.listenForJoinRequests();
+    this.listenToSockets();
   }
 
   loadJoinRequests(): void {
@@ -64,20 +67,44 @@ export class GroupSettings implements OnInit, OnDestroy {
       });
   }
 
-  listenForJoinRequests(): void {
-    const createdSub = this.socketService.onJoinRequestCreated().subscribe((request) => {
+  loadRoomRequests(): void {
+    this.groupService
+      .getRoomRequests({ groupName: this.groupName, status: 'pending' })
+      .subscribe({
+        next: (requests) => {
+          this.roomRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
+        },
+        error: (err) => console.error('Failed to load room requests:', err),
+      });
+  }
+
+  listenToSockets(): void {
+    const joinCreatedSub = this.socketService.onJoinRequestCreated().subscribe((request) => {
       if (request.groupName !== this.groupName) return;
       if (this.joinRequests.some((item) => item._id === request._id)) return;
       this.joinRequests.unshift({ ...request, rejectReason: '' });
     });
 
-    const resolvedSub = this.socketService.onJoinRequestResolved().subscribe(({ requestId, groupName }) => {
+    const joinResolvedSub = this.socketService.onJoinRequestResolved().subscribe(({ requestId, groupName }) => {
       if (groupName !== this.groupName) return;
       this.joinRequests = this.joinRequests.filter((req) => req._id !== requestId);
     });
 
-    this.subscriptions.add(createdSub);
-    this.subscriptions.add(resolvedSub);
+    const roomCreatedSub = this.socketService.onRoomRequestCreated().subscribe((request) => {
+      if (request.groupName !== this.groupName) return;
+      if (this.roomRequests.some((item) => item._id === request._id)) return;
+      this.roomRequests.unshift({ ...request, rejectReason: '' });
+    });
+
+    const roomResolvedSub = this.socketService.onRoomRequestResolved().subscribe(({ requestId, groupName }) => {
+      if (groupName !== this.groupName) return;
+      this.roomRequests = this.roomRequests.filter((req) => req._id !== requestId);
+    });
+
+    this.subscriptions.add(joinCreatedSub);
+    this.subscriptions.add(joinResolvedSub);
+    this.subscriptions.add(roomCreatedSub);
+    this.subscriptions.add(roomResolvedSub);
   }
 
   approveRequest(index: number): void {
@@ -107,6 +134,41 @@ export class GroupSettings implements OnInit, OnDestroy {
         if (res.ok) this.loadJoinRequests();
       },
       error: () => alert('Failed to reject request.'),
+    });
+  }
+
+  approveRoomRequest(index: number): void {
+    const request = this.roomRequests[index];
+    if (!request?._id) return;
+
+    this.groupService.approveRoomRequest(request._id).subscribe({
+      next: (res) => {
+        alert(res.message);
+        if (res.ok) {
+          if (!this.rooms.includes(request.roomName)) {
+            this.rooms.push(request.roomName);
+          }
+          this.loadRoomRequests();
+        }
+      },
+      error: () => alert('Failed to approve room proposal.'),
+    });
+  }
+
+  rejectRoomRequest(index: number): void {
+    const request = this.roomRequests[index];
+    const reason = request?.rejectReason?.trim();
+    if (!request?._id || !reason) {
+      alert('A rejection reason is required');
+      return;
+    }
+
+    this.groupService.rejectRoomRequest(request._id, reason).subscribe({
+      next: (res) => {
+        alert(res.message);
+        if (res.ok) this.loadRoomRequests();
+      },
+      error: () => alert('Failed to reject room proposal.'),
     });
   }
 
