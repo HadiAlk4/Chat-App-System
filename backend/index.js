@@ -1,9 +1,9 @@
 import express from "express";
 import http from "node:http";
 import cors from "cors";
-import { MongoClient } from "mongodb";
 import { Server } from "socket.io";
-import { testroute } from "./routes.js"; 
+import { testroute } from "./routes.js";
+import { connectDB } from "./db.js"; 
 
 const APP = express();
 const httpServer = http.createServer(APP);
@@ -18,20 +18,14 @@ APP.use(cors());
 
 APP.use(express.json()); 
 
-const URL = "mongodb://localhost:27017";
-const client = new MongoClient(URL);
-const dbName = "chat-app";
-
 io.on("connection", (socket) => {
   console.log(`Socket connected: ${socket.id}`);
 });
 
 async function main() 
 {
-
-await client.connect();
+const db = await connectDB();
 console.log("Connected to MongoDB");
-const db = client.db(dbName);
 
 testroute(APP, db, io);
 httpServer.listen(3000, () => 
