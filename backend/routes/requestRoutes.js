@@ -24,8 +24,7 @@ export function requestRoutes(app, io) {
         return res.send({ ok: false, valid: false, message: "User is already a member of this group" });
       }
 
-      const joinRequestsCollection = db.collection("joinRequests");
-      const duplicateRequest = await joinRequestsCollection.findOne({ groupName, username, status: "pending" });
+      const duplicateRequest = await db.collection("joinRequests").findOne({ groupName, username, status: "pending" });
       if (duplicateRequest) {
         return res.send({ ok: false, valid: false, message: "Join request already exists" });
       }
@@ -37,7 +36,7 @@ export function requestRoutes(app, io) {
         createdAt: new Date(),
       };
 
-      const result = await joinRequestsCollection.insertOne(newRequest);
+      const result = await db.collection("joinRequests").insertOne(newRequest);
       io.emit("join-request-created", { _id: result.insertedId, ...newRequest });
 
       res.send({ ok: true, message: "Join request submitted" });
@@ -62,22 +61,19 @@ export function requestRoutes(app, io) {
 
   app.patch("/api/join-requests/:id/approve", async (req, res) => {
     try {
-      const joinRequestsCollection = db.collection("joinRequests");
-      const request = await joinRequestsCollection.findOne({
+      const request = await db.collection("joinRequests").findOne({
         _id: new ObjectId(req.params.id),
         status: "pending",
       });
 
-      if (!request) {
-        return res.send({ ok: false, message: "Pending join request not found" });
-      }
+      if (!request) return res.send({ ok: false, message: "Pending join request not found" });
 
       await db.collection("groups").updateOne(
         { groupName: request.groupName },
         { $addToSet: { members: request.username } }
       );
 
-      await joinRequestsCollection.updateOne(
+      await db.collection("joinRequests").updateOne(
         { _id: new ObjectId(req.params.id) },
         { $set: { status: "approved", reviewedAt: new Date() } }
       );
@@ -97,21 +93,16 @@ export function requestRoutes(app, io) {
   app.patch("/api/join-requests/:id/reject", async (req, res) => {
     try {
       const reason = req.body.reason?.trim();
-      if (!reason) {
-        return res.status(400).send({ ok: false, message: "A rejection reason is required" });
-      }
+      if (!reason) return res.status(400).send({ ok: false, message: "A rejection reason is required" });
 
-      const joinRequestsCollection = db.collection("joinRequests");
-      const request = await joinRequestsCollection.findOne({
+      const request = await db.collection("joinRequests").findOne({
         _id: new ObjectId(req.params.id),
         status: "pending",
       });
 
-      if (!request) {
-        return res.status(404).send({ ok: false, message: "Pending join request not found" });
-      }
+      if (!request) return res.status(404).send({ ok: false, message: "Pending join request not found" });
 
-      await joinRequestsCollection.updateOne(
+      await db.collection("joinRequests").updateOne(
         { _id: new ObjectId(req.params.id) },
         { $set: { status: "rejected", rejectionReason: reason, reviewedAt: new Date() } }
       );

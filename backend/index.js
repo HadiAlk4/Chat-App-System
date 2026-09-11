@@ -6,6 +6,7 @@ import { connectDB, health } from "./db.js";
 import { authRoutes } from "./routes/authRoutes.js";
 import { groupRoutes } from "./routes/groupRoutes.js";
 import { requestRoutes } from "./routes/requestRoutes.js";
+import { roomRequestRoutes } from "./routes/roomRequestRoutes.js";
 
 const APP = express();
 const httpServer = http.createServer(APP);
@@ -38,6 +39,7 @@ async function mongo() {
     authRoutes(APP);
     groupRoutes(APP, io);
     requestRoutes(APP, io);
+    roomRequestRoutes(APP, io);
   } catch (err) {
     console.error("Database connection error:", err);
   }

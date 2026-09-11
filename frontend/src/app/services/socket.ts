@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { GroupRequest } from '../models/group-request';
 import { JoinRequest } from '../models/join-request';
+import { RoomRequest } from '../models/room-request';
 
 const SOCKET_URL = 'http://localhost:3000';
 
@@ -15,6 +16,13 @@ interface JoinRequestResolved {
   requestId: string;
   status: 'approved' | 'rejected';
   groupName: string;
+}
+
+interface RoomRequestResolved {
+  requestId: string;
+  status: 'approved' | 'rejected';
+  groupName: string;
+  roomName: string;
 }
 
 @Injectable({
@@ -38,6 +46,14 @@ export class SocketService {
 
   onJoinRequestResolved(): Observable<JoinRequestResolved> {
     return this.listen<JoinRequestResolved>('join-request-resolved');
+  }
+
+  onRoomRequestCreated(): Observable<RoomRequest> {
+    return this.listen<RoomRequest>('room-request-created');
+  }
+
+  onRoomRequestResolved(): Observable<RoomRequestResolved> {
+    return this.listen<RoomRequestResolved>('room-request-resolved');
   }
 
   private listen<T>(eventName: string): Observable<T> {
