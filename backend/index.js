@@ -1,43 +1,52 @@
 import express from "express";
 import http from "node:http";
 import cors from "cors";
-import { MongoClient } from "mongodb";
 import { Server } from "socket.io";
-import { testroute } from "./routes.js"; 
+import { connectDB, health } from "./db.js";
+import { authRoutes } from "./routes/authRoutes.js";
+import { groupRoutes } from "./routes/groupRoutes.js";
+import { requestRoutes } from "./routes/requestRoutes.js";
 
 const APP = express();
 const httpServer = http.createServer(APP);
+const PORT = process.env.PORT || 3000;
+
 const io = new Server(httpServer, {
   cors: {
     origin: "http://localhost:4200",
-    methods: ["GET", "POST", "PATCH"]
-  }
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+  },
 });
 
 APP.use(cors());
-
-APP.use(express.json()); 
-
-const URL = "mongodb://localhost:27017";
-const client = new MongoClient(URL);
-const dbName = "chat-app";
+APP.use(express.json());
 
 io.on("connection", (socket) => {
   console.log(`Socket connected: ${socket.id}`);
 });
 
-async function main() 
-{
+// MongoDB Connection & Route Registration (as taught in Week 8/9 workshops)
+async function mongo() {
+  try {
+    await connectDB();
+    await health();
 
-await client.connect();
-console.log("Connected to MongoDB");
-const db = client.db(dbName);
+    // Default health check endpoint
+    APP.get("/", (_req, res) => res.send({ ok: true }));
 
-testroute(APP, db, io);
-httpServer.listen(3000, () => 
-{
-console.log("Server listening on port: 3000");
-});
+    // Mount route modules
+    authRoutes(APP);
+    groupRoutes(APP, io);
+    requestRoutes(APP, io);
+  } catch (err) {
+    console.error("Database connection error:", err);
+  }
 }
 
-main().catch(console.error);
+mongo().catch(console.dir);
+
+httpServer.listen(PORT, () => {
+  console.log(`Server listening on port: ${PORT}`);
+});
+
+export { APP, httpServer };
