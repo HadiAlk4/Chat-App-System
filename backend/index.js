@@ -4,6 +4,7 @@ import cors from "cors";
 import { Server } from "socket.io";
 import { testroute } from "./routes.js";
 import { authRoutes } from "./routes/authRoutes.js";
+import { groupRoutes } from "./routes/groupRoutes.js";
 import { connectDB } from "./db.js"; 
 
 const APP = express();
@@ -29,6 +30,7 @@ const db = await connectDB();
 console.log("Connected to MongoDB");
 
 authRoutes(APP);
+groupRoutes(APP, io);
 testroute(APP, db, io);
 httpServer.listen(3000, () => 
 {
