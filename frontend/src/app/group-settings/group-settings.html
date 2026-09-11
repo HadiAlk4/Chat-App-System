@@ -141,26 +141,26 @@
                     <table class="table-hover" style="width: 100%; margin-bottom: 2rem;">
                         <thead>
                             <tr>
-                                <th style="width: 30%;">User</th>
+                                <th style="width: 25%;">User</th>
                                 <th style="width: 25%;">Requested On</th>
                                 <th style="width: 25%;">Room Name</th>
-                                <th style="width: 45%; text-align: right;">Actions</th>
+                                <th style="width: 25%; text-align: right;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @for (req of joinRequests; track req.username; let i = $index) {
+                            @for (req of roomRequests; track req._id ?? req.roomName; let i = $index) {
                             <tr>
                                 <td style="vertical-align: middle;">{{ req.username }}</td>
-                                <td style="vertical-align: middle; color: #555;">{{ req.requestedOn }}</td>
-                                <td style="vertical-align: middle; color: #555;"> Hardcoded room </td>
+                                <td style="vertical-align: middle; color: #555;">{{ req.createdAt | date:'dd/MM/yy' }}</td>
+                                <td style="vertical-align: middle; font-weight: bold;">#{{ req.roomName }}</td>
                                 <td style="text-align: right; vertical-align: middle;">
                                     <div style="display: inline-flex; gap: 0.4rem; align-items: center;">
-                                        <button (click)="approveRequest(i)" class="btn-success-outline btn-small">
+                                        <button (click)="approveRoomRequest(i)" class="btn-success-outline btn-small">
                                             Approve
                                         </button>
-                                        <input type="text" [(ngModel)]="req.rejectReason" placeholder="Reason..."
-                                            style="width: 110px; padding: 0.2rem 0.4rem; font-size: 0.85rem; border: 1px dashed #41403e;">
-                                        <button (click)="rejectRequest(i)" class="btn-danger-outline btn-small"
+                                        <textarea [(ngModel)]="req.rejectReason" placeholder="Reason..."
+                                            style="width: 110px; padding: 0.2rem 0.4rem; font-size: 0.85rem; border: 1px dashed #41403e;"></textarea>
+                                        <button (click)="rejectRoomRequest(i)" class="btn-danger-outline btn-small"
                                             style="border-style: dashed;">
                                             Reject
                                         </button>
@@ -169,8 +169,8 @@
                             </tr>
                             } @empty {
                             <tr>
-                                <td colspan="3" style="text-align: center; color: #777; font-style: italic;">
-                                    No pending join requests.
+                                <td colspan="4" style="text-align: center; color: #777; font-style: italic;">
+                                    No pending room proposals.
                                 </td>
                             </tr>
                             }
