@@ -4,6 +4,7 @@ import { Group } from '../models/group';
 import { GroupRequest } from '../models/group-request';
 import { Observable } from 'rxjs';
 import { JoinRequest } from '../models/join-request';
+import { RoomRequest } from '../models/room-request';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -67,5 +68,24 @@ export class GroupService // why not group
     rejectJoinRequest(requestId: string, reason: string): Observable<{ok: boolean, message: string}> {
         return this.http.patch<{ok: boolean, message: string}>
         (`${API_URL}/join-requests/${requestId}/reject`, {reason});
+    }
+
+    submitRoomRequest(groupName: string, roomName: string, username: string): Observable<{ok: boolean, message: string}> {
+        return this.http.post<{ok: boolean, message: string}>
+        (`${API_URL}/room-requests`, {groupName, roomName, username});
+    }
+
+    getRoomRequests(params: { groupName?: string; username?: string; status?: string }): Observable<RoomRequest[]> {
+        return this.http.get<RoomRequest[]>(`${API_URL}/room-requests`, { params });
+    }
+
+    approveRoomRequest(requestId: string): Observable<{ok: boolean, message: string}> {
+        return this.http.patch<{ok: boolean, message: string}>
+        (`${API_URL}/room-requests/${requestId}/approve`, {});
+    }
+
+    rejectRoomRequest(requestId: string, reason: string): Observable<{ok: boolean, message: string}> {
+        return this.http.patch<{ok: boolean, message: string}>
+        (`${API_URL}/room-requests/${requestId}/reject`, {reason});
     }
 }
