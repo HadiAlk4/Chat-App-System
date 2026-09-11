@@ -3,6 +3,7 @@ import http from "node:http";
 import cors from "cors";
 import { Server } from "socket.io";
 import { testroute } from "./routes.js";
+import { authRoutes } from "./routes/authRoutes.js";
 import { connectDB } from "./db.js"; 
 
 const APP = express();
@@ -27,6 +28,7 @@ async function main()
 const db = await connectDB();
 console.log("Connected to MongoDB");
 
+authRoutes(APP);
 testroute(APP, db, io);
 httpServer.listen(3000, () => 
 {

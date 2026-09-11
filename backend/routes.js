@@ -1,4 +1,3 @@
-import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 
 export function testroute(APP, db, io) 
@@ -8,39 +7,6 @@ export function testroute(APP, db, io)
   const roomsCollection = db.collection("rooms");
   const groupRequestsCollection = db.collection("groupRequests");
   const joinRequestsCollection = db.collection("joinRequests");
-  // authenticate user
-  APP.post("/api/auth", async (req, res) => 
-  {
-    try
-    {
-      const { email, password } = req.body;
-      if(!email || !password)
-      {
-        return res.send({ ok: false, valid: false, message: "Email and password are required" });
-      }
-      const user = await usersCollection.findOne({ email });
-
-      if (!user)
-      {
-        return res.send({ ok: false, valid: false, message: "Invalid Credentials" });
-      }
-
-      const passwordMatches = await bcrypt.compare(password, user.password);
-      if (!passwordMatches)
-      {
-        return res.send({ ok: false, valid: false, message: "Invalid Credentials" });
-      }
-
-      // strip res sensitive data from the response
-      const userResponse = { ...user };
-      delete userResponse.password;
-      res.send({ ok: true, valid: true, message: "Login Successful", user: userResponse });
-    }
-    catch (err) 
-    {
-      res.status(500).send({ ok: false, message: err.message });
-    }
-  });
 
   // get all groups
   APP.get("/api/groups", async (req, res) => 
@@ -49,61 +15,6 @@ export function testroute(APP, db, io)
     {
       const groups = await groupsCollection.find({}).toArray();
       res.send(groups);
-    }
-    catch (err)
-    {
-      res.status(500).send({ ok: false, message: err.message });
-    }
-  });
-
-
-  // sign up users
-  APP.post("/api/signup", async (req, res) => {
-    try{
-
-      const { username, email, password, dob, age } = req.body;
-
-      if(!username || !email || !password || !dob || !age)
-      {
-        return res.send({ ok: false, valid: false, message: "All fields are required" });
-      }
-
-      const passwordRegex = /^(?=.*[A-Z])[a-zA-Z0-9]{8,}$/;
-
-      if(!passwordRegex.test(password))
-      {
-        return res.send({ ok: false, valid: false, message: "Password must be at least 8 characters long and contain at least one uppercase letter" });
-      }      
-      const exists = await usersCollection.findOne({ email });
-      if (exists)
-      {
-        return res.send({ ok: false, valid: false, message: "Email already exists" });
-      }
-
-      // determine the role of the user for super admin bootstrapping
-      const userCount = await usersCollection.countDocuments();
-      const role = userCount === 0 ? "super-admin" : "user";
-
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-      const newUser = 
-      {
-        username,
-        email,
-        password: hashedPassword,
-        dob,
-        age,
-        role,
-        valid: true,
-        isDarkMode: false,
-        profilePictureUrl: '/pfp.png',
-      }
-      await usersCollection.insertOne(newUser);
-
-      const userResponse = { ...newUser };
-      delete userResponse.password;
-      res.send({ ok: true, valid: true, message: "Signup Successful", user: userResponse });
     }
     catch (err)
     {
