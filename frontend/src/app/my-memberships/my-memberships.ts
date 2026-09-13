@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../services/auth';
+import { GroupService } from '../services/group';
+import { Group } from '../models/group';
 
 @Component({
   selector: 'app-my-memberships',
@@ -10,118 +12,108 @@ import { AuthService } from '../services/auth';
   templateUrl: './my-memberships.html',
   styleUrl: './my-memberships.css',
 })
-export class MyMemberships 
+export class MyMemberships implements OnInit
 {
-
   currentUserRole: string = '';
   currentUsername: string = '';
-  constructor(private authService: AuthService) {}
+  joinedGroups: Group[] = [];
+  displayedGroups: Group[] = [];
+  searchQuery: string = '';
+  roleFilter: string = 'All Roles';
 
-joinedGroups = [
-    {
-      name: 'Sci-Fi Writers',
-      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.',
-      role: 'group-admin',
-      themeColor: '#e0f7fa', 
-      isSoleAdmin: true      // Because they are the sole admin, they cannot leave
-    },
-    {
-      name: 'Digital Artists Collab',
-      description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.',
-      role: 'member',
-      themeColor: '#f1f8e9', 
-      isSoleAdmin: false
-    },
-    {
-      name: 'Sci-Fi Writers',
-      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.',
-      role: 'group-admin',
-      themeColor: '#e0f7fa', 
-      isSoleAdmin: false      // Because they are the sole admin, they cannot leave
-    },
-    {
-      name: 'Sci-Fi Writers',
-      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.',
-      role: 'group-admin',
-      themeColor: '#e0f7fa', 
-      isSoleAdmin: true      // Because they are the sole admin, they cannot leave
-    },
-    {
-      name: 'Digital Artists Collab',
-      description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.',
-      role: 'member',
-      themeColor: '#f1f8e9', 
-      isSoleAdmin: false
-    },
-    {
-      name: 'Sci-Fi Writers',
-      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.',
-      role: 'group-admin',
-      themeColor: '#e0f7fa', 
-      isSoleAdmin: false      // Because they are the sole admin, they cannot leave
-    },{
-      name: 'Sci-Fi Writers',
-      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.',
-      role: 'group-admin',
-      themeColor: '#e0f7fa', 
-      isSoleAdmin: true      // Because they are the sole admin, they cannot leave
-    },
-    {
-      name: 'Digital Artists Collab',
-      description: 'Share your digital drawings, ask for feedback, and collaborate on big canvas projects together.',
-      role: 'member',
-      themeColor: '#f1f8e9', 
-      isSoleAdmin: false
-    },
-    {
-      name: 'Sci-Fi Writers',
-      description: 'A place for aspiring sci-fi authors to share snippets, world-build, and critique each other\'s work.',
-      role: 'group-admin',
-      themeColor: '#e0f7fa', 
-      isSoleAdmin: false      // Because they are the sole admin, they cannot leave
-    },
-
+  roleOptions =
+  [
+      { label: 'All Roles', value: 'All Roles' },
+      { label: 'Admin Only', value: 'group-admin' },
+      { label: 'Member Only', value: 'member' }
   ];
 
+  constructor(private authService: AuthService, private groupService: GroupService) {}
 
-  displayedGroups: any[] = [];
-    searchQuery: string = '';
-    roleFilter: string = 'All Roles';
+  ngOnInit(): void
+  {
+      const user = this.authService.getUser();
+      if(user)
+      {
+        this.currentUserRole = user.role;
+        this.currentUsername = user.username;
+      }
+      this.loadMemberships();
+  }
 
-    roleOptions = 
-    [
-        { label: 'All Roles', value: 'All Roles' },
-        { label: 'Admin Only', value: 'group-admin' },
-        { label: 'Member Only', value: 'member' }
-    ];
+  loadMemberships(): void
+  {
+      if (!this.currentUsername) {
+        this.joinedGroups = [];
+        this.displayedGroups = [];
+        return;
+      }
 
-    ngOnInit(): void
-    {
-        const user = this.authService.getUser();
-        if(user)
-        {
-          this.currentUserRole = user.role;
-          this.currentUsername = user.username;
+      this.groupService.getUserMemberships(this.currentUsername).subscribe({
+        next: (groups) => {
+          this.joinedGroups = groups;
+          this.applyFilters();
+        },
+        error: (err) => {
+          console.error('Failed to load memberships:', err);
+          this.joinedGroups = [];
+          this.displayedGroups = [];
         }
-        this.displayedGroups = [...this.joinedGroups];
-    }
+      });
+  }
 
-    onLogout(): void
-    {
-      this.authService.logout();
-    }
+  isUserAdmin(group: Group): boolean
+  {
+      return group.admins?.includes(this.currentUsername) ?? false;
+  }
 
-    applyFilters() {
-        const lowerCaseQuery = this.searchQuery.toLowerCase().trim();
+  isSoleAdmin(group: Group): boolean
+  {
+      return group.admins?.length === 1 && group.admins[0] === this.currentUsername;
+  }
 
-        this.displayedGroups = this.joinedGroups.filter(group => 
-          {
-            const matchesName = group.name.toLowerCase().includes(lowerCaseQuery);
-            let matchesRole = true;
-            if (this.roleFilter !== 'All Roles') {
-                matchesRole = group.role === this.roleFilter;
-            }
-            return matchesName && matchesRole;
-        });
-    }
+  leaveGroup(group: Group): void
+  {
+      if (this.isSoleAdmin(group)) {
+        alert('Cannot leave group as sole admin');
+        return;
+      }
+
+      const confirmed = confirm(`Are you sure you want to leave ${group.groupName}? This cannot be undone.`);
+      if (!confirmed) {
+        return;
+      }
+
+      this.groupService.leaveGroup(group.groupName, this.currentUsername).subscribe({
+        next: (response) => {
+          alert(response.message);
+          if (response.ok) {
+            this.loadMemberships();
+          }
+        },
+        error: (err) => {
+          alert(err.error?.message || 'Failed to leave group');
+        }
+      });
+  }
+
+  onLogout(): void
+  {
+    this.authService.logout();
+  }
+
+  applyFilters() {
+      const lowerCaseQuery = this.searchQuery.toLowerCase().trim();
+
+      this.displayedGroups = this.joinedGroups.filter(group =>
+        {
+          const matchesName = group.groupName.toLowerCase().includes(lowerCaseQuery);
+          let matchesRole = true;
+          if (this.roleFilter !== 'All Roles') {
+              const isAdmin = this.isUserAdmin(group);
+              matchesRole = this.roleFilter === 'group-admin' ? isAdmin : !isAdmin;
+          }
+          return matchesName && matchesRole;
+      });
+  }
 }

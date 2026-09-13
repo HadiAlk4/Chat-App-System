@@ -23,12 +23,12 @@
     </div>
 
     <div class="row" style="gap: 1.5rem; justify-content: center; flex-wrap: wrap;">        
-        @for (group of displayedGroups; track group.name) 
+        @for (group of displayedGroups; track group._id ?? group.groupName) 
         {
             <div class="card" style="width: 20rem; color: grey; background-color: rgb(245, 242, 242); " >
                   <div class="card-body">
-                    <h4 class="card-title"> {{ group.name }}</h4>
-                    @if (group.role === 'group-admin') 
+                    <h4 class="card-title"> {{ group.groupName }}</h4>
+                    @if (isUserAdmin(group)) 
                     {
                     <span class="badge secondary" style="font-size: 0.75rem; width: 4rem;"> GA </span>
                     }
@@ -37,15 +37,15 @@
                     <span class="badge secondary" style="font-size: 0.75rem; width: 4rem;"> U </span>
                     }
 
-                    <p class="card-text" style="padding-top: 1rem;"> {{ group.description }} </p>
+                    <p class="card-text" style="padding-top: 1rem;"> {{ group.groupDescription }} </p>
 
                     <div style="display: flex; gap: 0.8rem;"> 
                     <button routerLink="/chat" class="btn-warning">View Rooms</button>
-                    @if(group.isSoleAdmin)
+                    @if(isSoleAdmin(group))
                     {
                     <button 
                     class="btn-danger" 
-                    [disabled]="group.isSoleAdmin"
+                    [disabled]="true"
                     popover-bottom="Sole Admin"
                     >
                     Leave
@@ -55,14 +55,16 @@
                     <button 
                     class="btn-danger" 
                     popover-bottom="cannot be undone"
+                    (click)="leaveGroup(group)"
                     >
                     Leave
                     </button>
                     }
-                    @if(group.role === 'group-admin')
+                    @if(isUserAdmin(group))
                     {
                     <button
                     routerLink="/group-settings"
+                    [queryParams]="{ groupName: group.groupName }"
                     class="btn-secondary" 
                     style="width: 100%;"
                     >
@@ -72,6 +74,8 @@
                     </div>
                   </div>
             </div>
+        } @empty {
+            <p style="padding: 1rem; color: #777;">No memberships found.</p>
         }
     </div>
 
