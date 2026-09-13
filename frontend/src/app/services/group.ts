@@ -20,6 +20,17 @@ export class GroupService // why not group
         return this.http.get<Group[]>(`${API_URL}/groups`);
     }
 
+    getUserMemberships(username: string): Observable<Group[]> {
+        return this.http.get<Group[]>(`${API_URL}/groups/user/${username}`);
+    }
+
+    leaveGroup(groupName: string, username: string): Observable<{ ok: boolean; message: string }> {
+        return this.http.post<{ ok: boolean; message: string }>(
+            `${API_URL}/groups/${groupName}/leave`,
+            { username }
+        );
+    }
+
     submitProposal(
         group: Group,
         creatorUserName: string,
