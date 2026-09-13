@@ -48,12 +48,41 @@ export class GroupSettings implements OnInit, OnDestroy {
       if (params['groupName']) {
         this.groupName = params['groupName'];
       }
+      this.loadGroup();
       this.loadJoinRequests();
       this.loadRoomRequests();
     });
     this.subscriptions.add(routeSub);
 
     this.listenToSockets();
+  }
+
+  loadGroup(): void {
+    if (!this.groupName) return;
+
+    this.groupService.getGroupByName(this.groupName).subscribe({
+      next: (res) => {
+        if (!res.ok || !res.group) return;
+        const group = res.group;
+        this.groupName = group.groupName;
+        this.groupDescription = group.groupDescription;
+        this.groupMinAge = group.minAge;
+        this.groupThemeColor = group.themeColor;
+        this.rooms = group.rooms ?? [];
+        this.allowedMembers = this.buildAllowedMembers(group);
+      },
+      error: (err) => console.error('Failed to load group:', err),
+    });
+  }
+
+  private buildAllowedMembers(group: { admins?: string[]; members?: string[] }) {
+    const admins = group.admins ?? [];
+    const members = group.members ?? [];
+    const usernames = [...new Set([...admins, ...members])];
+    return usernames.map((username) => ({
+      username,
+      role: admins.includes(username) ? 'group-admin' : 'user',
+    }));
   }
 
   loadJoinRequests(): void {
@@ -88,6 +117,7 @@ export class GroupSettings implements OnInit, OnDestroy {
     const joinResolvedSub = this.socketService.onJoinRequestResolved().subscribe(({ requestId, groupName }) => {
       if (groupName !== this.groupName) return;
       this.joinRequests = this.joinRequests.filter((req) => req._id !== requestId);
+      this.loadGroup();
     });
 
     const roomCreatedSub = this.socketService.onRoomRequestCreated().subscribe((request) => {
@@ -99,6 +129,7 @@ export class GroupSettings implements OnInit, OnDestroy {
     const roomResolvedSub = this.socketService.onRoomRequestResolved().subscribe(({ requestId, groupName }) => {
       if (groupName !== this.groupName) return;
       this.roomRequests = this.roomRequests.filter((req) => req._id !== requestId);
+      this.loadGroup();
     });
 
     this.subscriptions.add(joinCreatedSub);
@@ -114,7 +145,10 @@ export class GroupSettings implements OnInit, OnDestroy {
     this.groupService.approveJoinRequest(request._id).subscribe({
       next: (res) => {
         alert(res.message || 'Request approved');
-        if (res.ok) this.loadJoinRequests();
+        if (res.ok) {
+          this.loadJoinRequests();
+          this.loadGroup();
+        }
       },
       error: () => alert('Failed to approve request.'),
     });
@@ -145,9 +179,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       next: (res) => {
         alert(res.message);
         if (res.ok) {
-          if (!this.rooms.includes(request.roomName)) {
-            this.rooms.push(request.roomName);
-          }
+          this.loadGroup();
           this.loadRoomRequests();
         }
       },
@@ -180,37 +212,81 @@ export class GroupSettings implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  rooms: string[] = ['announcements', 'general-chat', 'wednesday larps'];
-  allowedMembers = [
-    { username: 'DaveAcs', role: 'user' },
-    { username: 'Yo', role: 'user' },
-  ];
-  bannedMembers = [{ username: 'Tough Mudder' }, { username: 'JFofh' }];
+  rooms: string[] = [];
+  allowedMembers: { username: string; role: string }[] = [];
+  bannedMembers: { username: string }[] = [];
 
   addRoom(): void {
-    const roomName = prompt('Enter New Room Name: ');
-    if (roomName) this.rooms.push(roomName);
+    const roomName = prompt('Enter New Room Name: ')?.trim();
+    if (!roomName) return;
+
+    this.groupService.addRoomDirect(this.groupName, roomName).subscribe({
+      next: (res) => {
+        if (res.ok) this.rooms = res.rooms;
+        else alert(res.message || 'Failed to add room.');
+      },
+      error: (err) => alert(err.error?.message || 'Failed to add room.'),
+    });
   }
 
   editRoom(index: number): void {
-    const newName = prompt('Edit Room Name: ', this.rooms[index]);
-    if (newName) this.rooms[index] = newName;
+    const oldName = this.rooms[index];
+    const newName = prompt('Edit Room Name: ', oldName)?.trim();
+    if (!newName || newName === oldName) return;
+
+    this.groupService.renameRoom(this.groupName, oldName, newName).subscribe({
+      next: (res) => {
+        if (res.ok) this.rooms = res.rooms;
+        else alert(res.message || 'Failed to rename room.');
+      },
+      error: (err) => alert(err.error?.message || 'Failed to rename room.'),
+    });
   }
 
   deleteRoom(index: number): void {
-    if (confirm(`Are you sure you want to delete #${this.rooms[index]}?`)) {
-      this.rooms.splice(index, 1);
-    }
+    const roomName = this.rooms[index];
+    if (!confirm(`Are you sure you want to delete #${roomName}?`)) return;
+
+    this.groupService.deleteRoom(this.groupName, roomName).subscribe({
+      next: (res) => {
+        if (res.ok) this.rooms = res.rooms;
+        else alert(res.message || 'Failed to delete room.');
+      },
+      error: (err) => alert(err.error?.message || 'Failed to delete room.'),
+    });
   }
 
   promoteToGA(index: number): void {
-    this.allowedMembers[index].role = 'group-admin';
+    const member = this.allowedMembers[index];
+    if (!member || member.role === 'group-admin') return;
+
+    this.groupService.promoteMember(this.groupName, member.username).subscribe({
+      next: (res) => {
+        if (res.ok) {
+          this.allowedMembers[index].role = 'group-admin';
+        } else {
+          alert(res.message || 'Failed to promote member.');
+        }
+      },
+      error: (err) => alert(err.error?.message || 'Failed to promote member.'),
+    });
   }
 
   banMember(index: number): void {
     const user = this.allowedMembers[index];
-    this.bannedMembers.push({ username: user.username });
-    this.allowedMembers.splice(index, 1);
+    if (!user) return;
+    if (!confirm(`Remove ${user.username} from this group?`)) return;
+
+    this.groupService.removeMember(this.groupName, user.username).subscribe({
+      next: (res) => {
+        if (res.ok) {
+          this.allowedMembers.splice(index, 1);
+        } else {
+          alert(res.message || 'Failed to remove member.');
+        }
+      },
+      error: (err) => alert(err.error?.message || 'Failed to remove member.'),
+    });
   }
 
   unBanMember(index: number): void {
