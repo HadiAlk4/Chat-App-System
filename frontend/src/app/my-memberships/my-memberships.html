@@ -40,30 +40,25 @@
                     <p class="card-text" style="padding-top: 1rem;"> {{ group.groupDescription }} </p>
 
                     <div style="display: flex; gap: 0.8rem;"> 
-                    <button routerLink="/chat" class="btn-warning">View Rooms</button>
-                    @if(isSoleAdmin(group))
-                    {
-                    <button 
-                    class="btn-danger" 
-                    [disabled]="true"
-                    popover-bottom="Sole Admin"
+                    <button
+                    [routerLink]="['/chat']"
+                    [queryParams]="{ groupName: group.groupName }"
+                    class="btn-warning"
                     >
-                    Leave
+                    View Rooms
                     </button>
-                    } @else
-                    {
                     <button 
                     class="btn-danger" 
-                    popover-bottom="cannot be undone"
+                    [disabled]="isSoleAdmin(group)"
+                    [attr.popover-bottom]="isSoleAdmin(group) ? 'Sole Admin' : 'cannot be undone'"
                     (click)="leaveGroup(group)"
                     >
                     Leave
                     </button>
-                    }
                     @if(isUserAdmin(group))
                     {
                     <button
-                    routerLink="/group-settings"
+                    [routerLink]="['/group-settings']"
                     [queryParams]="{ groupName: group.groupName }"
                     class="btn-secondary" 
                     style="width: 100%;"
