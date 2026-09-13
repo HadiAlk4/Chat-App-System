@@ -34,7 +34,7 @@ export function groupRoutes(app) {
         return res.status(404).send({ ok: false, message: "Group not found" });
       }
 
-      res.send(group);
+      res.send({ ok: true, group });
     } catch (err) {
       res.status(500).send({ ok: false, message: err.message });
     }

@@ -31,6 +31,44 @@ export class GroupService // why not group
         );
     }
 
+    getGroupByName(groupName: string): Observable<{ ok: boolean; group: Group }> {
+        return this.http.get<{ ok: boolean; group: Group }>(`${API_URL}/groups/${groupName}`);
+    }
+
+    addRoomDirect(groupName: string, roomName: string): Observable<{ ok: boolean; message: string; rooms: string[] }> {
+        return this.http.post<{ ok: boolean; message: string; rooms: string[] }>(
+            `${API_URL}/groups/${groupName}/rooms/direct`,
+            { roomName }
+        );
+    }
+
+    renameRoom(groupName: string, oldName: string, newName: string): Observable<{ ok: boolean; message: string; rooms: string[] }> {
+        return this.http.patch<{ ok: boolean; message: string; rooms: string[] }>(
+            `${API_URL}/groups/${groupName}/rooms/rename`,
+            { oldName, newName }
+        );
+    }
+
+    deleteRoom(groupName: string, roomName: string): Observable<{ ok: boolean; message: string; rooms: string[] }> {
+        return this.http.delete<{ ok: boolean; message: string; rooms: string[] }>(
+            `${API_URL}/groups/${groupName}/rooms/${roomName}`
+        );
+    }
+
+    promoteMember(groupName: string, username: string): Observable<{ ok: boolean; message: string }> {
+        return this.http.patch<{ ok: boolean; message: string }>(
+            `${API_URL}/groups/${groupName}/members/${username}/promote`,
+            {}
+        );
+    }
+
+    removeMember(groupName: string, username: string): Observable<{ ok: boolean; message: string }> {
+        return this.http.post<{ ok: boolean; message: string }>(
+            `${API_URL}/groups/${groupName}/members/${username}/remove`,
+            {}
+        );
+    }
+
     submitProposal(
         group: Group,
         creatorUserName: string,
