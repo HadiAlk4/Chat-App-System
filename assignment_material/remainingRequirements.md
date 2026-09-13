@@ -23,12 +23,13 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
 
 ### 4. Group Admin Management (Un-mocking `group-settings.ts`)
 * Replace local `.splice()` and hardcoded arrays with real API updates:
-  * [ ] **Rooms:** Connect "+ Add Room", "Edit Name", and "Delete Room" to backend endpoints.
+  * [x] **Rooms:** Connect "+ Add Room", "Edit Name", and "Delete Room" to backend endpoints.
   * [x] **Join Requests:** Persist approvals and rejections; require and save a rejection reason to be viewed in the user's `request-history`.
   * [x] **Room Requests:** Persist approvals and rejections; require and save a rejection reason to be viewed in the user's `request-history`.
-  * [ ] **Promotions:** Persist regular member promotions to Group Admin.
-  * [ ] **Group Bans:** Persist group-level bans and ensure they are permanent (remove the "un-ban" button, as the specification states there is no un-ban system).
+  * [x] **Promotions:** Persist regular member promotions to Group Admin.
+  * [ ] **Group Bans:** Persist group-level bans and ensure they are permanent (remove the "un-ban" button, as the specification states there is no un-ban system). Member removal currently pulls the user from `members`/`admins` only; it does not store a permanent group ban list.
   * [ ] **Resignation & Deletion:** Enforce GA step-down rules (cannot step down if sole GA or if pending requests exist) and route group deletion requests to the Super Admin.
+  * [ ] **Group metadata:** Wire "Save Changes" on the General tab (name, description, min age, theme).
 
 ### 5. Account Deletion & Banned Emails
 * [ ] Wire the "Request Account Deletion" button in `user-profile-settings.html` to submit an approval request to the Super Admin.
@@ -66,13 +67,14 @@ This checklist combines the missing and un-mocked Phase 1 features with all new 
 
 ### 5. Un-Mocking Group Admin Controls (`group-settings.ts`)
 * Replace all component array `.splice()` methods with persistent MongoDB updates:
-  * [ ] Create, rename, and delete rooms.
+  * [x] Create, rename, and delete rooms.
   * [x] Approve or reject join and room requests, storing a mandatory rejection reason displayed in the user's `request-history`.
-  * [ ] Promote members to GA.
+  * [x] Promote members to GA.
   * [ ] Enforce GA step-down rules: prevent demotion if the user is the sole GA or has pending requests queued with the Super Admin.
-  * [ ] Issue permanent group-level bans (removing the un-ban capability from the UI).
+  * [ ] Issue permanent group-level bans (removing the un-ban capability from the UI). Member removal is wired, but bans are not persisted as a permanent group ban list.
   * [ ] Auto-evict existing members if the GA increases the group's minimum age threshold above their birth year.
   * [ ] Queue group deletion requests to the Super Admin.
+  * [ ] Persist General tab edits (group name, description, min age, theme) via Save Changes.
 
 ### 6. Super Admin Audit Logging & Global Bans
 * [ ] Replace `auditLogBook` with a server-side MongoDB collection that inserts an immutable timestamped record for every administrative action.
