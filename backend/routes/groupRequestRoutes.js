@@ -1,0 +1,107 @@
+import { ObjectId } from "mongodb";
+import { db } from "../db.js";
+
+export function groupRequestRoutes(app, io) {
+  // group proposals
+  app.post("/api/group-requests", async (req, res) => {
+    try {
+      const { groupName, groupDescription, minAge, themeColor, creatorUserName, creatorEmail } = req.body;
+      if (!groupName || !groupDescription || !minAge || !themeColor || !creatorUserName || !creatorEmail) {
+        return res.send({ ok: false, valid: false, message: "All fields are required" });
+      }
+
+      const groupRequestsCollection = db.collection("groupRequests");
+      const exists = await groupRequestsCollection.findOne({ groupName });
+      if (exists) {
+        return res.send({ ok: false, valid: false, message: "Group request already exists" });
+      }
+
+      const newRequest = {
+        groupName,
+        groupDescription,
+        minAge,
+        themeColor,
+        creatorUserName,
+        creatorEmail,
+        status: "pending",
+        createdAt: new Date(),
+      };
+
+      const result = await groupRequestsCollection.insertOne(newRequest);
+      io.emit("group-request-created", { _id: result.insertedId, ...newRequest });
+
+      res.send({ ok: true, valid: true, message: "Group request submitted successfully" });
+    } catch (err) {
+      res.status(500).send({ ok: false, message: err.message });
+    }
+  });
+
+  app.get("/api/group-requests", async (req, res) => {
+    try {
+      const filter = req.query.status ? { status: req.query.status } : {};
+      const requests = await db.collection("groupRequests").find(filter).toArray();
+      res.send(requests);
+    } catch (err) {
+      res.status(500).send({ ok: false, message: err.message });
+    }
+  });
+
+  app.patch("/api/group-requests/:id/approve", async (req, res) => {
+    try {
+      const groupRequestsCollection = db.collection("groupRequests");
+      const request = await groupRequestsCollection.findOne({ _id: new ObjectId(req.params.id), status: "pending" });
+      if (!request) {
+        return res.send({ ok: false, valid: false, message: "Request not found" });
+      }
+
+      const groupsCollection = db.collection("groups");
+      const groupExists = await groupsCollection.findOne({ groupName: request.groupName });
+      if (groupExists) {
+        return res.send({ ok: false, valid: false, message: "Group already exists" });
+      }
+
+      await groupsCollection.insertOne({
+        groupName: request.groupName,
+        groupDescription: request.groupDescription,
+        minAge: request.minAge,
+        themeColor: request.themeColor,
+        admins: [request.creatorUserName],
+        members: [request.creatorUserName],
+        rooms: ["Main Room"],
+      });
+
+      await groupRequestsCollection.updateOne(
+        { _id: new ObjectId(req.params.id) },
+        { $set: { status: "approved", reviewedAt: new Date() } }
+      );
+
+      io.emit("group-request-resolved", { requestId: req.params.id, status: "approved" });
+      res.send({ ok: true, valid: true, message: "Group request approved successfully" });
+    } catch (err) {
+      res.status(500).send({ ok: false, message: err.message });
+    }
+  });
+
+  app.patch("/api/group-requests/:id/reject", async (req, res) => {
+    try {
+      const reason = req.body.reason?.trim();
+      if (!reason) {
+        return res.status(400).send({ ok: false, message: "A rejection reason is required" });
+      }
+
+      const result = await db.collection("groupRequests").updateOne(
+        { _id: new ObjectId(req.params.id), status: "pending" },
+        { $set: { status: "rejected", rejectionReason: reason, reviewedAt: new Date() } }
+      );
+
+      if (result.matchedCount === 0) {
+        return res.status(404).send({ ok: false, message: "Pending proposal not found" });
+      }
+
+      io.emit("group-request-resolved", { requestId: req.params.id, status: "rejected" });
+      res.send({ ok: true, message: "Proposal rejected" });
+    } catch (err) {
+      res.status(500).send({ ok: false, message: err.message });
+    }
+  });
+}

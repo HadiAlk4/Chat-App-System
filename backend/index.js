@@ -5,6 +5,9 @@ import { Server } from "socket.io";
 import { connectDB, health } from "./db.js";
 import { authRoutes } from "./routes/authRoutes.js";
 import { groupRoutes } from "./routes/groupRoutes.js";
+import { roomRoutes } from "./routes/roomRoutes.js";
+import { memberRoutes } from "./routes/memberRoutes.js";
+import { groupRequestRoutes } from "./routes/groupRequestRoutes.js";
 import { requestRoutes } from "./routes/requestRoutes.js";
 import { roomRequestRoutes } from "./routes/roomRequestRoutes.js";
 
@@ -37,7 +40,10 @@ async function mongo() {
 
     // Mount route modules
     authRoutes(APP);
-    groupRoutes(APP, io);
+    groupRoutes(APP);
+    roomRoutes(APP);
+    memberRoutes(APP);
+    groupRequestRoutes(APP, io);
     requestRoutes(APP, io);
     roomRequestRoutes(APP, io);
   } catch (err) {
