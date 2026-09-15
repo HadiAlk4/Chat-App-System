@@ -75,14 +75,15 @@ export function initChatSockets(io) {
 
     socket.on("send-message", async (msgData) => {
       try {
-        const { groupName, roomName, senderUserName, content } = msgData;
-        if (!content?.trim()) return;
+        const { groupName, roomName, senderUserName, content, imageUrl } = msgData;
+        if (!content?.trim() && !imageUrl) return;
 
         const newMsg = {
           groupName,
           roomName,
           senderUserName,
-          content: content.trim(),
+          content: content ? content.trim() : "",
+          imageUrl: imageUrl || null,
           timestamp: new Date()
         };
 
