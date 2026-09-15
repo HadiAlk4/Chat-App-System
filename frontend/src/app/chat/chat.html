@@ -1,143 +1,117 @@
 <div class="row" [class.dark-theme]="isDarkMode" style="min-height: 100vh; width: 100%; transition: background-color 0.3s;">
-    <div class="torn-notepad" 
-style="width: 230px; min-width: 230px; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: 
-column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-left: 2rem;">    
-<h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> {{ currGroupName }} </h3>
+  <!-- LEFT SIDEBAR: ROOMS -->
+  <div class="torn-notepad" style="width: 230px; min-width: 230px; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; height: 75vh; margin-left: 2rem;">
+    <h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;">{{ currGroupName || 'Chat' }}</h3>
     <hr>
     <div>
-        @for ( room of rooms; track room)
-        {
-            <button
-            (click)="switchRooms(room)"
-            class="btn-block"
-            [style.background-color]="room === currentRoom ? '#a8d1ff' : 'transparent'"
-            [style.border-style]="room === currentRoom ? 'solid' : 'dashed'"
-            style="text-align: left; white-space: nowrap; margin-bottom: 0.5rem;;"
-            >
-            # {{ room }}
-            </button>
-        }
+      @for (room of rooms; track room) {
+        <button
+          (click)="switchRooms(room)"
+          class="btn-block"
+          [style.background-color]="room === currentRoom ? '#a8d1ff' : 'transparent'"
+          [style.border-style]="room === currentRoom ? 'solid' : 'dashed'"
+          style="text-align: left; white-space: nowrap; margin-bottom: 0.5rem;"
+        >
+          # {{ room }}
+        </button>
+      }
     </div>
+  </div>
+
+  <!-- CENTER: CHAT MESSAGES & INPUT -->
+  <div style="flex: 10; display: flex; flex-direction: column; padding: 0 1.5rem; height: 95vh;">
+    <!-- HEADER -->
+    <div style="border-bottom: 3px solid #222; margin-bottom: 1rem; padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+        <h2 style="margin: 0;">#{{ currentRoom }}</h2>
+        <span style="font-size: 1.1rem; font-weight: bold;">
+          User: {{ currentUser }}
+          <button routerLink="/my-memberships" class="btn-warning">Back to Memberships</button>
+        </span>
+      </div>
+
+      <label for="paperSwitch1" class="paper-switch-tile">
+        <input id="paperSwitch1" type="checkbox" [checked]="isDarkMode" (change)="toggleDarkMode($event)" />
+        <div class="paper-switch-tile-card border">
+          <div class="paper-switch-tile-card-front">Light</div>
+          <div class="paper-switch-tile-card-back">Dark</div>
+        </div>
+      </label>
     </div>
 
-    <div style="flex: 10; display: flex; flex-direction: column; padding: 0 1.5rem; height: 95vh;">   
+    <!-- TOAST NOTIFICATION -->
+    @if (displayNotification) {
+      <div class="alert alert-secondary dismissible" style="margin-bottom: 0.5rem;">
+        {{ systemNotification }}
+        <label class="btn-close" (click)="dismissToast()">X</label>
+      </div>
+    }
 
-        
-        <div style="border-bottom: 3px solid #222; margin-bottom: 1rem; padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-            
-            <div style="display: flex; flex-direction: column; gap: 0.2rem;">
-                <h2 style="margin: 0;">{{currentRoom}} </h2>
-                <span style="font-size: 1.1rem; font-weight: bold;">User: {{currentUser}} <button routerLink="/dashboard" class="btn-warning">Back to Dashboard</button></span>
+    <!-- MESSAGE STREAM -->
+    <div #scroll style="gap: 1rem; display: flex; flex-direction: column; overflow-y: auto; flex: 1; min-height: 0;">
+      @for (msg of messages; track msg._id) {
+        @if (msg.senderUserName === currentUser) {
+          <div class="card sender-bubble" style="align-self: flex-end; width: fit-content; max-width: 70%; min-width: 250px; padding: 0.6rem 1rem; margin: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.8rem;">
+              <p style="margin: 0; font-weight: bold; font-size: 0.95rem;">
+                {{ msg.senderUserName }} - {{ msg.timestamp | date:'shortTime' }}
+              </p>
+              <button (click)="deleteContent(msg._id)" class="btn-danger btn-small" style="padding: 0.1rem 0.4rem; font-size: 0.75rem;">
+                X
+              </button>
             </div>
-
-            
-            <label for="paperSwitch1" class="paper-switch-tile">
-                <input id="paperSwitch1" type="checkbox"  (change)="toggleDarkMode($event)"/>
-                <div class="paper-switch-tile-card border">
-                    <div class="paper-switch-tile-card-front ">Light</div>
-                    <div class="paper-switch-tile-card-back " >Dark</div>
-                </div>
-            </label>
-            
-
-        </div>        
-        <div #scroll style="gap: 1rem; display: flex; flex-direction: column; overflow-y: auto; flex: 1; min-height: 0;">
-            @for(msg of activeMessage; track msg.id)
-            {
-                @if(msg.senderUserName === currentUser)
-                {
-                    <div class="card sender-bubble" style="align-self: flex-end; width: fit-content; max-width: 70%; min-width: 280px; padding: 0.6rem 1rem; margin: 0;"> 
-                        <div style="display: flex; align-items: center; gap: 0.8rem;">
-                        <p 
-                        style="margin: 0; font-weight: bold; font-size: 1rem;"> 
-                        {{ msg.senderUserName }} - {{msg.timeStamp}} 
-                        </p>
-                        <button 
-                        (click)="deleteContent(msg.id)" class="btn-danger btn-small" style="height: 1%; align-items: center; display: flex; font-size: small;">
-                        🙈
-                        </button>
-                        </div>
-                        <p style="margin: 0.2rem 0 0 0; word-break: break-word;"> {{ msg.content }} </p>
-                    </div>
-                } 
-                @else 
-                {
-                    <div class="card receiver-bubble" style="align-self: flex-start; width: fit-content; max-width: 70%; min-width: 280px; padding: 0.6rem 1rem; margin: 0;">
-                        <p style="margin: 0; font-weight: bold; font-size: 1rem;"> {{ msg.senderUserName }} - {{msg.timeStamp}} </p>
-                        <p style="margin: 0.2rem 0 0 0; word-break: break-word;"> {{ msg.content }} </p>
-                    </div>
-                }
-            }
-        </div>
-
-        <div style="display: flex; padding-top: 5%; align-items: center;"> 
-            <input type="text"
-            [(ngModel)]="newMessageContent"
-            (keyup.enter)="sendContent()"
-            placeholder="Type a Message"
-            style="width: 70%; height: 3rem; border: #a56969;"
-            class="card chat-input"
-            >
-            <button
-            (click)="sendContent()"
-            class="button-secondary"
-            style="width: 10%;"
-            >
-            Send
-            </button>
-        </div>
-
+            <p style="margin: 0.3rem 0 0 0; word-break: break-word;">{{ msg.content }}</p>
+          </div>
+        } @else {
+          <div class="card receiver-bubble" style="align-self: flex-start; width: fit-content; max-width: 70%; min-width: 250px; padding: 0.6rem 1rem; margin: 0;">
+            <p style="margin: 0; font-weight: bold; font-size: 0.95rem;">
+              {{ msg.senderUserName }} - {{ msg.timestamp | date:'shortTime' }}
+            </p>
+            <p style="margin: 0.3rem 0 0 0; word-break: break-word;">{{ msg.content }}</p>
+          </div>
+        }
+      } @empty {
+        <p style="text-align: center; color: #777; margin-top: 2rem;">No messages in this room yet. Say hello!</p>
+      }
     </div>
 
-<div class="torn-notepad" 
-style="width: 230px; min-width: 230px; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: 
-column; align-items: stretch; justify-content: flex-start; height: 90vh; margin-right: 2rem;">    
-<h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;"> Group Members </h3>
-    <hr >
+    <!-- MESSAGE INPUT -->
+    <div style="display: flex; padding-top: 1rem; align-items: center; gap: 0.5rem;">
+      <input
+        type="text"
+        [(ngModel)]="newMessageContent"
+        (keyup.enter)="sendContent()"
+        placeholder="Type a message..."
+        style="flex: 1; height: 3rem;"
+        class="card chat-input"
+      />
+      <button (click)="sendContent()" class="btn-secondary" style="height: 3rem; width: 100px;">
+        Send
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDEBAR: MEMBERS -->
+  <div class="torn-notepad" style="width: 230px; min-width: 230px; padding: 1rem; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; height: 90vh; margin-right: 2rem;">
+    <h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;">Group Members</h3>
+    <hr>
     <div>
-        @for ( member of groupMembers; track member)
-        {
-        @if(member.isAdmin)
-        {
-            <p 
-            class="text-warning"
-            > 
-                Admin: {{ member.userName }}
-            </p>
-        } @else 
-        {
-            <p 
-            class="text-success"
-            > 
-                User: {{ member.userName }}
-            </p>
+      @for (member of groupMembers; track member.userName) {
+        @if (member.isAdmin) {
+          <p class="text-warning">Admin: {{ member.userName }}</p>
+        } @else {
+          <p class="text-success">User: {{ member.userName }}</p>
         }
-        }
+      }
     </div>
     <hr>
-    <h3 style="margin: 0; white-space: nowrap; font-size: 1.2rem; text-align: center;"> Online Room Members </h3>
+    <h3 style="margin: 0; white-space: nowrap; font-size: 1.2rem; text-align: center;">In this room</h3>
     <div>
-        @for ( member of onlineGroupMembers; track member)
-        {
-            <p 
-            class="text-secondary"
-            > 
-                {{ member.userName }}
-            </p>
-        }
-    <div class="row flex-spaces">
-    <input class="alert-state" id="alert-2" type="checkbox">
-    <div class="alert alert-secondary dismissible">
-    ChronicDuke Joined the Room 
-    <label class="btn-close" for="alert-2">X</label>
+      @for (username of onlineRoomMembers; track username) {
+        <p class="text-secondary">{{ username }}</p>
+      } @empty {
+        <p style="color: #777; font-style: italic;">No one in this room yet.</p>
+      }
     </div>
-    </div>
-    <div class="row flex-spaces">
-    <input class="alert-state" id="alert-1" type="checkbox">
-    <div class="alert alert-primary dismissible">
-    BigAl_ Left the Room
-    <label class="btn-close" for="alert-1">X</label>
-    </div>
-    </div>
-    </div>
+  </div>
 </div>

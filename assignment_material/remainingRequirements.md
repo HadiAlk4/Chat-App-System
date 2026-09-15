@@ -83,14 +83,14 @@ This checklist combines the missing and un-mocked Phase 1 features with all new 
 
 ### 7. Real-Time Chat Infrastructure (Socket.io)
 * [x] Install and configure `socket.io` on the Node.js HTTP server and `socket.io-client` on Angular.
-* [ ] Establish room-based socket channels matching group room IDs to isolate message traffic.
-* [ ] Emit join and leave events to trigger real-time toast notifications.
-* [ ] Dynamically update the online room participants list in the chat sidebar via live socket presence tracking.
+* [x] Establish room-based socket channels matching group room IDs to isolate message traffic.
+* [x] Emit join and leave events to trigger real-time toast notifications.
+* [x] Dynamically update the online room participants list in the chat sidebar via live socket presence tracking.
 
 ### 8. Real-Time Messaging & Media Handling
-* [ ] **History Buffer:** When a user enters a room, query MongoDB for strictly the last 5 messages sent in that channel.
-* [ ] **Live Streaming:** Broadcast subsequent messages in real-time without capping the chat display while the user stays active.
-* [ ] **Self-Message Deletion:** Allow users to delete their own messages, emitting a socket event that removes the message instantly from all active screens and deletes it from MongoDB.
+* [x] **History Buffer:** When a user enters a room, query MongoDB for strictly the last 5 messages sent in that channel. Re-entry (leave and come back, or switch rooms) reloads those 5; live socket messages are not capped while they stay in the room.
+* [x] **Live Streaming:** Broadcast subsequent messages in real-time without capping the chat display while the user stays active.
+* [x] **Self-Message Deletion:** Allow users to delete their own messages, emitting a socket event that removes the message instantly from all active screens and deletes it from MongoDB.
 * [ ] **Cascaded Deletion:** If a user account is deleted by the Super Admin, broadcast an event to remove all messages sent by that user across all rooms instantly.
 * [ ] **File Attachments:** Enable image uploads (PNG, JPEG, GIF up to 2MB) in chat messages.
 
