@@ -104,5 +104,14 @@
         }
       }
     </div>
+    <hr>
+    <h3 style="margin: 0; white-space: nowrap; font-size: 1.2rem; text-align: center;">In this room</h3>
+    <div>
+      @for (username of onlineRoomMembers; track username) {
+        <p class="text-secondary">{{ username }}</p>
+      } @empty {
+        <p style="color: #777; font-style: italic;">No one in this room yet.</p>
+      }
+    </div>
   </div>
 </div>

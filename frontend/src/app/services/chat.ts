@@ -69,4 +69,11 @@ export class ChatService {
       return () => this.socket?.off('message-deleted');
     });
   }
+
+  onRoomUsers(): Observable<{ roomName: string; users: string[] }> {
+    return new Observable((observer) => {
+      this.socket?.on('room-users', (data: { roomName: string; users: string[] }) => observer.next(data));
+      return () => this.socket?.off('room-users');
+    });
+  }
 }

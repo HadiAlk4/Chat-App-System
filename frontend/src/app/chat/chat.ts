@@ -24,6 +24,7 @@ export class Chat implements OnInit, OnDestroy {
 
   rooms: string[] = [];
   groupMembers: { userName: string; isAdmin: boolean }[] = [];
+  onlineRoomMembers: string[] = [];
   messages: ChatMessage[] = [];
   newMessageContent = '';
 
@@ -89,6 +90,7 @@ export class Chat implements OnInit, OnDestroy {
     }
 
     this.currentRoom = room;
+    this.onlineRoomMembers = [];
     this.chatService.joinRoom(this.currGroupName, this.currentRoom, this.currentUser);
 
     // Fetch room history from MongoDB
@@ -125,10 +127,17 @@ export class Chat implements OnInit, OnDestroy {
       this.messages = this.messages.filter((m) => String(m._id) !== String(messageId));
     });
 
+    const roomUsersSub = this.chatService.onRoomUsers().subscribe((data) => {
+      if (data.roomName === this.currentRoom) {
+        this.onlineRoomMembers = data.users || [];
+      }
+    });
+
     this.subscriptions.add(msgSub);
     this.subscriptions.add(joinSub);
     this.subscriptions.add(leftSub);
     this.subscriptions.add(deletedSub);
+    this.subscriptions.add(roomUsersSub);
   }
 
   sendContent(): void {

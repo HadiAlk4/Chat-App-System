@@ -85,7 +85,7 @@ This checklist combines the missing and un-mocked Phase 1 features with all new 
 * [x] Install and configure `socket.io` on the Node.js HTTP server and `socket.io-client` on Angular.
 * [x] Establish room-based socket channels matching group room IDs to isolate message traffic.
 * [x] Emit join and leave events to trigger real-time toast notifications.
-* [ ] Dynamically update the online room participants list in the chat sidebar via live socket presence tracking.
+* [x] Dynamically update the online room participants list in the chat sidebar via live socket presence tracking.
 
 ### 8. Real-Time Messaging & Media Handling
 * [x] **History Buffer:** When a user enters a room, query MongoDB for strictly the last 5 messages sent in that channel. Re-entry (leave and come back, or switch rooms) reloads those 5; live socket messages are not capped while they stay in the room.
