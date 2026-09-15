@@ -121,9 +121,14 @@ export class Chat implements OnInit, OnDestroy {
       }
     });
 
+    const deletedSub = this.chatService.onMessageDeleted().subscribe(({ messageId }) => {
+      this.messages = this.messages.filter((m) => String(m._id) !== String(messageId));
+    });
+
     this.subscriptions.add(msgSub);
     this.subscriptions.add(joinSub);
     this.subscriptions.add(leftSub);
+    this.subscriptions.add(deletedSub);
   }
 
   sendContent(): void {
@@ -142,12 +147,7 @@ export class Chat implements OnInit, OnDestroy {
   deleteContent(msgId?: string): void {
     if (!msgId) return;
     if (confirm('Delete this message?')) {
-      this.chatService.deleteMessage(msgId).subscribe({
-        next: () => {
-          this.messages = this.messages.filter((m) => m._id !== msgId);
-        },
-        error: () => alert('Failed to delete message.')
-      });
+      this.chatService.emitDeleteMessage(this.currGroupName, this.currentRoom, msgId);
     }
   }
 

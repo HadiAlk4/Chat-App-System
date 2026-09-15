@@ -90,7 +90,7 @@ This checklist combines the missing and un-mocked Phase 1 features with all new 
 ### 8. Real-Time Messaging & Media Handling
 * [x] **History Buffer:** When a user enters a room, query MongoDB for strictly the last 5 messages sent in that channel. Re-entry (leave and come back, or switch rooms) reloads those 5; live socket messages are not capped while they stay in the room.
 * [x] **Live Streaming:** Broadcast subsequent messages in real-time without capping the chat display while the user stays active.
-* [ ] **Self-Message Deletion:** Allow users to delete their own messages, emitting a socket event that removes the message instantly from all active screens and deletes it from MongoDB. Sender can delete via `DELETE /api/messages/:id`; other clients are not notified yet.
+* [x] **Self-Message Deletion:** Allow users to delete their own messages, emitting a socket event that removes the message instantly from all active screens and deletes it from MongoDB.
 * [ ] **Cascaded Deletion:** If a user account is deleted by the Super Admin, broadcast an event to remove all messages sent by that user across all rooms instantly.
 * [ ] **File Attachments:** Enable image uploads (PNG, JPEG, GIF up to 2MB) in chat messages.
 

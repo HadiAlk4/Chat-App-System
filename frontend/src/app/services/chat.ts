@@ -38,6 +38,10 @@ export class ChatService {
     this.socket?.emit('send-message', msg);
   }
 
+  emitDeleteMessage(groupName: string, roomName: string, messageId: string): void {
+    this.socket?.emit('delete-message', { groupName, roomName, messageId });
+  }
+
   onNewMessage(): Observable<ChatMessage> {
     return new Observable<ChatMessage>((observer) => {
       this.socket?.on('new-message', (msg: ChatMessage) => observer.next(msg));
@@ -56,6 +60,13 @@ export class ChatService {
     return new Observable((observer) => {
       this.socket?.on('user-left', (data) => observer.next(data));
       return () => this.socket?.off('user-left');
+    });
+  }
+
+  onMessageDeleted(): Observable<{ messageId: string }> {
+    return new Observable((observer) => {
+      this.socket?.on('message-deleted', (data: { messageId: string }) => observer.next(data));
+      return () => this.socket?.off('message-deleted');
     });
   }
 }

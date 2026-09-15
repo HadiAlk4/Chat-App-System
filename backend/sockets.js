@@ -1,3 +1,4 @@
+import { ObjectId } from "mongodb";
 import { db } from "./db.js";
 
 export function initChatSockets(io) {
@@ -37,6 +38,20 @@ export function initChatSockets(io) {
         io.to(`${groupName}:${roomName}`).emit("new-message", savedMessage);
       } catch (err) {
         console.error("Failed to save socket message:", err);
+      }
+    });
+
+    socket.on("delete-message", async ({ groupName, roomName, messageId }) => {
+      try {
+        if (!messageId || !groupName || !roomName) return;
+
+        await db.collection("messages").deleteOne({
+          _id: new ObjectId(messageId)
+        });
+
+        io.to(`${groupName}:${roomName}`).emit("message-deleted", { messageId });
+      } catch (err) {
+        console.error("Failed to delete socket message:", err);
       }
     });
   });
