@@ -27,18 +27,17 @@ const io = new Server(httpServer, {
 APP.use(cors());
 APP.use(express.json());
 
+// Initialize Socket.IO event listeners
 initChatSockets(io);
 
-// MongoDB Connection & Route Registration (as taught in Week 8/9 workshops)
 async function mongo() {
   try {
     await connectDB();
     await health();
 
-    // Default health check endpoint
     APP.get("/", (_req, res) => res.send({ ok: true }));
 
-    // Mount route modules
+    // Mount modular routes
     authRoutes(APP);
     groupRoutes(APP);
     roomRoutes(APP);
