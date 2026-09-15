@@ -1,5 +1,7 @@
 import express from "express";
 import http from "node:http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import cors from "cors";
 import { Server } from "socket.io";
 import { connectDB, health } from "./db.js";
@@ -11,7 +13,11 @@ import { groupRequestRoutes } from "./routes/groupRequestRoutes.js";
 import { requestRoutes } from "./routes/requestRoutes.js";
 import { roomRequestRoutes } from "./routes/roomRequestRoutes.js";
 import { chatRoutes } from "./routes/chatRoutes.js";
+import { uploadRoutes } from "./routes/uploadRoutes.js";
 import { initChatSockets } from "./sockets.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const APP = express();
 const httpServer = http.createServer(APP);
@@ -26,6 +32,9 @@ const io = new Server(httpServer, {
 
 APP.use(cors());
 APP.use(express.json());
+
+// Serve static uploaded assets
+APP.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Initialize Socket.IO event listeners
 initChatSockets(io);
@@ -46,6 +55,7 @@ async function mongo() {
     requestRoutes(APP, io);
     roomRequestRoutes(APP, io);
     chatRoutes(APP);
+    uploadRoutes(APP);
   } catch (err) {
     console.error("Database connection error:", err);
   }
