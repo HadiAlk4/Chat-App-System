@@ -10,6 +10,8 @@ import { memberRoutes } from "./routes/memberRoutes.js";
 import { groupRequestRoutes } from "./routes/groupRequestRoutes.js";
 import { requestRoutes } from "./routes/requestRoutes.js";
 import { roomRequestRoutes } from "./routes/roomRequestRoutes.js";
+import { chatRoutes } from "./routes/chatRoutes.js";
+import { initChatSockets } from "./sockets.js";
 
 const APP = express();
 const httpServer = http.createServer(APP);
@@ -25,9 +27,7 @@ const io = new Server(httpServer, {
 APP.use(cors());
 APP.use(express.json());
 
-io.on("connection", (socket) => {
-  console.log(`Socket connected: ${socket.id}`);
-});
+initChatSockets(io);
 
 // MongoDB Connection & Route Registration (as taught in Week 8/9 workshops)
 async function mongo() {
@@ -46,6 +46,7 @@ async function mongo() {
     groupRequestRoutes(APP, io);
     requestRoutes(APP, io);
     roomRequestRoutes(APP, io);
+    chatRoutes(APP);
   } catch (err) {
     console.error("Database connection error:", err);
   }
