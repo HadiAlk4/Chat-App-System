@@ -3,6 +3,7 @@ export interface ChatMessage {
   groupName: string;
   roomName: string;
   senderUserName: string;
-  content: string;
+  content?: string;
+  imageUrl?: string;
   timestamp: string | Date;
 }
