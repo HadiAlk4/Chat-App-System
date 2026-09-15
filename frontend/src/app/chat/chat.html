@@ -60,14 +60,24 @@
                 X
               </button>
             </div>
-            <p style="margin: 0.3rem 0 0 0; word-break: break-word;">{{ msg.content }}</p>
+            @if (msg.content) {
+              <p style="margin: 0.3rem 0 0 0; word-break: break-word;">{{ msg.content }}</p>
+            }
+            @if (msg.imageUrl) {
+              <img [src]="attachmentSrc(msg.imageUrl)" alt="Attachment" style="max-width: 250px; border-radius: 8px; margin-top: 0.5rem; display: block; border: 1px solid #444;" />
+            }
           </div>
         } @else {
           <div class="card receiver-bubble" style="align-self: flex-start; width: fit-content; max-width: 70%; min-width: 250px; padding: 0.6rem 1rem; margin: 0;">
             <p style="margin: 0; font-weight: bold; font-size: 0.95rem;">
               {{ msg.senderUserName }} - {{ msg.timestamp | date:'shortTime' }}
             </p>
-            <p style="margin: 0.3rem 0 0 0; word-break: break-word;">{{ msg.content }}</p>
+            @if (msg.content) {
+              <p style="margin: 0.3rem 0 0 0; word-break: break-word;">{{ msg.content }}</p>
+            }
+            @if (msg.imageUrl) {
+              <img [src]="attachmentSrc(msg.imageUrl)" alt="Attachment" style="max-width: 250px; border-radius: 8px; margin-top: 0.5rem; display: block; border: 1px solid #444;" />
+            }
           </div>
         }
       } @empty {
@@ -75,8 +85,17 @@
       }
     </div>
 
-    <!-- MESSAGE INPUT -->
+    <!-- MESSAGE INPUT & FILE ATTACHMENT -->
     <div style="display: flex; padding-top: 1rem; align-items: center; gap: 0.5rem;">
+      <label class="paper-btn btn-small" style="margin: 0; cursor: pointer; padding: 0.6rem 0.8rem;">
+        📎
+        <input #chatFileInput type="file" accept="image/*" (change)="onChatFileSelected($event)" style="display: none;" />
+      </label>
+      @if (selectedChatFile) {
+        <span style="font-size: 0.85rem; color: #007bff; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          {{ selectedChatFile.name }}
+        </span>
+      }
       <input
         type="text"
         [(ngModel)]="newMessageContent"

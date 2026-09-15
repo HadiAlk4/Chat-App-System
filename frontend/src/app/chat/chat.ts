@@ -6,7 +6,10 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../services/auth';
 import { GroupService } from '../services/group';
 import { ChatService } from '../services/chat';
+import { UploadService } from '../services/upload';
 import { ChatMessage } from '../models/message';
+
+const BACKEND_URL = 'http://localhost:3000';
 
 @Component({
   imports: [RouterLink, FormsModule, DatePipe],
@@ -16,6 +19,7 @@ import { ChatMessage } from '../models/message';
 })
 export class Chat implements OnInit, OnDestroy {
   @ViewChild('scroll') private messageScrollContainer!: ElementRef;
+  @ViewChild('chatFileInput') private chatFileInput!: ElementRef<HTMLInputElement>;
 
   currGroupName = '';
   currentRoom = '';
@@ -27,6 +31,7 @@ export class Chat implements OnInit, OnDestroy {
   onlineRoomMembers: string[] = [];
   messages: ChatMessage[] = [];
   newMessageContent = '';
+  selectedChatFile: File | null = null;
 
   systemNotification = '';
   displayNotification = false;
@@ -38,6 +43,7 @@ export class Chat implements OnInit, OnDestroy {
     private authService: AuthService,
     private groupService: GroupService,
     private chatService: ChatService,
+    private uploadService: UploadService,
     private route: ActivatedRoute
   ) {}
 
@@ -140,17 +146,53 @@ export class Chat implements OnInit, OnDestroy {
     this.subscriptions.add(roomUsersSub);
   }
 
-  sendContent(): void {
-    if (!this.newMessageContent.trim()) return;
+  onChatFileSelected(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    if (target.files && target.files.length > 0) {
+      this.selectedChatFile = target.files[0];
+    }
+  }
 
+  attachmentSrc(url?: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('/uploads/')) {
+      return `${BACKEND_URL}${url}`;
+    }
+    return url;
+  }
+
+  sendContent(): void {
+    const content = this.newMessageContent.trim();
+    if (!content && !this.selectedChatFile) return;
+
+    if (this.selectedChatFile) {
+      this.uploadService.uploadChatImage(this.selectedChatFile).subscribe({
+        next: (res) => {
+          if (res.ok) {
+            this.dispatchMessage(content, res.fileUrl);
+          }
+        },
+        error: () => alert('Failed to upload image attachment.'),
+      });
+    } else {
+      this.dispatchMessage(content);
+    }
+  }
+
+  private dispatchMessage(content: string, imageUrl?: string): void {
     this.chatService.sendMessage({
       groupName: this.currGroupName,
       roomName: this.currentRoom,
       senderUserName: this.currentUser,
-      content: this.newMessageContent.trim()
+      content,
+      imageUrl,
     });
 
     this.newMessageContent = '';
+    this.selectedChatFile = null;
+    if (this.chatFileInput) {
+      this.chatFileInput.nativeElement.value = '';
+    }
   }
 
   deleteContent(msgId?: string): void {
