@@ -6,10 +6,13 @@ export function chatRoutes(app) {
   app.get("/api/messages/:groupName/:roomName", async (req, res) => {
     try {
       const { groupName, roomName } = req.params;
+      // Last 5 on join/re-entry only; live socket messages stay uncapped while the user remains in the room
       const messages = await db.collection("messages")
         .find({ groupName, roomName })
-        .sort({ timestamp: 1 })
+        .sort({ timestamp: -1 })
+        .limit(5)
         .toArray();
+      messages.reverse();
       res.send(messages);
     } catch (err) {
       res.status(500).send({ ok: false, message: err.message });
