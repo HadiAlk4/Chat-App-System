@@ -57,8 +57,8 @@ export class UserProfileSettings implements OnInit {
     const target = event.target as HTMLInputElement;
     if (target.files && target.files.length > 0) {
       const file = target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File exceeds 5MB limit.');
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File exceeds 2MB limit.');
         target.value = '';
         this.selectedFile = null;
         return;

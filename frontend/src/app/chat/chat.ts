@@ -149,7 +149,14 @@ export class Chat implements OnInit, OnDestroy {
   onChatFileSelected(event: Event): void {
     const target = event.target as HTMLInputElement;
     if (target.files && target.files.length > 0) {
-      this.selectedChatFile = target.files[0];
+      const file = target.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File exceeds 2MB limit.');
+        target.value = '';
+        this.selectedChatFile = null;
+        return;
+      }
+      this.selectedChatFile = file;
     }
   }
 
