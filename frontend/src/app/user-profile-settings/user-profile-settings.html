@@ -31,7 +31,7 @@
                     <label for="usernameInput">Display Name</label>
                     <div style="display: flex; gap: 1rem;">
                         <input type="text" id="usernameInput" [(ngModel)]="userProfile.username" style="flex: 1;">
-                        <button class="btn-secondary" style="margin: 0;">Save</button>
+                        <button class="btn-secondary" style="margin: 0;" (click)="saveUsername()">Save</button>
                     </div>
                 </div>
                 <fieldset class="form-group" style="margin-top: 2rem; display: flex; align-items: center; gap: 1rem;">
@@ -39,7 +39,7 @@
                         Dark Mode Theme
                     </label>
                     <label class="paper-switch" style="margin: 0;">
-                        <input id="paperSwitch5" name="paperSwitch5" type="checkbox" [(ngModel)]="userProfile.isDarkMode" />
+                        <input id="paperSwitch5" name="paperSwitch5" type="checkbox" [(ngModel)]="userProfile.isDarkMode" (ngModelChange)="onDarkModeChange($event)" />
                         <span class="paper-switch-slider"></span>
                     </label>
                 </fieldset>
@@ -82,7 +82,7 @@
                 <label for="confirmPass">Confirm New Password</label>
                 <input type="password" id="confirmPass" class="input-block" placeholder="Retype new password" [(ngModel)]="confirmPasswordInput">
             </div>
-            <button class="btn-success btn-block" style="margin-top: 1.5rem;">Save New Password</button>
+            <button class="btn-success btn-block" style="margin-top: 1.5rem;" (click)="savePassword()">Save New Password</button>
         </div>
     </div>
 </div>
