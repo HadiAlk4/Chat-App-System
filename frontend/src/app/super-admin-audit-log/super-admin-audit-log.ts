@@ -1,109 +1,71 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
+import { AuditService } from '../services/audit';
+import { AuditLog } from '../models/audit-log';
 
 @Component({
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, DatePipe],
   selector: 'app-super-admin-audit-log',
   styleUrl: './super-admin-audit-log.css',
   templateUrl: './super-admin-audit-log.html',
 })
-export class SuperAdminAuditLog 
-{
-    userName: string = 'Super_mAllen'
+export class SuperAdminAuditLog implements OnInit {
+  userName = 'Super_mAllen';
+  displayedAuditLog: AuditLog[] = [];
 
-    constructor(private authService: AuthService) {}
+  startDate = '';
+  endDate = '';
+  selectedAction = 'All Actions';
 
-    onLogout(): void
-    {
-      this.authService.logout();
+  actionTypes: string[] = [
+    'All Actions',
+    'Accepted Global User Ban',
+    'Rejected Global User Ban',
+    'Accepted Group Creation',
+    'Rejected Group Creation',
+    'Accepted Group Deletion',
+    'Rejected Group Deletion',
+  ];
+
+  constructor(
+    private authService: AuthService,
+    private auditService: AuditService
+  ) {}
+
+  ngOnInit(): void {
+    const user = this.authService.getUser();
+    if (user) {
+      this.userName = user.username;
     }
+    this.loadLogs();
+  }
 
-    auditLogBook = 
-    [
-      {
-        timeStamp: "2026-07-28T08:30:12",
-        actionPerformed: "Accepted Global User Ban",
-        target: "Tough Mudder@mud.tuff",
-      },
-      {
-        timeStamp: "2026-07-28T08:30:12",
-        actionPerformed: "Rejected Global User Ban",
-        target: "Tough Mudder",
-      },
-      {
-        timeStamp: "2026-07-28T08:30:12",
-        actionPerformed: "Accepted Group Creation",
-        target: "Wednesday Lab",
-      },
-      {
-        timeStamp: "2026-07-28T08:30:12",
-        actionPerformed: "Rejected Group Creation",
-        target: "Wednesday Lab",
-      },
-      {
-        timeStamp: "2026-07-28T08:30:12",
-        actionPerformed: "Accepted Group Deletion",
-        target: "Wednesday Lab",
-      },
-      {
-        timeStamp: "2026-07-28T08:30:12",
-        actionPerformed: "Rejected Group Deletion",
-        target: "Wednesday Lab",
-      },
-    ]
+  onLogout(): void {
+    this.authService.logout();
+  }
 
-    displayedAuditLog: any[] = [];
+  applyFilters(): void {
+    this.loadLogs();
+  }
 
-    startDate: string = '';
-    endDate: string = '';
-    selectedAction: string = 'All Actions';
-
-    actionTypes: string[] = 
-    [
-      'All Actions',
-      'Accepted Global User Ban',
-      'Rejected Global User Ban',
-      'Accepted Group Creation',
-      'Rejected Group Creation',
-      'Accepted Group Deletion',
-      'Rejected Group Deletion'
-    ];
-
-    ngOnInit()
-    {
-      this.displayedAuditLog = [...this.auditLogBook];
-    }
-
-    applyFilters()
-    {
-      this.displayedAuditLog = this.auditLogBook.filter(log => 
-      {
-        let matchesAction = true;
-        let matchesDate = true;
-
-        if(this.selectedAction !== 'All Actions')
-        {
-          matchesAction = log.actionPerformed === this.selectedAction;
-        }
-
-        const logData = new Date(log.timeStamp);
-
-        if(this.startDate)
-        {
-          const start = new Date(this.startDate);
-          start.setHours(0,0,0,0);
-          if(logData < start) matchesDate = false;
-        }
-        if(this.endDate)
-        {
-          const end = new Date(this.startDate);
-          end.setHours(23, 59, 59, 999);
-          if(logData > end) matchesDate = false;
-        }
-        return matchesAction && matchesDate;
-      }
-      );
-    }
+  private loadLogs(): void {
+    this.auditService
+      .getLogs({
+        action: this.selectedAction,
+        startDate: this.startDate || undefined,
+        endDate: this.endDate || undefined,
+      })
+      .subscribe({
+        next: (logs) => {
+          this.displayedAuditLog = logs;
+        },
+        error: (err) => {
+          console.error('Failed to load audit logs:', err);
+          this.displayedAuditLog = [];
+        },
+      });
+  }
 }
