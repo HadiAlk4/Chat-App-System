@@ -56,7 +56,7 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
 ### 7. Super Admin Role Restrictions (mocked / incomplete in Phase 1)
 
 - [ ] Super Admin is action-requests only: no chat functions and no access to old chat history.
-- [ ] Keep Super Admin tools in the main app shell (audit log remains a dedicated filterable page; no separate Super Admin-only product).
+- [x] Keep Super Admin tools in the main app shell (audit log remains a dedicated filterable page; no separate Super Admin-only product).
 
 ---
 
@@ -104,7 +104,7 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
   - [x] Create, rename, and delete rooms. Groups may have 0 to unlimited rooms with unlimited user capacity.
   - [x] Approve or reject join and room requests, storing a mandatory rejection reason displayed in the user's `request-history`.
   - [x] Promote members to GA. A group must always have at least one GA and may have multiple.
-  - [ ] Show a visual indicator of GA status while chatting.
+  - [x] Show a visual indicator of GA status while chatting.
   - [ ] Enforce GA step-down rules: prevent demotion if the user is the sole GA or has pending requests queued with the Super Admin.
   - [ ] Issue permanent group-level bans (removing the un-ban capability from the UI). Member removal is wired, but bans are not persisted as a permanent group ban list.
   - [ ] GA can see all allowed and banned members for their group.
@@ -135,11 +135,11 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 - [x] **Live Streaming:** Broadcast subsequent messages in real-time without capping the chat display while the user stays active.
 - [x] **Self-Message Deletion:** Allow users to delete their own messages (e.g. right-click), emitting a socket event that removes the message instantly from all active screens and deletes it from MongoDB.
 - [ ] **Cascaded Deletion:** When a user account is deleted (subject to Super Admin approval), broadcast an event to remove all messages sent by that user across all rooms instantly. If those messages were in any room's last-5 buffer, they are removed (the room may then show fewer than 5 messages, or a blank chat if all 5 belonged to them).
-- [ ] **File Attachments:** Enable image uploads (PNG, JPEG, GIF up to 2MB) in chat messages. Text is also allowed. No other file types.
+- [x] **File Attachments:** Enable image uploads (PNG, JPEG, GIF up to 2MB) in chat messages. Text is also allowed. No other file types.
 - [ ] **Channel rules:** Single-channel, single-thread only. No one-on-one private chat, voice, video, markup tags (e.g. `@someone`), or typing indicators.
 - [ ] **Content rules:** No external hyperlinks (no malicious-link detection required) and no automatic parental censoring.
-- [ ] **Message display:** Show timestamp and sender display name, not the unique user ID. No text size limit. No unread indicators.
-- [ ] **Empty rooms:** A user joining a completely fresh chat room with no prior history starts with a blank chat interface.
+- [x] **Message display:** Show timestamp and sender display name, not the unique user ID. No text size limit. No unread indicators.
+- [x] **Empty rooms:** A user joining a completely fresh chat room with no prior history starts with a blank chat interface.
 
 ### 9. UI, Themes & Profiles
 
