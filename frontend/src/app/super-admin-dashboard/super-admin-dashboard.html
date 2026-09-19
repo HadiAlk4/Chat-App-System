@@ -117,24 +117,28 @@
       <th>UserName</th>
       <th>Email</th>
       <th>User Role</th>
+      <th>Actions</th>
     </tr>
+  </thead>
   <tbody>
-    
-    @for(req of groupDeletionRequests; track req.groupDeletionRequestName)
+    @for(req of accountDeletionRequests(); track req._id ?? req.username)
     {
-    <tr>      
-
+    <tr>
         <td> {{ $index + 1}} </td>
-        <td> {{ req.groupDeletionRequestName }} </td>
-        <td> {{ req.groupDeletionRequestByUser }} </td>
-        <td> {{ req.groupDeletionRequestByUserRole }}</td>
-        <td> 
-            <div> 
-            <button (click)="acceptGroupDeletionRequest($index)" class="btn-success-outline btn-small">Accept</button>
-            <button class="btn-danger-outline btn-small" >Reject</button>
+        <td> {{ req.username }} </td>
+        <td> {{ req.email }}</td>
+        <td> {{ req.role }}</td>
+        <td>
+            <div>
+            <button (click)="acceptAccountDeletionRequest(req)" class="btn-success-outline btn-small">Accept</button>
+            <button (click)="rejectAccountDeletionRequest(req)" class="btn-danger-outline btn-small">Reject</button>
             </div>
         </td>
     </tr>
+    } @empty {
+        <tr>
+            <td colspan="5">No pending account deletion requests.</td>
+        </tr>
     }
   </tbody>
 </table>
@@ -182,9 +186,11 @@
     
     <div class="paper container container-lg" >
         <h4 style="margin-top: 0%;"> Permanently Banned Emails </h4>
-        @for(i of permaBannedEmails; track $index)
+        @for(banned of bannedEmails(); track banned._id ?? banned.email)
         {
-            <p> {{i}}</p>
+            <p> {{ banned.email }}</p>
+        } @empty {
+            <p>No permanently banned emails.</p>
         }
 
     </div>

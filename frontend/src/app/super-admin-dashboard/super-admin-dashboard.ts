@@ -3,8 +3,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { GroupService } from '../services/group';
+import { AccountService } from '../services/account';
 import { SocketService } from '../services/socket';
 import { GroupRequest } from '../models/group-request';
+import { AccountDeletionRequest } from '../models/account-deletion-request';
+import { BannedEmail } from '../models/banned-email';
 
 @Component({
   imports: [RouterLink],
@@ -20,6 +23,7 @@ export class SuperAdminDashboard
   constructor(
     private authService: AuthService,
     private groupService: GroupService,
+    private accountService: AccountService,
     private socketService: SocketService,
     private destroyRef: DestroyRef
   ) {}
@@ -32,7 +36,10 @@ export class SuperAdminDashboard
       this.userName = user.username;
     }
     this.loadGroupRequests();
+    this.loadAccountDeletionRequests();
+    this.loadBannedEmails();
     this.listenForGroupRequestEvents();
+    this.listenForAccountDeletionEvents();
   }
 
   onLogout(): void
@@ -107,11 +114,46 @@ export class SuperAdminDashboard
     },
   ]
 
+  accountDeletionRequests = signal<AccountDeletionRequest[]>([]);
+  bannedEmails = signal<BannedEmail[]>([]);
 
-  permaBannedEmails: string[] = 
-  [
-    'ban@ban.ban', 'ban@ban.ban', 'ban@ban.ban'
-  ]
+  loadAccountDeletionRequests(): void
+  {
+    this.accountService.getPendingDeletionRequests().subscribe({
+      next: requests => this.accountDeletionRequests.set(requests),
+      error: error => console.error('Failed to load account deletion requests:', error),
+    });
+  }
+
+  loadBannedEmails(): void
+  {
+    this.accountService.getBannedEmails().subscribe({
+      next: emails => this.bannedEmails.set(emails),
+      error: error => console.error('Failed to load banned emails:', error),
+    });
+  }
+
+  listenForAccountDeletionEvents(): void
+  {
+    this.socketService.onAccountDeletionRequestCreated()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(request => {
+        this.accountDeletionRequests.update(requests =>
+          requests.some(item => item._id === request._id)
+            ? requests
+            : [request, ...requests]
+        );
+      });
+
+    this.socketService.onAccountDeletionRequestResolved()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ requestId }) => {
+        this.accountDeletionRequests.update(requests =>
+          requests.filter(request => request._id !== requestId)
+        );
+        this.loadBannedEmails();
+      });
+  }
 
 
   rejectGroupCreationRequest(request: GroupRequest): void
@@ -160,6 +202,50 @@ export class SuperAdminDashboard
   acceptGroupDeletionRequest(index: number): void
   {
     this.groupDeletionRequests.splice(index, 1);
+  }
+
+  acceptAccountDeletionRequest(request: AccountDeletionRequest): void
+  {
+    if (!request._id) {
+      return;
+    }
+
+    this.accountService.approveDeletion(request._id).subscribe({
+      next: response => {
+        alert(response.message);
+        if (response.ok) {
+          this.loadAccountDeletionRequests();
+          this.loadBannedEmails();
+        }
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Failed to approve account deletion request.');
+      }
+    });
+  }
+
+  rejectAccountDeletionRequest(request: AccountDeletionRequest): void
+  {
+    if (!request._id) {
+      return;
+    }
+
+    const reason = prompt('Enter a rejection reason:')?.trim();
+    if (!reason) {
+      return;
+    }
+
+    this.accountService.rejectDeletion(request._id, reason).subscribe({
+      next: response => {
+        alert(response.message);
+        if (response.ok) {
+          this.loadAccountDeletionRequests();
+        }
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Failed to reject account deletion request.');
+      }
+    });
   }
 
   acceptUserBanRequest(index: number): void

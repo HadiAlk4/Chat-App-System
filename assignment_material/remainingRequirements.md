@@ -44,10 +44,10 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
 
 ### 5. Account Deletion & Banned Emails
 
-- [ ] Wire the "Request Account Deletion" button in `user-profile-settings.html` to submit an approval request to the Super Admin.
-- [ ] Implement backend logic for Super Admin global bans/deletions: add emails to a permanent ban list that blocks re-registration.
-- [ ] Super Admin cannot delete or hard-ban themselves.
-- [ ] Super Admin can view the list of permanently banned accounts.
+- [x] Wire the "Request Account Deletion" button in `user-profile-settings.html` to submit an approval request to the Super Admin.
+- [x] Implement backend logic for Super Admin global bans/deletions: add emails to a permanent ban list that blocks re-registration.
+- [x] Super Admin cannot delete or hard-ban themselves.
+- [x] Super Admin can view the list of permanently banned accounts.
 
 ### 6. Super Admin Audit Logging (Un-mocking `super-admin-audit-log.ts`)
 
@@ -84,7 +84,7 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 - [ ] Permanently lock the bootstrap endpoint once the Super Admin account exists.
 - [ ] Super Admin handles action requests only: no chat access and no old chat history.
 - [ ] Super Admin cannot create groups except by approving a user proposal and assigning the initial GA.
-- [ ] Super Admin cannot delete themselves.
+- [x] Super Admin cannot delete themselves.
 - [ ] Super Admin tools stay integrated in the main app; retain a dedicated filterable audit-log page.
 
 ### 4. Group & Room Request Lifecycle
@@ -117,9 +117,9 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 
 - [ ] Replace `auditLogBook` with a server-side MongoDB collection that inserts an immutable timestamped record for every administrative action.
 - [ ] Enable date and action-type filtering directly against the database on `/super-admin-audit-log`.
-- [ ] Implement global account deletions and permanent email bans, preventing banned emails from ever re-registering. Super Admin is the only role that can hard-ban a user from the entire system.
-- [ ] Super Admin can view permanently banned accounts.
-- [ ] Super Admin cannot delete or hard-ban themselves.
+- [x] Implement global account deletions and permanent email bans, preventing banned emails from ever re-registering. Super Admin is the only role that can hard-ban a user from the entire system.
+- [x] Super Admin can view permanently banned accounts.
+- [x] Super Admin cannot delete or hard-ban themselves.
 
 ### 7. Real-Time Chat Infrastructure (Socket.io)
 

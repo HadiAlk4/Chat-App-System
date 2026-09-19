@@ -4,6 +4,7 @@ import { io, Socket } from 'socket.io-client';
 import { GroupRequest } from '../models/group-request';
 import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
+import { AccountDeletionRequest } from '../models/account-deletion-request';
 
 const SOCKET_URL = 'http://localhost:3000';
 
@@ -23,6 +24,13 @@ interface RoomRequestResolved {
   status: 'approved' | 'rejected';
   groupName: string;
   roomName: string;
+}
+
+interface AccountDeletionRequestResolved {
+  requestId: string;
+  status: 'approved' | 'rejected';
+  username?: string;
+  email?: string;
 }
 
 @Injectable({
@@ -54,6 +62,14 @@ export class SocketService {
 
   onRoomRequestResolved(): Observable<RoomRequestResolved> {
     return this.listen<RoomRequestResolved>('room-request-resolved');
+  }
+
+  onAccountDeletionRequestCreated(): Observable<AccountDeletionRequest> {
+    return this.listen<AccountDeletionRequest>('account-deletion-request-created');
+  }
+
+  onAccountDeletionRequestResolved(): Observable<AccountDeletionRequestResolved> {
+    return this.listen<AccountDeletionRequestResolved>('account-deletion-request-resolved');
   }
 
   private listen<T>(eventName: string): Observable<T> {

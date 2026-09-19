@@ -14,6 +14,7 @@ import { requestRoutes } from "./routes/requestRoutes.js";
 import { roomRequestRoutes } from "./routes/roomRequestRoutes.js";
 import { chatRoutes } from "./routes/chatRoutes.js";
 import { uploadRoutes } from "./routes/uploadRoutes.js";
+import { accountDeletionRoutes } from "./routes/accountDeletionRoutes.js";
 import { initChatSockets } from "./sockets.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,6 +57,7 @@ async function mongo() {
     roomRequestRoutes(APP, io);
     chatRoutes(APP);
     uploadRoutes(APP);
+    accountDeletionRoutes(APP, io);
   } catch (err) {
     console.error("Database connection error:", err);
   }
