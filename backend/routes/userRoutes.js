@@ -1,4 +1,7 @@
+import bcrypt from "bcrypt";
 import { db } from "../db.js";
+
+const PASSWORD_REGEX = /^(?=.*[A-Z])[a-zA-Z0-9]{8,}$/;
 
 function stripPassword(user) {
   if (!user) return user;
@@ -75,6 +78,40 @@ export function userRoutes(app) {
         message: "Username updated",
         user: stripPassword(updated),
       });
+    } catch (err) {
+      res.status(500).send({ ok: false, message: err.message });
+    }
+  });
+
+  app.patch("/api/users/password", async (req, res) => {
+    try {
+      const { email, currentPassword, newPassword } = req.body;
+      if (!email || !currentPassword || !newPassword) {
+        return res.send({ ok: false, message: "Email, current password, and new password are required" });
+      }
+
+      if (!PASSWORD_REGEX.test(newPassword)) {
+        return res.send({
+          ok: false,
+          message: "Password must be at least 8 characters long and contain at least one uppercase letter",
+        });
+      }
+
+      const usersCollection = db.collection("users");
+      const user = await usersCollection.findOne({ email });
+      if (!user) {
+        return res.status(404).send({ ok: false, message: "User not found" });
+      }
+
+      const currentMatches = await bcrypt.compare(currentPassword, user.password);
+      if (!currentMatches) {
+        return res.send({ ok: false, message: "Current password is incorrect" });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await usersCollection.updateOne({ email }, { $set: { password: hashedPassword } });
+
+      res.send({ ok: true, message: "Password updated" });
     } catch (err) {
       res.status(500).send({ ok: false, message: err.message });
     }
