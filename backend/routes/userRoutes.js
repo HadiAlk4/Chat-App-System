@@ -116,4 +116,31 @@ export function userRoutes(app) {
       res.status(500).send({ ok: false, message: err.message });
     }
   });
+
+  // Chat-window theme preference only (not a global app theme)
+  app.patch("/api/users/theme", async (req, res) => {
+    try {
+      const { email, isDarkMode } = req.body;
+      if (!email || typeof isDarkMode !== "boolean") {
+        return res.send({ ok: false, message: "Email and isDarkMode (boolean) are required" });
+      }
+
+      const usersCollection = db.collection("users");
+      const user = await usersCollection.findOne({ email });
+      if (!user) {
+        return res.status(404).send({ ok: false, message: "User not found" });
+      }
+
+      await usersCollection.updateOne({ email }, { $set: { isDarkMode } });
+      const updated = await usersCollection.findOne({ email });
+
+      res.send({
+        ok: true,
+        message: "Chat theme updated",
+        user: stripPassword(updated),
+      });
+    } catch (err) {
+      res.status(500).send({ ok: false, message: err.message });
+    }
+  });
 }
