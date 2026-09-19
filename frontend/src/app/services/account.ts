@@ -44,4 +44,25 @@ export class AccountService {
   getBannedEmails(): Observable<BannedEmail[]> {
     return this.http.get<BannedEmail[]>(`${API_URL}/banned-emails`);
   }
+
+  updateUsername(email: string, newUsername: string): Observable<{ ok: boolean; message: string; user?: any }> {
+    return this.http.patch<{ ok: boolean; message: string; user?: any }>(
+      `${API_URL}/users/username`,
+      { email, newUsername }
+    );
+  }
+
+  updatePassword(email: string, currentPassword: string, newPassword: string): Observable<{ ok: boolean; message: string }> {
+    return this.http.patch<{ ok: boolean; message: string }>(
+      `${API_URL}/users/password`,
+      { email, currentPassword, newPassword }
+    );
+  }
+
+  updateTheme(email: string, isDarkMode: boolean): Observable<{ ok: boolean; message: string; user?: any }> {
+    return this.http.patch<{ ok: boolean; message: string; user?: any }>(
+      `${API_URL}/users/theme`,
+      { email, isDarkMode }
+    );
+  }
 }
