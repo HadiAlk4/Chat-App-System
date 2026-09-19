@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { db } from "../db.js";
+import { logAudit } from "../audit.js";
 
 export function groupRequestRoutes(app, io) {
   // group proposals
@@ -75,6 +76,16 @@ export function groupRequestRoutes(app, io) {
         { $set: { status: "approved", reviewedAt: new Date() } }
       );
 
+      try {
+        await logAudit(db, {
+          actionPerformed: "Accepted Group Creation",
+          target: request.groupName,
+          performedBy: req.body.performedBy,
+        });
+      } catch (err) {
+        console.error("Failed to write audit log:", err);
+      }
+
       io.emit("group-request-resolved", { requestId: req.params.id, status: "approved" });
       res.send({ ok: true, valid: true, message: "Group request approved successfully" });
     } catch (err) {
@@ -89,13 +100,28 @@ export function groupRequestRoutes(app, io) {
         return res.status(400).send({ ok: false, message: "A rejection reason is required" });
       }
 
-      const result = await db.collection("groupRequests").updateOne(
-        { _id: new ObjectId(req.params.id), status: "pending" },
+      const request = await db.collection("groupRequests").findOne({
+        _id: new ObjectId(req.params.id),
+        status: "pending",
+      });
+
+      if (!request) {
+        return res.status(404).send({ ok: false, message: "Pending proposal not found" });
+      }
+
+      await db.collection("groupRequests").updateOne(
+        { _id: new ObjectId(req.params.id) },
         { $set: { status: "rejected", rejectionReason: reason, reviewedAt: new Date() } }
       );
 
-      if (result.matchedCount === 0) {
-        return res.status(404).send({ ok: false, message: "Pending proposal not found" });
+      try {
+        await logAudit(db, {
+          actionPerformed: "Rejected Group Creation",
+          target: request.groupName,
+          performedBy: req.body.performedBy,
+        });
+      } catch (err) {
+        console.error("Failed to write audit log:", err);
       }
 
       io.emit("group-request-resolved", { requestId: req.params.id, status: "rejected" });
