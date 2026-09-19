@@ -49,13 +49,17 @@
     </tr>
     </thead>
   <tbody>
-    @for(req of displayedAuditLog; track req.target)
+    @for(req of displayedAuditLog; track req._id ?? $index)
     {
-    <tr>      
+    <tr>
         <td> {{ $index + 1}} </td>
-        <td> {{ req.timeStamp }} </td>
+        <td> {{ req.timeStamp | date:'short' }} </td>
         <td> {{ req.actionPerformed }} </td>
         <td> {{ req.target }}</td>
+    </tr>
+    } @empty {
+    <tr>
+        <td colspan="4">No audit records.</td>
     </tr>
     }
   </tbody>

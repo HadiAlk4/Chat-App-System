@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { db } from "../db.js";
+import { logAudit } from "../audit.js";
 
 function normalizeEmail(email) {
   return String(email || "").trim().toLowerCase();
@@ -113,6 +114,16 @@ export function accountDeletionRoutes(app, io) {
         { $set: { status: "approved", reviewedAt: new Date() } }
       );
 
+      try {
+        await logAudit(db, {
+          actionPerformed: "Accepted Global User Ban",
+          target: email || request.username,
+          performedBy: req.body.performedBy,
+        });
+      } catch (err) {
+        console.error("Failed to write audit log:", err);
+      }
+
       io.emit("account-deletion-request-resolved", {
         requestId: req.params.id,
         status: "approved",
@@ -133,13 +144,28 @@ export function accountDeletionRoutes(app, io) {
         return res.status(400).send({ ok: false, message: "A rejection reason is required" });
       }
 
-      const result = await db.collection("accountDeletionRequests").updateOne(
-        { _id: new ObjectId(req.params.id), status: "pending" },
+      const request = await db.collection("accountDeletionRequests").findOne({
+        _id: new ObjectId(req.params.id),
+        status: "pending",
+      });
+
+      if (!request) {
+        return res.status(404).send({ ok: false, message: "Pending account deletion request not found" });
+      }
+
+      await db.collection("accountDeletionRequests").updateOne(
+        { _id: new ObjectId(req.params.id) },
         { $set: { status: "rejected", rejectionReason: reason, reviewedAt: new Date() } }
       );
 
-      if (result.matchedCount === 0) {
-        return res.status(404).send({ ok: false, message: "Pending account deletion request not found" });
+      try {
+        await logAudit(db, {
+          actionPerformed: "Rejected Global User Ban",
+          target: request.email || request.username,
+          performedBy: req.body.performedBy,
+        });
+      } catch (err) {
+        console.error("Failed to write audit log:", err);
       }
 
       io.emit("account-deletion-request-resolved", {

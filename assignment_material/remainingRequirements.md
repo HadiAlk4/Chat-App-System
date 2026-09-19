@@ -51,7 +51,7 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
 
 ### 6. Super Admin Audit Logging (Un-mocking `super-admin-audit-log.ts`)
 
-- [ ] Replace `auditLogBook` with a server-side collection that logs every administrative action (bans, approvals, deletions) with an immutable timestamp.
+- [x] Replace `auditLogBook` with a server-side collection that logs every administrative action (bans, approvals, deletions) with an immutable timestamp.
 
 ### 7. Super Admin Role Restrictions (mocked / incomplete in Phase 1)
 
@@ -85,7 +85,7 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 - [ ] Super Admin handles action requests only: no chat access and no old chat history.
 - [ ] Super Admin cannot create groups except by approving a user proposal and assigning the initial GA.
 - [x] Super Admin cannot delete themselves.
-- [ ] Super Admin tools stay integrated in the main app; retain a dedicated filterable audit-log page.
+- [x] Super Admin tools stay integrated in the main app; retain a dedicated filterable audit-log page.
 
 ### 4. Group & Room Request Lifecycle
 
@@ -115,8 +115,8 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 
 ### 6. Super Admin Audit Logging & Global Bans
 
-- [ ] Replace `auditLogBook` with a server-side MongoDB collection that inserts an immutable timestamped record for every administrative action.
-- [ ] Enable date and action-type filtering directly against the database on `/super-admin-audit-log`.
+- [x] Replace `auditLogBook` with a server-side MongoDB collection that inserts an immutable timestamped record for every administrative action.
+- [x] Enable date and action-type filtering directly against the database on `/super-admin-audit-log`.
 - [x] Implement global account deletions and permanent email bans, preventing banned emails from ever re-registering. Super Admin is the only role that can hard-ban a user from the entire system.
 - [x] Super Admin can view permanently banned accounts.
 - [x] Super Admin cannot delete or hard-ban themselves.
