@@ -49,6 +49,16 @@ export function authRoutes(app) {
       }
 
       const usersCollection = db.collection("users");
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const banned = await db.collection("bannedEmails").findOne({ email: normalizedEmail });
+      if (banned) {
+        return res.send({
+          ok: false,
+          valid: false,
+          message: "This email is permanently banned",
+        });
+      }
+
       const exists = await usersCollection.findOne({ email });
       if (exists) {
         return res.send({ ok: false, valid: false, message: "Email already exists" });
