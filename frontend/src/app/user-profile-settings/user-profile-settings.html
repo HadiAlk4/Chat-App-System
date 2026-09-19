@@ -46,7 +46,11 @@
                 <p>* Just for the Chat Screen</p>
             </div>
             <div style="border-top: 2px dashed #a56969; padding-top: 1.5rem; margin-top: 1.5rem;">
-                <button class="btn-danger btn-block">Request Account Deletion</button>
+                @if (isSuperAdmin) {
+                    <p style="margin: 0; color: #777;">Super Admin cannot request account deletion.</p>
+                } @else {
+                    <button class="btn-danger btn-block" (click)="requestAccountDeletion()">Request Account Deletion</button>
+                }
             </div>
         </div>
 

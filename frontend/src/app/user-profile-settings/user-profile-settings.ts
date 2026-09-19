@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth';
 import { UploadService } from '../services/upload';
+import { AccountService } from '../services/account';
 
 const BACKEND_URL = 'http://localhost:3000';
 
@@ -30,7 +31,8 @@ export class UserProfileSettings implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private uploadService: UploadService
+    private uploadService: UploadService,
+    private accountService: AccountService
   ) {}
 
   ngOnInit(): void {
@@ -91,6 +93,35 @@ export class UserProfileSettings implements OnInit {
         }
       },
       error: () => alert('Failed to connect to backend upload endpoint.'),
+    });
+  }
+
+  get isSuperAdmin(): boolean {
+    return this.userProfile.role === 'super-admin';
+  }
+
+  requestAccountDeletion(): void {
+    if (this.isSuperAdmin) {
+      alert('Super Admin cannot request account deletion.');
+      return;
+    }
+
+    if (!this.userProfile.username) {
+      alert('You must be logged in to request account deletion.');
+      return;
+    }
+
+    if (!confirm('Submit an account deletion request to Super Admin? This cannot be undone once approved.')) {
+      return;
+    }
+
+    this.accountService.requestAccountDeletion(this.userProfile.username).subscribe({
+      next: (res) => {
+        alert(res.message || (res.ok ? 'Account deletion request submitted.' : 'Request failed.'));
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Failed to submit account deletion request.');
+      },
     });
   }
 }
