@@ -6,6 +6,7 @@ import cors from "cors";
 import { Server } from "socket.io";
 import { connectDB, health } from "./db.js";
 import { authRoutes } from "./routes/authRoutes.js";
+import { userRoutes } from "./routes/userRoutes.js";
 import { groupRoutes } from "./routes/groupRoutes.js";
 import { roomRoutes } from "./routes/roomRoutes.js";
 import { memberRoutes } from "./routes/memberRoutes.js";
@@ -50,6 +51,7 @@ async function mongo() {
 
     // Mount modular routes
     authRoutes(APP);
+    userRoutes(APP);
     groupRoutes(APP);
     roomRoutes(APP);
     memberRoutes(APP);

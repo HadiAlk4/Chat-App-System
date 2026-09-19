@@ -28,6 +28,7 @@ export class UserProfileSettings implements OnInit {
   currentPasswordInput = '';
   newPasswordInput = '';
   confirmPasswordInput = '';
+  originalUsername = '';
 
   constructor(
     private authService: AuthService,
@@ -44,6 +45,7 @@ export class UserProfileSettings implements OnInit {
       this.userProfile.role = user.role;
       this.userProfile.isDarkMode = user.isDarkMode;
       this.userProfile.profilePictureUrl = user.profilePictureUrl || '/pfp.png';
+      this.originalUsername = user.username;
     }
   }
 
@@ -75,7 +77,7 @@ export class UserProfileSettings implements OnInit {
       return;
     }
 
-    this.uploadService.uploadAvatar(this.selectedFile, this.userProfile.username).subscribe({
+    this.uploadService.uploadAvatar(this.selectedFile, this.originalUsername || this.userProfile.username).subscribe({
       next: (res) => {
         if (res.ok) {
           this.userProfile.profilePictureUrl = res.profilePictureUrl;
@@ -115,7 +117,7 @@ export class UserProfileSettings implements OnInit {
       return;
     }
 
-    this.accountService.requestAccountDeletion(this.userProfile.username).subscribe({
+    this.accountService.requestAccountDeletion(this.originalUsername || this.userProfile.username).subscribe({
       next: (res) => {
         alert(res.message || (res.ok ? 'Account deletion request submitted.' : 'Request failed.'));
       },
@@ -123,5 +125,78 @@ export class UserProfileSettings implements OnInit {
         alert(err?.error?.message || 'Failed to submit account deletion request.');
       },
     });
+  }
+
+  saveUsername(): void {
+    const nextUsername = this.userProfile.username.trim();
+    if (!this.userProfile.email || !nextUsername) {
+      alert('Username is required.');
+      return;
+    }
+
+    this.accountService.updateUsername(this.userProfile.email, nextUsername).subscribe({
+      next: (res) => {
+        alert(res.message || (res.ok ? 'Username updated' : 'Failed to update username'));
+        if (res.ok && res.user) {
+          this.syncSession(res.user);
+        }
+      },
+      error: (err) => alert(err?.error?.message || 'Failed to update username.'),
+    });
+  }
+
+  onDarkModeChange(isDarkMode: boolean): void {
+    this.userProfile.isDarkMode = isDarkMode;
+    if (!this.userProfile.email) return;
+
+    this.accountService.updateTheme(this.userProfile.email, isDarkMode).subscribe({
+      next: (res) => {
+        if (res.ok && res.user) {
+          this.syncSession(res.user);
+        } else {
+          alert(res.message || 'Failed to update chat theme');
+        }
+      },
+      error: (err) => alert(err?.error?.message || 'Failed to update chat theme.'),
+    });
+  }
+
+  savePassword(): void {
+    if (!this.currentPasswordInput || !this.newPasswordInput || !this.confirmPasswordInput) {
+      alert('Please fill in all password fields.');
+      return;
+    }
+
+    if (this.newPasswordInput !== this.confirmPasswordInput) {
+      alert('New password and confirmation do not match.');
+      return;
+    }
+
+    this.accountService
+      .updatePassword(this.userProfile.email, this.currentPasswordInput, this.newPasswordInput)
+      .subscribe({
+        next: (res) => {
+          alert(res.message || (res.ok ? 'Password updated' : 'Failed to update password'));
+          if (res.ok) {
+            this.currentPasswordInput = '';
+            this.newPasswordInput = '';
+            this.confirmPasswordInput = '';
+          }
+        },
+        error: (err) => alert(err?.error?.message || 'Failed to update password.'),
+      });
+  }
+
+  private syncSession(user: any): void {
+    this.authService.setUser(user);
+    this.userProfile.username = user.username;
+    this.userProfile.isDarkMode = user.isDarkMode;
+    this.userProfile.profilePictureUrl = user.profilePictureUrl || this.userProfile.profilePictureUrl;
+    this.originalUsername = user.username;
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('username', user.username);
+      sessionStorage.setItem('user', JSON.stringify(user));
+      if (user.role) sessionStorage.setItem('role', user.role);
+    }
   }
 }

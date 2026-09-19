@@ -144,7 +144,7 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 ### 9. UI, Themes & Profiles
 
 - [ ] Apply GA-configured default background-color themes to chat rooms while allowing individual users to apply a unified custom theme across all their groups.
-- [ ] Wire profile settings: changeable username; unchangeable email as unique ID; password change with current-password verification; age/DOB; light/dark screen preference; role; profile picture (up to 2MB); group memberships.
+- [x] Wire profile settings: changeable username; unchangeable email as unique ID; password change with current-password verification; age/DOB; light/dark screen preference; role; profile picture (up to 2MB); group memberships.
 - [ ] Profiles are completely private. Other users cannot open them (hovering for basic info is optional).
 - [ ] Desktop-first layout that remains usable at tablet sizes.
 
