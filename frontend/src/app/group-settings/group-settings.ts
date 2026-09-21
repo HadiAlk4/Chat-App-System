@@ -464,7 +464,15 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   requestGroupDeletion(): void {
-    const reason = prompt('Please enter a reason for the Super Admin:');
-    if (reason) alert('Deletion request submitted to Super Admin.');
+    const reason = prompt('Please enter a reason for the Super Admin:')?.trim();
+    if (!reason) return;
+
+    const groupKey = this.originalGroupName || this.groupName;
+    this.groupService.submitGroupDeletionRequest(groupKey, this.username, reason).subscribe({
+      next: (res) => {
+        alert(res.message || (res.ok ? 'Deletion request submitted to Super Admin.' : 'Request failed.'));
+      },
+      error: (err) => alert(err.error?.message || 'Failed to submit group deletion request.'),
+    });
   }
 }

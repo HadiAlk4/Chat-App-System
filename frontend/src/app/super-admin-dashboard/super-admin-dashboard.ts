@@ -8,6 +8,7 @@ import { SocketService } from '../services/socket';
 import { GroupRequest } from '../models/group-request';
 import { AccountDeletionRequest } from '../models/account-deletion-request';
 import { GroupBanRequest } from '../models/group-ban-request';
+import { GroupDeletionRequest } from '../models/group-deletion-request';
 import { BannedEmail } from '../models/banned-email';
 
 @Component({
@@ -39,10 +40,12 @@ export class SuperAdminDashboard
     this.loadGroupRequests();
     this.loadAccountDeletionRequests();
     this.loadGroupBanRequests();
+    this.loadGroupDeletionRequests();
     this.loadBannedEmails();
     this.listenForGroupRequestEvents();
     this.listenForAccountDeletionEvents();
     this.listenForGroupBanRequestEvents();
+    this.listenForGroupDeletionEvents();
   }
 
   onLogout(): void
@@ -85,26 +88,7 @@ export class SuperAdminDashboard
       });
   }
 
-  groupDeletionRequests = 
-  [
-    {
-    groupDeletionRequestName: 'sm ts idk name gg',
-    groupDeletionRequestByUser: ' sm user',
-    groupDeletionRequestByUserRole: 'sm role'
-
-    },
-    {
-    groupDeletionRequestName: 'sm ts idk name hhh',
-    groupDeletionRequestByUser: ' sm user',
-    groupDeletionRequestByUserRole: 'sm role'
-
-    },
-    {
-    groupDeletionRequestName: 'sm ts idk nameeeee',
-    groupDeletionRequestByUser: ' sm user',
-    groupDeletionRequestByUserRole: 'sm role'
-    },
-  ]
+  groupDeletionRequests = signal<GroupDeletionRequest[]>([]);
 
   userBanRequests = signal<GroupBanRequest[]>([]);
 
@@ -149,6 +133,35 @@ export class SuperAdminDashboard
           return;
         }
         this.userBanRequests.update(requests =>
+          requests.filter(request => request._id !== requestId)
+        );
+      });
+  }
+
+  loadGroupDeletionRequests(): void
+  {
+    this.groupService.getGroupDeletionRequests({ status: 'pending' }).subscribe({
+      next: requests => this.groupDeletionRequests.set(requests),
+      error: error => console.error('Failed to load group deletion requests:', error),
+    });
+  }
+
+  listenForGroupDeletionEvents(): void
+  {
+    this.socketService.onGroupDeletionRequestCreated()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(request => {
+        this.groupDeletionRequests.update(requests =>
+          requests.some(item => item._id === request._id)
+            ? requests
+            : [request, ...requests]
+        );
+      });
+
+    this.socketService.onGroupDeletionRequestResolved()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ requestId }) => {
+        this.groupDeletionRequests.update(requests =>
           requests.filter(request => request._id !== requestId)
         );
       });
@@ -228,9 +241,47 @@ export class SuperAdminDashboard
     });
   }
 
-  acceptGroupDeletionRequest(index: number): void
+  acceptGroupDeletionRequest(request: GroupDeletionRequest): void
   {
-    this.groupDeletionRequests.splice(index, 1);
+    if (!request._id) {
+      return;
+    }
+
+    this.groupService.approveGroupDeletionRequest(request._id, this.userName).subscribe({
+      next: response => {
+        alert(response.message);
+        if (response.ok) {
+          this.loadGroupDeletionRequests();
+        }
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Failed to approve group deletion request.');
+      }
+    });
+  }
+
+  rejectGroupDeletionRequest(request: GroupDeletionRequest): void
+  {
+    if (!request._id) {
+      return;
+    }
+
+    const reason = prompt('Enter a rejection reason:')?.trim();
+    if (!reason) {
+      return;
+    }
+
+    this.groupService.rejectGroupDeletionRequest(request._id, reason, this.userName).subscribe({
+      next: response => {
+        alert(response.message);
+        if (response.ok) {
+          this.loadGroupDeletionRequests();
+        }
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Failed to reject group deletion request.');
+      }
+    });
   }
 
   acceptAccountDeletionRequest(request: AccountDeletionRequest): void

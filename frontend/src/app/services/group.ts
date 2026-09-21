@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
 import { GroupBanRequest } from '../models/group-ban-request';
+import { GroupDeletionRequest } from '../models/group-deletion-request';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -218,6 +219,46 @@ export class GroupService // why not group
         }>(
             `${API_URL}/groups/${encodeURIComponent(groupName)}/admins/${encodeURIComponent(username)}/step-down`,
             {}
+        );
+    }
+
+    submitGroupDeletionRequest(
+        groupName: string,
+        requestedBy: string,
+        reason: string
+    ): Observable<{ ok: boolean; message: string; request?: GroupDeletionRequest }> {
+        return this.http.post<{ ok: boolean; message: string; request?: GroupDeletionRequest }>(
+            `${API_URL}/group-deletion-requests`,
+            { groupName, requestedBy, reason }
+        );
+    }
+
+    getGroupDeletionRequests(params: {
+        groupName?: string;
+        requestedBy?: string;
+        status?: string;
+    } = {}): Observable<GroupDeletionRequest[]> {
+        return this.http.get<GroupDeletionRequest[]>(`${API_URL}/group-deletion-requests`, { params });
+    }
+
+    approveGroupDeletionRequest(
+        requestId: string,
+        performedBy?: string
+    ): Observable<{ ok: boolean; message: string }> {
+        return this.http.patch<{ ok: boolean; message: string }>(
+            `${API_URL}/group-deletion-requests/${requestId}/approve`,
+            { performedBy }
+        );
+    }
+
+    rejectGroupDeletionRequest(
+        requestId: string,
+        reason: string,
+        performedBy?: string
+    ): Observable<{ ok: boolean; message: string }> {
+        return this.http.patch<{ ok: boolean; message: string }>(
+            `${API_URL}/group-deletion-requests/${requestId}/reject`,
+            { reason, performedBy }
         );
     }
 }
