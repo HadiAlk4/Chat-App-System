@@ -35,6 +35,16 @@ export class GroupService // why not group
         return this.http.get<{ ok: boolean; group: Group }>(`${API_URL}/groups/${encodeURIComponent(groupName)}`);
     }
 
+    updateGroup(
+        currentGroupName: string,
+        payload: { groupName: string; groupDescription: string; minAge: number; themeColor: 'light' | 'dark' }
+    ): Observable<{ ok: boolean; message: string; group: Group }> {
+        return this.http.patch<{ ok: boolean; message: string; group: Group }>(
+            `${API_URL}/groups/${encodeURIComponent(currentGroupName)}`,
+            payload
+        );
+    }
+
     addRoomDirect(groupName: string, roomName: string): Observable<{ ok: boolean; message: string; rooms: string[] }> {
         return this.http.post<{ ok: boolean; message: string; rooms: string[] }>(
             `${API_URL}/groups/${encodeURIComponent(groupName)}/rooms/direct`,

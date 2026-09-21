@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../services/auth';
@@ -18,10 +18,11 @@ import { RoomRequest } from '../models/room-request';
 export class GroupSettings implements OnInit, OnDestroy {
   userRole: string = 'group-admin';
   username: string = '';
+  originalGroupName: string = '';
   groupName: string = 'Sci-Fi Larpers';
   groupDescription: string = 'when ts not just intersteller and chess videos';
   groupMinAge: number = 10;
-  groupThemeColor: string = 'Light';
+  groupThemeColor: 'light' | 'dark' = 'light';
 
   joinRequests: (JoinRequest & { rejectReason?: string; requestedOn?: string })[] = [];
   roomRequests: RoomRequest[] = [];
@@ -32,7 +33,8 @@ export class GroupSettings implements OnInit, OnDestroy {
     private authService: AuthService,
     private groupService: GroupService,
     private socketService: SocketService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -46,6 +48,7 @@ export class GroupSettings implements OnInit, OnDestroy {
     
     const routeSub = this.route.queryParams.subscribe((params) => {
       if (params['groupName']) {
+        this.originalGroupName = params['groupName'];
         this.groupName = params['groupName'];
       }
       this.loadGroup();
@@ -58,21 +61,76 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   loadGroup(): void {
-    if (!this.groupName) return;
+    const groupKey = this.originalGroupName || this.groupName;
+    if (!groupKey) return;
 
-    this.groupService.getGroupByName(this.groupName).subscribe({
+    this.groupService.getGroupByName(groupKey).subscribe({
       next: (res) => {
         if (!res.ok || !res.group) return;
-        const group = res.group;
-        this.groupName = group.groupName;
-        this.groupDescription = group.groupDescription;
-        this.groupMinAge = group.minAge;
-        this.groupThemeColor = group.themeColor;
-        this.rooms = group.rooms ?? [];
-        this.allowedMembers = this.buildAllowedMembers(group);
+        this.applyGroup(res.group);
       },
       error: (err) => console.error('Failed to load group:', err),
     });
+  }
+
+  private applyGroup(group: {
+    groupName: string;
+    groupDescription: string;
+    minAge: number;
+    themeColor: 'light' | 'dark';
+    rooms?: string[];
+    admins?: string[];
+    members?: string[];
+    bannedMembers?: string[];
+  }): void {
+    this.originalGroupName = group.groupName;
+    this.groupName = group.groupName;
+    this.groupDescription = group.groupDescription;
+    this.groupMinAge = group.minAge;
+    this.groupThemeColor = group.themeColor === 'dark' ? 'dark' : 'light';
+    this.rooms = group.rooms ?? [];
+    this.allowedMembers = this.buildAllowedMembers(group);
+    this.bannedMembers = (group.bannedMembers ?? []).map((username) => ({ username }));
+  }
+
+  saveChanges(): void {
+    const groupName = this.groupName.trim();
+    const groupDescription = this.groupDescription.trim();
+    if (!groupName || !groupDescription) {
+      alert('Group name and description are required');
+      return;
+    }
+    if (groupDescription.length > 250) {
+      alert('Group description must be 250 characters or fewer');
+      return;
+    }
+
+    const previousName = this.originalGroupName || this.groupName;
+    this.groupService
+      .updateGroup(previousName, {
+        groupName,
+        groupDescription,
+        minAge: Number(this.groupMinAge),
+        themeColor: this.groupThemeColor,
+      })
+      .subscribe({
+        next: (res) => {
+          if (!res.ok || !res.group) {
+            alert(res.message || 'Failed to save group settings.');
+            return;
+          }
+          this.applyGroup(res.group);
+          if (res.group.groupName !== previousName) {
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: { groupName: res.group.groupName },
+              queryParamsHandling: 'merge',
+            });
+          }
+          alert(res.message || 'Group settings saved');
+        },
+        error: (err) => alert(err.error?.message || 'Failed to save group settings.'),
+      });
   }
 
   private buildAllowedMembers(group: { admins?: string[]; members?: string[] }) {
@@ -87,7 +145,7 @@ export class GroupSettings implements OnInit, OnDestroy {
 
   loadJoinRequests(): void {
     this.groupService
-      .getJoinRequests({ groupName: this.groupName, status: 'pending' })
+      .getJoinRequests({ groupName: this.originalGroupName || this.groupName, status: 'pending' })
       .subscribe({
         next: (requests) => {
           this.joinRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
@@ -98,7 +156,7 @@ export class GroupSettings implements OnInit, OnDestroy {
 
   loadRoomRequests(): void {
     this.groupService
-      .getRoomRequests({ groupName: this.groupName, status: 'pending' })
+      .getRoomRequests({ groupName: this.originalGroupName || this.groupName, status: 'pending' })
       .subscribe({
         next: (requests) => {
           this.roomRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
@@ -109,25 +167,25 @@ export class GroupSettings implements OnInit, OnDestroy {
 
   listenToSockets(): void {
     const joinCreatedSub = this.socketService.onJoinRequestCreated().subscribe((request) => {
-      if (request.groupName !== this.groupName) return;
+      if (request.groupName !== (this.originalGroupName || this.groupName)) return;
       if (this.joinRequests.some((item) => item._id === request._id)) return;
       this.joinRequests.unshift({ ...request, rejectReason: '' });
     });
 
     const joinResolvedSub = this.socketService.onJoinRequestResolved().subscribe(({ requestId, groupName }) => {
-      if (groupName !== this.groupName) return;
+      if (groupName !== (this.originalGroupName || this.groupName)) return;
       this.joinRequests = this.joinRequests.filter((req) => req._id !== requestId);
       this.loadGroup();
     });
 
     const roomCreatedSub = this.socketService.onRoomRequestCreated().subscribe((request) => {
-      if (request.groupName !== this.groupName) return;
+      if (request.groupName !== (this.originalGroupName || this.groupName)) return;
       if (this.roomRequests.some((item) => item._id === request._id)) return;
       this.roomRequests.unshift({ ...request, rejectReason: '' });
     });
 
     const roomResolvedSub = this.socketService.onRoomRequestResolved().subscribe(({ requestId, groupName }) => {
-      if (groupName !== this.groupName) return;
+      if (groupName !== (this.originalGroupName || this.groupName)) return;
       this.roomRequests = this.roomRequests.filter((req) => req._id !== requestId);
       this.loadGroup();
     });
@@ -220,7 +278,7 @@ export class GroupSettings implements OnInit, OnDestroy {
     const roomName = prompt('Enter New Room Name: ')?.trim();
     if (!roomName) return;
 
-    this.groupService.addRoomDirect(this.groupName, roomName).subscribe({
+    this.groupService.addRoomDirect(this.originalGroupName || this.groupName, roomName).subscribe({
       next: (res) => {
         if (res.ok) this.rooms = res.rooms;
         else alert(res.message || 'Failed to add room.');
@@ -234,7 +292,7 @@ export class GroupSettings implements OnInit, OnDestroy {
     const newName = prompt('Edit Room Name: ', oldName)?.trim();
     if (!newName || newName === oldName) return;
 
-    this.groupService.renameRoom(this.groupName, oldName, newName).subscribe({
+    this.groupService.renameRoom(this.originalGroupName || this.groupName, oldName, newName).subscribe({
       next: (res) => {
         if (res.ok) this.rooms = res.rooms;
         else alert(res.message || 'Failed to rename room.');
@@ -247,7 +305,7 @@ export class GroupSettings implements OnInit, OnDestroy {
     const roomName = this.rooms[index];
     if (!confirm(`Are you sure you want to delete #${roomName}?`)) return;
 
-    this.groupService.deleteRoom(this.groupName, roomName).subscribe({
+    this.groupService.deleteRoom(this.originalGroupName || this.groupName, roomName).subscribe({
       next: (res) => {
         if (res.ok) this.rooms = res.rooms;
         else alert(res.message || 'Failed to delete room.');
@@ -260,7 +318,7 @@ export class GroupSettings implements OnInit, OnDestroy {
     const member = this.allowedMembers[index];
     if (!member || member.role === 'group-admin') return;
 
-    this.groupService.promoteMember(this.groupName, member.username).subscribe({
+    this.groupService.promoteMember(this.originalGroupName || this.groupName, member.username).subscribe({
       next: (res) => {
         if (res.ok) {
           this.allowedMembers[index].role = 'group-admin';
@@ -277,7 +335,7 @@ export class GroupSettings implements OnInit, OnDestroy {
     if (!user) return;
     if (!confirm(`Remove ${user.username} from this group?`)) return;
 
-    this.groupService.removeMember(this.groupName, user.username).subscribe({
+    this.groupService.removeMember(this.originalGroupName || this.groupName, user.username).subscribe({
       next: (res) => {
         if (res.ok) {
           this.allowedMembers.splice(index, 1);

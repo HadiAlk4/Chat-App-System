@@ -36,11 +36,26 @@
 
             <div class="content" id="content1">
                 <div class="paper container container-sm">
-                    <p> Group Name: {{ groupName }} </p>
-                    <p> Group Description: <br> {{ groupDescription }} </p>
-                    <p> Minimum Age: {{ groupMinAge }}</p>
-                    <p> Group Theme Color: {{ groupThemeColor }} </p>
-                    <button class="btn-block" style="margin-top: 2rem;"> Save Changes </button>
+                    <div class="form-group">
+                        <label for="grpSettingsName">Group Name</label>
+                        <input class="input-block" type="text" id="grpSettingsName" [(ngModel)]="groupName">
+                    </div>
+                    <div class="form-group">
+                        <label for="grpSettingsDesc">Group Description</label>
+                        <textarea id="grpSettingsDesc" class="input-block" [(ngModel)]="groupDescription" maxlength="250"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="grpSettingsAge">Minimum Age</label>
+                        <input class="input-block" type="number" id="grpSettingsAge" [(ngModel)]="groupMinAge">
+                    </div>
+                    <div class="form-group">
+                        <label for="grpSettingsTheme">Group Theme Color</label>
+                        <select id="grpSettingsTheme" class="input-block" [(ngModel)]="groupThemeColor">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                    <button (click)="saveChanges()" class="btn-block" style="margin-top: 2rem;"> Save Changes </button>
                 </div>
             </div>
 
