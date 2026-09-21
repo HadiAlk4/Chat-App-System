@@ -5,6 +5,8 @@ import { GroupRequest } from '../models/group-request';
 import { Observable } from 'rxjs';
 import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
+import { GroupBanRequest } from '../models/group-ban-request';
+import { GroupDeletionRequest } from '../models/group-deletion-request';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -33,6 +35,16 @@ export class GroupService // why not group
 
     getGroupByName(groupName: string): Observable<{ ok: boolean; group: Group }> {
         return this.http.get<{ ok: boolean; group: Group }>(`${API_URL}/groups/${encodeURIComponent(groupName)}`);
+    }
+
+    updateGroup(
+        currentGroupName: string,
+        payload: { groupName: string; groupDescription: string; minAge: number; themeColor: 'light' | 'dark' }
+    ): Observable<{ ok: boolean; message: string; group: Group }> {
+        return this.http.patch<{ ok: boolean; message: string; group: Group }>(
+            `${API_URL}/groups/${encodeURIComponent(currentGroupName)}`,
+            payload
+        );
     }
 
     addRoomDirect(groupName: string, roomName: string): Observable<{ ok: boolean; message: string; rooms: string[] }> {
@@ -65,6 +77,25 @@ export class GroupService // why not group
     removeMember(groupName: string, username: string): Observable<{ ok: boolean; message: string }> {
         return this.http.post<{ ok: boolean; message: string }>(
             `${API_URL}/groups/${encodeURIComponent(groupName)}/members/${encodeURIComponent(username)}/remove`,
+            {}
+        );
+    }
+
+    banMember(groupName: string, username: string): Observable<{
+        ok: boolean;
+        message: string;
+        members?: string[];
+        admins?: string[];
+        bannedMembers?: string[];
+    }> {
+        return this.http.post<{
+            ok: boolean;
+            message: string;
+            members?: string[];
+            admins?: string[];
+            bannedMembers?: string[];
+        }>(
+            `${API_URL}/groups/${encodeURIComponent(groupName)}/members/${encodeURIComponent(username)}/ban`,
             {}
         );
     }
@@ -136,5 +167,98 @@ export class GroupService // why not group
     rejectRoomRequest(requestId: string, reason: string): Observable<{ok: boolean, message: string}> {
         return this.http.patch<{ok: boolean, message: string}>
         (`${API_URL}/room-requests/${requestId}/reject`, {reason});
+    }
+
+    submitGroupBanRequest(
+        groupName: string,
+        targetUsername: string,
+        requestedBy: string
+    ): Observable<{ ok: boolean; message: string; request?: GroupBanRequest }> {
+        return this.http.post<{ ok: boolean; message: string; request?: GroupBanRequest }>(
+            `${API_URL}/group-ban-requests`,
+            { groupName, targetUsername, requestedBy }
+        );
+    }
+
+    getGroupBanRequests(params: {
+        groupName?: string;
+        status?: string;
+        destination?: string;
+        requestedBy?: string;
+    }): Observable<GroupBanRequest[]> {
+        return this.http.get<GroupBanRequest[]>(`${API_URL}/group-ban-requests`, { params });
+    }
+
+    approveGroupBanRequest(requestId: string): Observable<{ ok: boolean; message: string }> {
+        return this.http.patch<{ ok: boolean; message: string }>(
+            `${API_URL}/group-ban-requests/${requestId}/approve`,
+            {}
+        );
+    }
+
+    rejectGroupBanRequest(requestId: string, reason: string): Observable<{ ok: boolean; message: string }> {
+        return this.http.patch<{ ok: boolean; message: string }>(
+            `${API_URL}/group-ban-requests/${requestId}/reject`,
+            { reason }
+        );
+    }
+
+    stepDownAsAdmin(groupName: string, username: string): Observable<{
+        ok: boolean;
+        message: string;
+        role?: string;
+        admins?: string[];
+        members?: string[];
+    }> {
+        return this.http.post<{
+            ok: boolean;
+            message: string;
+            role?: string;
+            admins?: string[];
+            members?: string[];
+        }>(
+            `${API_URL}/groups/${encodeURIComponent(groupName)}/admins/${encodeURIComponent(username)}/step-down`,
+            {}
+        );
+    }
+
+    submitGroupDeletionRequest(
+        groupName: string,
+        requestedBy: string,
+        reason: string
+    ): Observable<{ ok: boolean; message: string; request?: GroupDeletionRequest }> {
+        return this.http.post<{ ok: boolean; message: string; request?: GroupDeletionRequest }>(
+            `${API_URL}/group-deletion-requests`,
+            { groupName, requestedBy, reason }
+        );
+    }
+
+    getGroupDeletionRequests(params: {
+        groupName?: string;
+        requestedBy?: string;
+        status?: string;
+    } = {}): Observable<GroupDeletionRequest[]> {
+        return this.http.get<GroupDeletionRequest[]>(`${API_URL}/group-deletion-requests`, { params });
+    }
+
+    approveGroupDeletionRequest(
+        requestId: string,
+        performedBy?: string
+    ): Observable<{ ok: boolean; message: string }> {
+        return this.http.patch<{ ok: boolean; message: string }>(
+            `${API_URL}/group-deletion-requests/${requestId}/approve`,
+            { performedBy }
+        );
+    }
+
+    rejectGroupDeletionRequest(
+        requestId: string,
+        reason: string,
+        performedBy?: string
+    ): Observable<{ ok: boolean; message: string }> {
+        return this.http.patch<{ ok: boolean; message: string }>(
+            `${API_URL}/group-deletion-requests/${requestId}/reject`,
+            { reason, performedBy }
+        );
     }
 }

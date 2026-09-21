@@ -7,6 +7,8 @@ import { AccountService } from '../services/account';
 import { SocketService } from '../services/socket';
 import { GroupRequest } from '../models/group-request';
 import { AccountDeletionRequest } from '../models/account-deletion-request';
+import { GroupBanRequest } from '../models/group-ban-request';
+import { GroupDeletionRequest } from '../models/group-deletion-request';
 import { BannedEmail } from '../models/banned-email';
 
 @Component({
@@ -37,9 +39,13 @@ export class SuperAdminDashboard
     }
     this.loadGroupRequests();
     this.loadAccountDeletionRequests();
+    this.loadGroupBanRequests();
+    this.loadGroupDeletionRequests();
     this.loadBannedEmails();
     this.listenForGroupRequestEvents();
     this.listenForAccountDeletionEvents();
+    this.listenForGroupBanRequestEvents();
+    this.listenForGroupDeletionEvents();
   }
 
   onLogout(): void
@@ -82,37 +88,9 @@ export class SuperAdminDashboard
       });
   }
 
-  groupDeletionRequests = 
-  [
-    {
-    groupDeletionRequestName: 'sm ts idk name gg',
-    groupDeletionRequestByUser: ' sm user',
-    groupDeletionRequestByUserRole: 'sm role'
+  groupDeletionRequests = signal<GroupDeletionRequest[]>([]);
 
-    },
-    {
-    groupDeletionRequestName: 'sm ts idk name hhh',
-    groupDeletionRequestByUser: ' sm user',
-    groupDeletionRequestByUserRole: 'sm role'
-
-    },
-    {
-    groupDeletionRequestName: 'sm ts idk nameeeee',
-    groupDeletionRequestByUser: ' sm user',
-    groupDeletionRequestByUserRole: 'sm role'
-    },
-  ]
-
-  userBanRequest = 
-  [
-    {
-      userBanRequestUsername: 'sm banned name',
-      userBanRequestEmail: 'ban@ban.ban',
-      userBanRequestRole: 'sm banned role',
-      userBanRequestByUser: 'sm  name',
-      userBanRequestByUserRole: 'sm  role',
-    },
-  ]
+  userBanRequests = signal<GroupBanRequest[]>([]);
 
   accountDeletionRequests = signal<AccountDeletionRequest[]>([]);
   bannedEmails = signal<BannedEmail[]>([]);
@@ -123,6 +101,70 @@ export class SuperAdminDashboard
       next: requests => this.accountDeletionRequests.set(requests),
       error: error => console.error('Failed to load account deletion requests:', error),
     });
+  }
+
+  loadGroupBanRequests(): void
+  {
+    this.groupService.getGroupBanRequests({ status: 'pending', destination: 'super-admin' }).subscribe({
+      next: requests => this.userBanRequests.set(requests),
+      error: error => console.error('Failed to load group ban requests:', error),
+    });
+  }
+
+  listenForGroupBanRequestEvents(): void
+  {
+    this.socketService.onGroupBanRequestCreated()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(request => {
+        if (request.destination !== 'super-admin') {
+          return;
+        }
+        this.userBanRequests.update(requests =>
+          requests.some(item => item._id === request._id)
+            ? requests
+            : [request, ...requests]
+        );
+      });
+
+    this.socketService.onGroupBanRequestResolved()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ requestId, destination }) => {
+        if (destination && destination !== 'super-admin') {
+          return;
+        }
+        this.userBanRequests.update(requests =>
+          requests.filter(request => request._id !== requestId)
+        );
+      });
+  }
+
+  loadGroupDeletionRequests(): void
+  {
+    this.groupService.getGroupDeletionRequests({ status: 'pending' }).subscribe({
+      next: requests => this.groupDeletionRequests.set(requests),
+      error: error => console.error('Failed to load group deletion requests:', error),
+    });
+  }
+
+  listenForGroupDeletionEvents(): void
+  {
+    this.socketService.onGroupDeletionRequestCreated()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(request => {
+        this.groupDeletionRequests.update(requests =>
+          requests.some(item => item._id === request._id)
+            ? requests
+            : [request, ...requests]
+        );
+      });
+
+    this.socketService.onGroupDeletionRequestResolved()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(({ requestId }) => {
+        this.groupDeletionRequests.update(requests =>
+          requests.filter(request => request._id !== requestId)
+        );
+      });
   }
 
   loadBannedEmails(): void
@@ -199,9 +241,47 @@ export class SuperAdminDashboard
     });
   }
 
-  acceptGroupDeletionRequest(index: number): void
+  acceptGroupDeletionRequest(request: GroupDeletionRequest): void
   {
-    this.groupDeletionRequests.splice(index, 1);
+    if (!request._id) {
+      return;
+    }
+
+    this.groupService.approveGroupDeletionRequest(request._id, this.userName).subscribe({
+      next: response => {
+        alert(response.message);
+        if (response.ok) {
+          this.loadGroupDeletionRequests();
+        }
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Failed to approve group deletion request.');
+      }
+    });
+  }
+
+  rejectGroupDeletionRequest(request: GroupDeletionRequest): void
+  {
+    if (!request._id) {
+      return;
+    }
+
+    const reason = prompt('Enter a rejection reason:')?.trim();
+    if (!reason) {
+      return;
+    }
+
+    this.groupService.rejectGroupDeletionRequest(request._id, reason, this.userName).subscribe({
+      next: response => {
+        alert(response.message);
+        if (response.ok) {
+          this.loadGroupDeletionRequests();
+        }
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Failed to reject group deletion request.');
+      }
+    });
   }
 
   acceptAccountDeletionRequest(request: AccountDeletionRequest): void
@@ -248,8 +328,46 @@ export class SuperAdminDashboard
     });
   }
 
-  acceptUserBanRequest(index: number): void
+  acceptUserBanRequest(request: GroupBanRequest): void
   {
-    this.userBanRequest.splice(index, 1);
+    if (!request._id) {
+      return;
+    }
+
+    this.groupService.approveGroupBanRequest(request._id).subscribe({
+      next: response => {
+        alert(response.message);
+        if (response.ok) {
+          this.loadGroupBanRequests();
+        }
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Failed to approve ban request.');
+      }
+    });
+  }
+
+  rejectUserBanRequest(request: GroupBanRequest): void
+  {
+    if (!request._id) {
+      return;
+    }
+
+    const reason = prompt('Enter a rejection reason:')?.trim();
+    if (!reason) {
+      return;
+    }
+
+    this.groupService.rejectGroupBanRequest(request._id, reason).subscribe({
+      next: response => {
+        alert(response.message);
+        if (response.ok) {
+          this.loadGroupBanRequests();
+        }
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'Failed to reject ban request.');
+      }
+    });
   }
 }

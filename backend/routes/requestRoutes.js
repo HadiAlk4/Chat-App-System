@@ -24,6 +24,10 @@ export function requestRoutes(app, io) {
         return res.send({ ok: false, valid: false, message: "User is already a member of this group" });
       }
 
+      if (group.bannedMembers?.includes(username)) {
+        return res.send({ ok: false, valid: false, message: "User is permanently banned from this group" });
+      }
+
       const duplicateRequest = await db.collection("joinRequests").findOne({ groupName, username, status: "pending" });
       if (duplicateRequest) {
         return res.send({ ok: false, valid: false, message: "Join request already exists" });

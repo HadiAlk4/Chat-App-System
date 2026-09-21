@@ -16,6 +16,8 @@ import { roomRequestRoutes } from "./routes/roomRequestRoutes.js";
 import { chatRoutes } from "./routes/chatRoutes.js";
 import { uploadRoutes } from "./routes/uploadRoutes.js";
 import { accountDeletionRoutes } from "./routes/accountDeletionRoutes.js";
+import { groupBanRequestRoutes } from "./routes/groupBanRequestRoutes.js";
+import { groupDeletionRoutes } from "./routes/groupDeletionRoutes.js";
 import { auditRoutes } from "./routes/auditRoutes.js";
 import { initChatSockets } from "./sockets.js";
 
@@ -61,6 +63,8 @@ async function mongo() {
     chatRoutes(APP);
     uploadRoutes(APP);
     accountDeletionRoutes(APP, io);
+    groupBanRequestRoutes(APP, io);
+    groupDeletionRoutes(APP, io);
     auditRoutes(APP);
   } catch (err) {
     console.error("Database connection error:", err);

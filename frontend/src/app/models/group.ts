@@ -8,4 +8,5 @@ export interface Group
     admins?: string[];
     members?: string[];
     rooms?: string[];
+    bannedMembers?: string[];
 }
