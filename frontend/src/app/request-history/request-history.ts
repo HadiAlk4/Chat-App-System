@@ -9,6 +9,7 @@ import { SocketService } from '../services/socket';
 import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
 import { Group } from '../models/group';
+import { GroupBanRequest } from '../models/group-ban-request';
 
 @Component({
   selector: 'app-request-history',
@@ -29,6 +30,11 @@ export class RequestHistory implements OnInit, OnDestroy {
   userJoinedGroups: Group[] = [];
   selectedGroupForRoom: string = '';
   newRoomNameInput: string = '';
+
+  pendingBanRequests: GroupBanRequest[] = [];
+  rejectedBanRequests: GroupBanRequest[] = [];
+  selectedGroupForBan: string = '';
+  banTargetUsername: string = '';
 
   private subs = new Subscription();
 
@@ -66,6 +72,14 @@ export class RequestHistory implements OnInit, OnDestroy {
       },
       error: (err) => console.error('Failed to load room requests:', err),
     });
+
+    this.groupService.getGroupBanRequests({ requestedBy: this.userName }).subscribe({
+      next: (requests) => {
+        this.pendingBanRequests = requests.filter((r) => r.status === 'pending');
+        this.rejectedBanRequests = requests.filter((r) => r.status === 'rejected');
+      },
+      error: (err) => console.error('Failed to load ban requests:', err),
+    });
   }
 
   loadUserGroups(): void {
@@ -77,6 +91,27 @@ export class RequestHistory implements OnInit, OnDestroy {
       },
       error: (err) => console.error('Failed to load user groups:', err),
     });
+  }
+
+  submitBanRequest(): void {
+    const targetUsername = this.banTargetUsername.trim();
+    if (!this.selectedGroupForBan || !targetUsername) {
+      alert('Please select a group and enter a username to ban.');
+      return;
+    }
+
+    this.groupService
+      .submitGroupBanRequest(this.selectedGroupForBan, targetUsername, this.userName)
+      .subscribe({
+        next: (res) => {
+          alert(res.message);
+          if (res.ok) {
+            this.banTargetUsername = '';
+            this.loadHistory();
+          }
+        },
+        error: (err) => alert(err.error?.message || 'Failed to submit ban request.'),
+      });
   }
 
   submitRoomProposal(): void {
@@ -109,8 +144,18 @@ export class RequestHistory implements OnInit, OnDestroy {
       this.loadHistory();
     });
 
+    const banCreated = this.socketService.onGroupBanRequestCreated().subscribe(() => {
+      this.loadHistory();
+    });
+
+    const banResolved = this.socketService.onGroupBanRequestResolved().subscribe(() => {
+      this.loadHistory();
+    });
+
     this.subs.add(resolvedJoin);
     this.subs.add(resolvedRoom);
+    this.subs.add(banCreated);
+    this.subs.add(banResolved);
   }
 
   onLogout(): void {

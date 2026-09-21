@@ -218,19 +218,56 @@
                                         </button>
                                         }
 
-                                        @if (member.username !== username) {
                                         <button (click)="banMember(i)" class="btn-danger-outline btn-small"
                                             style="border-style: dashed;">
                                             Ban from Group
                                         </button>
-                                        }
                                     </div>
                                 </td>
                             </tr>
                             }
                         </tbody>
                     </table>
-                    <small class="text-muted"> Ban Requests Wil Be Sent to SA </small>
+                    <small class="text-muted"> Bans of Group Admins are sent to the Super Admin. </small>
+                    <hr style="border-top: 1px dashed #ccc; margin: 1.5rem 0;">
+
+                    <h3>Ban Requests</h3>
+                    <table class="table-hover" style="width: 100%; margin-bottom: 2rem;">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">User</th>
+                                <th style="width: 25%;">Requested By</th>
+                                <th style="width: 50%; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (req of banRequests; track req._id ?? req.targetUsername; let i = $index) {
+                            <tr>
+                                <td style="vertical-align: middle;">{{ req.targetUsername }}</td>
+                                <td style="vertical-align: middle; color: #555;">{{ req.requestedBy }}</td>
+                                <td style="text-align: right; vertical-align: middle;">
+                                    <div style="display: inline-flex; gap: 0.4rem; align-items: center;">
+                                        <button (click)="approveBanRequest(i)" class="btn-success-outline btn-small">
+                                            Approve
+                                        </button>
+                                        <input type="text" [(ngModel)]="req.rejectReason" placeholder="Reason..."
+                                            style="width: 110px; padding: 0.2rem 0.4rem; font-size: 0.85rem; border: 1px dashed #41403e;">
+                                        <button (click)="rejectBanRequest(i)" class="btn-danger-outline btn-small"
+                                            style="border-style: dashed;">
+                                            Reject
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            } @empty {
+                            <tr>
+                                <td colspan="3" style="text-align: center; color: #777; font-style: italic;">
+                                    No pending ban requests.
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
                     <hr style="border-top: 1px dashed #ccc; margin: 1.5rem 0;">
 
                     <h3>Banned Members</h3>

@@ -5,6 +5,7 @@ import { GroupRequest } from '../models/group-request';
 import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
 import { AccountDeletionRequest } from '../models/account-deletion-request';
+import { GroupBanRequest } from '../models/group-ban-request';
 
 const SOCKET_URL = 'http://localhost:3000';
 
@@ -31,6 +32,13 @@ interface AccountDeletionRequestResolved {
   status: 'approved' | 'rejected';
   username?: string;
   email?: string;
+}
+
+interface GroupBanRequestResolved {
+  requestId: string;
+  status: 'approved' | 'rejected';
+  groupName: string;
+  destination: 'group-admin' | 'super-admin';
 }
 
 @Injectable({
@@ -70,6 +78,14 @@ export class SocketService {
 
   onAccountDeletionRequestResolved(): Observable<AccountDeletionRequestResolved> {
     return this.listen<AccountDeletionRequestResolved>('account-deletion-request-resolved');
+  }
+
+  onGroupBanRequestCreated(): Observable<GroupBanRequest> {
+    return this.listen<GroupBanRequest>('group-ban-request-created');
+  }
+
+  onGroupBanRequestResolved(): Observable<GroupBanRequestResolved> {
+    return this.listen<GroupBanRequestResolved>('group-ban-request-resolved');
   }
 
   private listen<T>(eventName: string): Observable<T> {

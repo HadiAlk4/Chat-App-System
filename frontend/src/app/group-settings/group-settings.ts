@@ -8,6 +8,8 @@ import { GroupService } from '../services/group';
 import { SocketService } from '../services/socket';
 import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
+import { GroupBanRequest } from '../models/group-ban-request';
+import { GroupBanRequest } from '../models/group-ban-request';
 
 @Component({
   selector: 'app-group-settings',
@@ -26,6 +28,8 @@ export class GroupSettings implements OnInit, OnDestroy {
 
   joinRequests: (JoinRequest & { rejectReason?: string; requestedOn?: string })[] = [];
   roomRequests: RoomRequest[] = [];
+  banRequests: (GroupBanRequest & { rejectReason?: string })[] = [];
+  banRequests: (GroupBanRequest & { rejectReason?: string })[] = [];
 
   private subscriptions = new Subscription();
 
@@ -54,6 +58,8 @@ export class GroupSettings implements OnInit, OnDestroy {
       this.loadGroup();
       this.loadJoinRequests();
       this.loadRoomRequests();
+      this.loadBanRequests();
+      this.loadBanRequests();
     });
     this.subscriptions.add(routeSub);
 
@@ -165,6 +171,21 @@ export class GroupSettings implements OnInit, OnDestroy {
       });
   }
 
+  loadBanRequests(): void {
+    this.groupService
+      .getGroupBanRequests({
+        groupName: this.originalGroupName || this.groupName,
+        status: 'pending',
+        destination: 'group-admin',
+      })
+      .subscribe({
+        next: (requests) => {
+          this.banRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
+        },
+        error: (err) => console.error('Failed to load ban requests:', err),
+      });
+  }
+
   listenToSockets(): void {
     const joinCreatedSub = this.socketService.onJoinRequestCreated().subscribe((request) => {
       if (request.groupName !== (this.originalGroupName || this.groupName)) return;
@@ -190,10 +211,25 @@ export class GroupSettings implements OnInit, OnDestroy {
       this.loadGroup();
     });
 
+    const banCreatedSub = this.socketService.onGroupBanRequestCreated().subscribe((request) => {
+      if (request.groupName !== (this.originalGroupName || this.groupName)) return;
+      if (request.destination !== 'group-admin') return;
+      if (this.banRequests.some((item) => item._id === request._id)) return;
+      this.banRequests.unshift({ ...request, rejectReason: '' });
+    });
+
+    const banResolvedSub = this.socketService.onGroupBanRequestResolved().subscribe(({ requestId, groupName }) => {
+      if (groupName !== (this.originalGroupName || this.groupName)) return;
+      this.banRequests = this.banRequests.filter((req) => req._id !== requestId);
+      this.loadGroup();
+    });
+
     this.subscriptions.add(joinCreatedSub);
     this.subscriptions.add(joinResolvedSub);
     this.subscriptions.add(roomCreatedSub);
     this.subscriptions.add(roomResolvedSub);
+    this.subscriptions.add(banCreatedSub);
+    this.subscriptions.add(banResolvedSub);
   }
 
   approveRequest(index: number): void {
@@ -259,6 +295,39 @@ export class GroupSettings implements OnInit, OnDestroy {
         if (res.ok) this.loadRoomRequests();
       },
       error: () => alert('Failed to reject room proposal.'),
+    });
+  }
+
+  approveBanRequest(index: number): void {
+    const request = this.banRequests[index];
+    if (!request?._id) return;
+
+    this.groupService.approveGroupBanRequest(request._id).subscribe({
+      next: (res) => {
+        alert(res.message || 'Ban request approved');
+        if (res.ok) {
+          this.loadBanRequests();
+          this.loadGroup();
+        }
+      },
+      error: (err) => alert(err.error?.message || 'Failed to approve ban request.'),
+    });
+  }
+
+  rejectBanRequest(index: number): void {
+    const request = this.banRequests[index];
+    const reason = request?.rejectReason?.trim();
+    if (!request?._id || !reason) {
+      alert('A rejection reason is required');
+      return;
+    }
+
+    this.groupService.rejectGroupBanRequest(request._id, reason).subscribe({
+      next: (res) => {
+        alert(res.message || 'Ban request rejected');
+        if (res.ok) this.loadBanRequests();
+      },
+      error: (err) => alert(err.error?.message || 'Failed to reject ban request.'),
     });
   }
 
@@ -333,10 +402,25 @@ export class GroupSettings implements OnInit, OnDestroy {
   banMember(index: number): void {
     const user = this.allowedMembers[index];
     if (!user) return;
-    if (user.username === this.username) return;
-    if (!confirm(`Permanently ban ${user.username} from this group?`)) return;
 
-    this.groupService.banMember(this.originalGroupName || this.groupName, user.username).subscribe({
+    const groupKey = this.originalGroupName || this.groupName;
+    const escalateToSuperAdmin = user.role === 'group-admin';
+    const confirmText = escalateToSuperAdmin
+      ? `Send a Super Admin request to ban ${user.username} from this group?`
+      : `Permanently ban ${user.username} from this group?`;
+    if (!confirm(confirmText)) return;
+
+    if (escalateToSuperAdmin) {
+      this.groupService.submitGroupBanRequest(groupKey, user.username, this.username).subscribe({
+        next: (res) => {
+          alert(res.message || 'Ban request submitted to Super Admin.');
+        },
+        error: (err) => alert(err.error?.message || 'Failed to submit ban request.'),
+      });
+      return;
+    }
+
+    this.groupService.banMember(groupKey, user.username).subscribe({
       next: (res) => {
         if (res.ok) {
           this.allowedMembers = this.buildAllowedMembers({

@@ -33,6 +33,9 @@
       <input id="tab3" type="radio" name="tabs">
       <label for="tab3">Propose Room</label>
 
+      <input id="tab4" type="radio" name="tabs">
+      <label for="tab4">Request Ban</label>
+
       <!-- TAB 1: PENDING -->
       <div class="content" id="content1">
         <div class="paper container container-sm">
@@ -78,6 +81,30 @@
                 </tr>
               } @empty {
                 <tr><td colspan="4" style="text-align: center;">No pending room proposals.</td></tr>
+              }
+            </tbody>
+          </table>
+
+          <h4 style="margin-top: 2rem;">Pending Ban Requests</h4>
+          <table class="table-hover">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Group Name</th>
+                <th>User</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of pendingBanRequests; track req._id ?? req.targetUsername) {
+                <tr>
+                  <td>{{ req.createdAt | date:'dd/MM/yy' }}</td>
+                  <td>{{ req.groupName }}</td>
+                  <td>{{ req.targetUsername }}</td>
+                  <td><span class="badge secondary">Pending</span></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" style="text-align: center;">No pending ban requests.</td></tr>
               }
             </tbody>
           </table>
@@ -132,6 +159,30 @@
               }
             </tbody>
           </table>
+
+          <h4 style="margin-top: 2rem;">Rejected Ban Requests</h4>
+          <table class="table-alternating">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Group Name</th>
+                <th>User</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of rejectedBanRequests; track req._id ?? req.targetUsername) {
+                <tr>
+                  <td>{{ req.reviewedAt | date:'dd/MM/yy' }}</td>
+                  <td>{{ req.groupName }}</td>
+                  <td>{{ req.targetUsername }}</td>
+                  <td>{{ req.rejectionReason }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" style="text-align: center;">No rejected ban requests.</td></tr>
+              }
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -175,6 +226,76 @@
                 </tr>
               } @empty {
                 <tr><td colspan="4" style="text-align: center;">No pending room proposals.</td></tr>
+              }
+            </tbody>
+          </table>
+
+          <h4 style="margin-top: 2rem;">Pending Ban Requests</h4>
+          <table class="table-hover">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Group Name</th>
+                <th>User</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of pendingBanRequests; track req._id ?? req.targetUsername) {
+                <tr>
+                  <td>{{ req.createdAt | date:'dd/MM/yy' }}</td>
+                  <td>{{ req.groupName }}</td>
+                  <td>{{ req.targetUsername }}</td>
+                  <td><span class="badge secondary">Pending</span></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" style="text-align: center;">No pending ban requests.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: REQUEST BAN -->
+      <div class="content" id="content4">
+        <div class="paper container container-sm">
+          <div class="form-group">
+            <label>Select Group You Belong To</label>
+            <select [(ngModel)]="selectedGroupForBan" class="input-block">
+              <option value="" disabled selected>Choose Group</option>
+              @for (grp of userJoinedGroups; track grp.groupName) {
+                <option [value]="grp.groupName">{{ grp.groupName }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="form-group col-9">
+              <input [(ngModel)]="banTargetUsername" placeholder="Username to ban" class="input-block">
+            </div>
+            <button (click)="submitBanRequest()" class="btn-danger col-3">Submit Ban Request</button>
+          </div>
+
+          <h4 style="margin-top: 2rem;">Your Ban Requests</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Target Group</th>
+                <th>User</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of pendingBanRequests; track req._id ?? req.targetUsername) {
+                <tr>
+                  <td>{{ req.createdAt | date:'dd/MM/yy' }}</td>
+                  <td>{{ req.groupName }}</td>
+                  <td>{{ req.targetUsername }}</td>
+                  <td><span class="badge secondary">Pending</span></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" style="text-align: center;">No pending ban requests.</td></tr>
               }
             </tbody>
           </table>

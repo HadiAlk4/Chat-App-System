@@ -152,6 +152,7 @@
   <thead>
     <tr>
       <th>#</th>
+      <th>Group Title</th>
       <th>UserName</th>
       <th>Email</th>
       <th>User Role</th>
@@ -161,21 +162,26 @@
     </tr>
     </thead>
   <tbody>
-    @for(req of userBanRequest; track req.userBanRequestUsername)
+    @for(req of userBanRequests(); track req._id ?? req.targetUsername)
     {
     <tr>      
         <td> {{ $index + 1}} </td>
-        <td> {{ req.userBanRequestUsername }} </td>
-        <td> {{ req.userBanRequestEmail }} </td>
-        <td> {{ req.userBanRequestRole }}</td>
-        <td> {{ req.userBanRequestByUser }} </td>
-        <td> {{ req.userBanRequestByUserRole }}</td>
+        <td> {{ req.groupName }} </td>
+        <td> {{ req.targetUsername }} </td>
+        <td> {{ req.targetEmail }} </td>
+        <td> {{ req.targetRole }}</td>
+        <td> {{ req.requestedBy }} </td>
+        <td> {{ req.requestedByRole }}</td>
         <td> 
             <div> 
-            <button (click)="acceptUserBanRequest($index)" class="btn-success-outline btn-small">Accept</button>
-            <button class="btn-danger-outline btn-small">Reject</button>
+            <button (click)="acceptUserBanRequest(req)" class="btn-success-outline btn-small">Accept</button>
+            <button (click)="rejectUserBanRequest(req)" class="btn-danger-outline btn-small">Reject</button>
             </div>
         </td>
+    </tr>
+    } @empty {
+    <tr>
+        <td colspan="8">No pending user ban requests.</td>
     </tr>
     }
   </tbody>

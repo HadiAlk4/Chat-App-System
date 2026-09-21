@@ -5,6 +5,7 @@ import { GroupRequest } from '../models/group-request';
 import { Observable } from 'rxjs';
 import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
+import { GroupBanRequest } from '../models/group-ban-request';
 
 const API_URL = 'http://localhost:3000/api';
 
@@ -165,5 +166,39 @@ export class GroupService // why not group
     rejectRoomRequest(requestId: string, reason: string): Observable<{ok: boolean, message: string}> {
         return this.http.patch<{ok: boolean, message: string}>
         (`${API_URL}/room-requests/${requestId}/reject`, {reason});
+    }
+
+    submitGroupBanRequest(
+        groupName: string,
+        targetUsername: string,
+        requestedBy: string
+    ): Observable<{ ok: boolean; message: string; request?: GroupBanRequest }> {
+        return this.http.post<{ ok: boolean; message: string; request?: GroupBanRequest }>(
+            `${API_URL}/group-ban-requests`,
+            { groupName, targetUsername, requestedBy }
+        );
+    }
+
+    getGroupBanRequests(params: {
+        groupName?: string;
+        status?: string;
+        destination?: string;
+        requestedBy?: string;
+    }): Observable<GroupBanRequest[]> {
+        return this.http.get<GroupBanRequest[]>(`${API_URL}/group-ban-requests`, { params });
+    }
+
+    approveGroupBanRequest(requestId: string): Observable<{ ok: boolean; message: string }> {
+        return this.http.patch<{ ok: boolean; message: string }>(
+            `${API_URL}/group-ban-requests/${requestId}/approve`,
+            {}
+        );
+    }
+
+    rejectGroupBanRequest(requestId: string, reason: string): Observable<{ ok: boolean; message: string }> {
+        return this.http.patch<{ ok: boolean; message: string }>(
+            `${API_URL}/group-ban-requests/${requestId}/reject`,
+            { reason }
+        );
     }
 }
