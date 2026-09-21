@@ -333,24 +333,23 @@ export class GroupSettings implements OnInit, OnDestroy {
   banMember(index: number): void {
     const user = this.allowedMembers[index];
     if (!user) return;
-    if (!confirm(`Remove ${user.username} from this group?`)) return;
+    if (user.username === this.username) return;
+    if (!confirm(`Permanently ban ${user.username} from this group?`)) return;
 
-    this.groupService.removeMember(this.originalGroupName || this.groupName, user.username).subscribe({
+    this.groupService.banMember(this.originalGroupName || this.groupName, user.username).subscribe({
       next: (res) => {
         if (res.ok) {
-          this.allowedMembers.splice(index, 1);
+          this.allowedMembers = this.buildAllowedMembers({
+            members: res.members,
+            admins: res.admins,
+          });
+          this.bannedMembers = (res.bannedMembers ?? []).map((username) => ({ username }));
         } else {
-          alert(res.message || 'Failed to remove member.');
+          alert(res.message || 'Failed to ban member.');
         }
       },
-      error: (err) => alert(err.error?.message || 'Failed to remove member.'),
+      error: (err) => alert(err.error?.message || 'Failed to ban member.'),
     });
-  }
-
-  unBanMember(index: number): void {
-    const user = this.bannedMembers[index];
-    this.allowedMembers.push({ username: user.username, role: 'user' });
-    this.bannedMembers.splice(index, 1);
   }
 
   stepDownAsGA(): void {

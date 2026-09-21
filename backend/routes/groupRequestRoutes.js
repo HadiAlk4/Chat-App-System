@@ -79,6 +79,7 @@ export function groupRequestRoutes(app, io) {
         admins: [request.creatorUserName],
         members: [request.creatorUserName],
         rooms: ["Main Room"],
+        bannedMembers: [],
       });
 
       await groupRequestsCollection.updateOne(

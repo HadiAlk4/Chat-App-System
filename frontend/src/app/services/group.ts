@@ -79,6 +79,25 @@ export class GroupService // why not group
         );
     }
 
+    banMember(groupName: string, username: string): Observable<{
+        ok: boolean;
+        message: string;
+        members?: string[];
+        admins?: string[];
+        bannedMembers?: string[];
+    }> {
+        return this.http.post<{
+            ok: boolean;
+            message: string;
+            members?: string[];
+            admins?: string[];
+            bannedMembers?: string[];
+        }>(
+            `${API_URL}/groups/${encodeURIComponent(groupName)}/members/${encodeURIComponent(username)}/ban`,
+            {}
+        );
+    }
+
     submitProposal(
         group: Group,
         creatorUserName: string,

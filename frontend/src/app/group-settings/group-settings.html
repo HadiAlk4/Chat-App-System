@@ -218,10 +218,12 @@
                                         </button>
                                         }
 
+                                        @if (member.username !== username) {
                                         <button (click)="banMember(i)" class="btn-danger-outline btn-small"
                                             style="border-style: dashed;">
                                             Ban from Group
                                         </button>
+                                        }
                                     </div>
                                 </td>
                             </tr>
