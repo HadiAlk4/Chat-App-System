@@ -2,19 +2,29 @@ import { ObjectId } from "mongodb";
 import { db } from "../db.js";
 import { logAudit } from "../audit.js";
 
+async function groupNameTaken(name) {
+  const groupName = String(name || "").trim();
+  const existingGroup = await db.collection("groups").findOne({ groupName });
+  const pending = await db.collection("groupRequests").findOne({
+    groupName,
+    status: "pending",
+  });
+  return Boolean(existingGroup || pending);
+}
+
 export function groupRequestRoutes(app, io) {
   // group proposals
   app.post("/api/group-requests", async (req, res) => {
     try {
-      const { groupName, groupDescription, minAge, themeColor, creatorUserName, creatorEmail } = req.body;
+      const { groupDescription, minAge, themeColor, creatorUserName, creatorEmail } = req.body;
+      const groupName = String(req.body.groupName || "").trim();
       if (!groupName || !groupDescription || !minAge || !themeColor || !creatorUserName || !creatorEmail) {
         return res.send({ ok: false, valid: false, message: "All fields are required" });
       }
 
       const groupRequestsCollection = db.collection("groupRequests");
-      const exists = await groupRequestsCollection.findOne({ groupName });
-      if (exists) {
-        return res.send({ ok: false, valid: false, message: "Group request already exists" });
+      if (await groupNameTaken(groupName)) {
+        return res.send({ ok: false, valid: false, message: "Group name already taken" });
       }
 
       const newRequest = {
