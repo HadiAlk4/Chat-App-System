@@ -19,14 +19,14 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
 - [x] Connect the "Propose New Group" PaperCSS modal in `dashboard.html` to an API endpoint rather than purely toggling the UI.
 - [x] Ensure proposals route to the Super Admin's queue.
 - [x] Allow the Super Admin to accept the proposal, designate the initial Group Admin (GA), and create the group in the database.
-- [ ] Enforce unique group names on proposal and creation.
+- [x] Enforce unique group names on proposal and creation.
 - [ ] Super Admin cannot create groups directly without a user proposal.
 
 ### 3. Group Join Requests & Age Validation
 
 - [x] Bind a click event to the "Request to Join" button in `dashboard.html` to submit a join request to the group's GA.
 - [x] Add validation blocking any user from requesting to join if their birth year is below the group's `minAge`.
-- [ ] Implement logic in the GA settings where updating `minAge` automatically boots existing members who fall below the new age limit.
+- [x] Implement logic in the GA settings where updating `minAge` automatically boots existing members who fall below the new age limit.
 - [ ] Pending join requests cannot be cancelled by the requester.
 
 ### 4. Group Admin Management (Un-mocking `group-settings.ts`)
@@ -36,11 +36,11 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
   - [x] **Join Requests:** Persist approvals and rejections; require and save a rejection reason to be viewed in the user's `request-history`.
   - [x] **Room Requests:** Persist approvals and rejections; require and save a rejection reason to be viewed in the user's `request-history`.
   - [x] **Promotions:** Persist regular member promotions to Group Admin.
-  - [ ] **Group Bans:** Persist group-level bans and ensure they are permanent (remove the "un-ban" button, as the specification states there is no un-ban system). Member removal currently pulls the user from `members`/`admins` only; it does not store a permanent group ban list.
-  - [ ] **Banned-member visibility:** GA can see all allowed and banned members for their group.
-  - [ ] **User-requested bans:** Regular users can request the GA to ban a specific user. A GA cannot self-approve a ban against themselves; that request must go to the Super Admin.
-  - [ ] **Resignation & Deletion:** Enforce GA step-down rules (cannot step down if sole GA or if pending requests exist) and route group deletion requests to the Super Admin. After Super Admin deletes the group, that requesting GA is demoted to a regular user.
-  - [ ] **Group metadata:** Wire "Save Changes" on the General tab (unique name, description up to 250 characters, min age, theme).
+  - [x] **Group Bans:** Persist group-level bans and ensure they are permanent (remove the "un-ban" button, as the specification states there is no un-ban system). Member removal currently pulls the user from `members`/`admins` only; it does not store a permanent group ban list.
+  - [x] **Banned-member visibility:** GA can see all allowed and banned members for their group.
+  - [x] **User-requested bans:** Regular users can request the GA to ban a specific user. A GA cannot self-approve a ban against themselves; that request must go to the Super Admin.
+  - [x] **Resignation & Deletion:** Enforce GA step-down rules (cannot step down if sole GA or if pending requests exist) and route group deletion requests to the Super Admin. After Super Admin deletes the group, that requesting GA is demoted to a regular user.
+  - [x] **Group metadata:** Wire "Save Changes" on the General tab (unique name, description up to 250 characters, min age, theme).
 
 ### 5. Account Deletion & Banned Emails
 
@@ -94,9 +94,9 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 - [x] Wire the "Request to Join" button on `dashboard.html` to create a pending join request for the GA, enforcing age validation so users under the group's `minAge` are rejected automatically.
 - [x] Enable regular users to propose new rooms within a group via `request-history`.
 - [x] Regular users can view a list of all existing groups to potentially join.
-- [ ] Enforce unique group names. There is no limit on how many groups a user can join or administer.
+- [x] Enforce unique group names. There is no limit on how many groups a user can join or administer.
 - [ ] Pending join requests cannot be cancelled.
-- [ ] Regular users can request the GA to ban a specific user.
+- [x] Regular users can request the GA to ban a specific user.
 
 ### 5. Un-Mocking Group Admin Controls (`group-settings.ts`)
 
@@ -105,13 +105,13 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
   - [x] Approve or reject join and room requests, storing a mandatory rejection reason displayed in the user's `request-history`.
   - [x] Promote members to GA. A group must always have at least one GA and may have multiple.
   - [x] Show a visual indicator of GA status while chatting.
-  - [ ] Enforce GA step-down rules: prevent demotion if the user is the sole GA or has pending requests queued with the Super Admin.
-  - [ ] Issue permanent group-level bans (removing the un-ban capability from the UI). Member removal is wired, but bans are not persisted as a permanent group ban list.
-  - [ ] GA can see all allowed and banned members for their group.
-  - [ ] User-requested bans: persist requests from regular users. A GA cannot self-approve a ban against themselves; those requests go to the Super Admin.
-  - [ ] Auto-evict existing members if the GA increases the group's minimum age threshold above their birth year. The age limit is birth-year based and applies to all rooms in the group.
-  - [ ] Queue group deletion requests to the Super Admin; after deletion, the requesting GA is demoted to a regular user.
-  - [ ] Persist General tab edits via Save Changes: unique group name, description (max 250 characters), min age, and theme. No Super Admin permission required for these edits.
+  - [x] Enforce GA step-down rules: prevent demotion if the user is the sole GA or has pending requests queued with the Super Admin.
+  - [x] Issue permanent group-level bans (removing the un-ban capability from the UI). Member removal is wired, but bans are not persisted as a permanent group ban list.
+  - [x] GA can see all allowed and banned members for their group.
+  - [x] User-requested bans: persist requests from regular users. A GA cannot self-approve a ban against themselves; those requests go to the Super Admin.
+  - [x] Auto-evict existing members if the GA increases the group's minimum age threshold above their birth year. The age limit is birth-year based and applies to all rooms in the group.
+  - [x] Queue group deletion requests to the Super Admin; after deletion, the requesting GA is demoted to a regular user.
+  - [x] Persist General tab edits via Save Changes: unique group name, description (max 250 characters), min age, and theme. No Super Admin permission required for these edits.
 
 ### 6. Super Admin Audit Logging & Global Bans
 
