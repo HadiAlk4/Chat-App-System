@@ -201,4 +201,23 @@ export class GroupService // why not group
             { reason }
         );
     }
+
+    stepDownAsAdmin(groupName: string, username: string): Observable<{
+        ok: boolean;
+        message: string;
+        role?: string;
+        admins?: string[];
+        members?: string[];
+    }> {
+        return this.http.post<{
+            ok: boolean;
+            message: string;
+            role?: string;
+            admins?: string[];
+            members?: string[];
+        }>(
+            `${API_URL}/groups/${encodeURIComponent(groupName)}/admins/${encodeURIComponent(username)}/step-down`,
+            {}
+        );
+    }
 }

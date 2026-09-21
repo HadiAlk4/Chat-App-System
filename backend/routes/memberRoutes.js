@@ -139,4 +139,73 @@ export function memberRoutes(app) {
       res.status(500).send({ ok: false, message: err.message });
     }
   });
+
+  // GA: step down (stay a member; blocked if sole GA or pending Super Admin requests)
+  app.post("/api/groups/:groupName/admins/:username/step-down", async (req, res) => {
+    try {
+      const { groupName, username } = req.params;
+      const groupsCollection = db.collection("groups");
+      const group = await groupsCollection.findOne({ groupName });
+
+      if (!group) {
+        return res.status(404).send({ ok: false, message: "Group not found" });
+      }
+
+      if (!group.admins?.includes(username)) {
+        return res.status(400).send({ ok: false, message: "User is not a Group Admin of this group" });
+      }
+
+      if (group.admins.length === 1) {
+        return res.status(400).send({
+          ok: false,
+          message: "Cannot step down as the sole Group Admin",
+        });
+      }
+
+      const pendingSuperAdminBan = await db.collection("groupBanRequests").findOne({
+        requestedBy: username,
+        destination: "super-admin",
+        status: "pending",
+      });
+      const pendingGroupDeletion = await db.collection("groupDeletionRequests").findOne({
+        requestedBy: username,
+        status: "pending",
+      });
+      if (pendingSuperAdminBan || pendingGroupDeletion) {
+        return res.status(400).send({
+          ok: false,
+          message: "Cannot step down while you have pending requests queued with the Super Admin",
+        });
+      }
+
+      await groupsCollection.updateOne(
+        { groupName },
+        {
+          $pull: { admins: username },
+          $addToSet: { members: username },
+        }
+      );
+
+      const stillAdminElsewhere = await groupsCollection.findOne({ admins: username });
+      let role = (await db.collection("users").findOne({ username }))?.role || "group-admin";
+      if (!stillAdminElsewhere && role !== "super-admin") {
+        await db.collection("users").updateOne(
+          { username },
+          { $set: { role: "user" } }
+        );
+        role = "user";
+      }
+
+      const updatedGroup = await groupsCollection.findOne({ groupName });
+      res.send({
+        ok: true,
+        message: "Stepped down as Group Admin",
+        role,
+        admins: updatedGroup.admins,
+        members: updatedGroup.members,
+      });
+    } catch (err) {
+      res.status(500).send({ ok: false, message: err.message });
+    }
+  });
 }

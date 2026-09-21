@@ -29,7 +29,6 @@ export class GroupSettings implements OnInit, OnDestroy {
   joinRequests: (JoinRequest & { rejectReason?: string; requestedOn?: string })[] = [];
   roomRequests: RoomRequest[] = [];
   banRequests: (GroupBanRequest & { rejectReason?: string })[] = [];
-  banRequests: (GroupBanRequest & { rejectReason?: string })[] = [];
 
   private subscriptions = new Subscription();
 
@@ -58,7 +57,6 @@ export class GroupSettings implements OnInit, OnDestroy {
       this.loadGroup();
       this.loadJoinRequests();
       this.loadRoomRequests();
-      this.loadBanRequests();
       this.loadBanRequests();
     });
     this.subscriptions.add(routeSub);
@@ -437,9 +435,32 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   stepDownAsGA(): void {
-    if (confirm('Are you sure you want to step down as Group Admin?')) {
-      alert('You have stepped down.');
-    }
+    if (!confirm('Are you sure you want to step down as Group Admin?')) return;
+
+    const groupKey = this.originalGroupName || this.groupName;
+    this.groupService.stepDownAsAdmin(groupKey, this.username).subscribe({
+      next: (res) => {
+        if (!res.ok) {
+          alert(res.message || 'Failed to step down.');
+          return;
+        }
+        if (res.role) {
+          const user = this.authService.getUser();
+          if (user) {
+            const updated = { ...user, role: res.role };
+            this.authService.setUser(updated);
+            if (typeof window !== 'undefined') {
+              sessionStorage.setItem('user', JSON.stringify(updated));
+              sessionStorage.setItem('role', res.role);
+            }
+          }
+          this.userRole = res.role;
+        }
+        alert(res.message || 'You have stepped down.');
+        this.router.navigate(['/my-memberships'], { queryParams: { groupName: groupKey } });
+      },
+      error: (err) => alert(err.error?.message || 'Failed to step down.'),
+    });
   }
 
   requestGroupDeletion(): void {
