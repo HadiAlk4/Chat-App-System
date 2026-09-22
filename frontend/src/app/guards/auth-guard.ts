@@ -19,5 +19,13 @@ export const authGuard: CanActivateFn = (route, state) => {
     router.navigateByUrl('/dashboard');
     return false;
   }
+
+  const superAdminDeniedPaths = ['chat', 'my-memberships', 'group-settings'];
+  if(user.role === 'super-admin' && superAdminDeniedPaths.includes(route.routeConfig?.path ?? ''))
+  {
+    router.navigateByUrl('/super-admin-dashboard');
+    return false;
+  }
+
   return true;
 };

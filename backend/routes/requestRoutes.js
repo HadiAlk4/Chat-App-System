@@ -12,6 +12,10 @@ export function requestRoutes(app, io) {
       const user = await db.collection("users").findOne({ username });
       if (!user) return res.send({ ok: false, valid: false, message: "User not found" });
 
+      if (user.role === "super-admin") {
+        return res.send({ ok: false, message: "Super Admin cannot join groups" });
+      }
+
       const group = await db.collection("groups").findOne({ groupName });
       if (!group) return res.send({ ok: false, valid: false, message: "Group not found" });
 

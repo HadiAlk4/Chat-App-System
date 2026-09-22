@@ -40,6 +40,7 @@
                     <p class="card-text" style="padding-top: 1rem;"> {{ group.groupDescription }} </p>
 
                     <div style="display: flex; gap: 0.8rem;"> 
+                    @if (currentUserRole !== 'super-admin') {
                     <button
                     [routerLink]="['/chat']"
                     [queryParams]="{ groupName: group.groupName }"
@@ -47,6 +48,7 @@
                     >
                     View Rooms
                     </button>
+                    }
                     <button 
                     class="btn-danger" 
                     [disabled]="isSoleAdmin(group)"

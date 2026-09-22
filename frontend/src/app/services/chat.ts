@@ -16,9 +16,10 @@ export class ChatService {
 
   constructor(private http: HttpClient) {}
 
-  getRoomMessages(groupName: string, roomName: string): Observable<ChatMessage[]> {
+  getRoomMessages(groupName: string, roomName: string, username: string): Observable<ChatMessage[]> {
     return this.http.get<ChatMessage[]>(
-      `${API_URL}/messages/${encodeURIComponent(groupName)}/${encodeURIComponent(roomName)}`
+      `${API_URL}/messages/${encodeURIComponent(groupName)}/${encodeURIComponent(roomName)}`,
+      { params: { username } }
     );
   }
 

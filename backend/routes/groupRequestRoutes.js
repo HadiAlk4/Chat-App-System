@@ -22,6 +22,11 @@ export function groupRequestRoutes(app, io) {
         return res.send({ ok: false, valid: false, message: "All fields are required" });
       }
 
+      const creator = await db.collection("users").findOne({ username: creatorUserName });
+      if (creator?.role === "super-admin") {
+        return res.send({ ok: false, message: "Super Admin cannot propose groups" });
+      }
+
       const groupRequestsCollection = db.collection("groupRequests");
       if (await groupNameTaken(groupName)) {
         return res.send({ ok: false, valid: false, message: "Group name already taken" });
