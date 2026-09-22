@@ -90,6 +90,7 @@ export function requestRoutes(app, io) {
         requestId: req.params.id,
         status: "approved",
         groupName: request.groupName,
+        username: request.username,
       });
 
       res.send({ ok: true, message: "Join request approved" });
@@ -119,6 +120,7 @@ export function requestRoutes(app, io) {
         requestId: req.params.id,
         status: "rejected",
         groupName: request.groupName,
+        username: request.username,
       });
 
       res.send({ ok: true, message: "Join request rejected" });

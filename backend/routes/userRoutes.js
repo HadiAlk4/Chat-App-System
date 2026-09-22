@@ -120,9 +120,9 @@ export function userRoutes(app) {
   // Chat-window theme preference only (not a global app theme)
   app.patch("/api/users/theme", async (req, res) => {
     try {
-      const { email, isDarkMode } = req.body;
-      if (!email || typeof isDarkMode !== "boolean") {
-        return res.send({ ok: false, message: "Email and isDarkMode (boolean) are required" });
+      const { email, isDarkMode, usePersonalTheme } = req.body;
+      if (!email || typeof isDarkMode !== "boolean" || typeof usePersonalTheme !== "boolean") {
+        return res.send({ ok: false, message: "Email, isDarkMode, and usePersonalTheme (booleans) are required" });
       }
 
       const usersCollection = db.collection("users");
@@ -131,7 +131,7 @@ export function userRoutes(app) {
         return res.status(404).send({ ok: false, message: "User not found" });
       }
 
-      await usersCollection.updateOne({ email }, { $set: { isDarkMode } });
+      await usersCollection.updateOne({ email }, { $set: { isDarkMode, usePersonalTheme } });
       const updated = await usersCollection.findOne({ email });
 
       res.send({

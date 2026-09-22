@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../services/auth';
+import { AccountService } from '../services/account';
 import { GroupService } from '../services/group';
 import { ChatService } from '../services/chat';
+import { SocketService } from '../services/socket';
 import { UploadService } from '../services/upload';
 import { ChatMessage } from '../models/message';
 
@@ -36,13 +38,16 @@ export class Chat implements OnInit, OnDestroy {
   systemNotification = '';
   displayNotification = false;
   isDarkMode = false;
+  groupThemeColor = '';
 
   private subscriptions = new Subscription();
 
   constructor(
     private authService: AuthService,
+    private accountService: AccountService,
     private groupService: GroupService,
     private chatService: ChatService,
+    private socketService: SocketService,
     private uploadService: UploadService,
     private route: ActivatedRoute
   ) {}
@@ -52,7 +57,6 @@ export class Chat implements OnInit, OnDestroy {
     if (user) {
       this.currentUser = user.username;
       this.currentUserRole = user.role;
-      this.isDarkMode = user.isDarkMode || false;
     }
 
     const routeSub = this.route.queryParams.subscribe((params) => {
@@ -71,6 +75,8 @@ export class Chat implements OnInit, OnDestroy {
       next: (res) => {
         if (res.ok && res.group) {
           const g = res.group;
+          this.groupThemeColor = g.themeColor;
+          this.applyChatTheme();
           this.rooms = g.rooms || ['Main Room'];
 
           const admins = new Set(g.admins || []);
@@ -145,11 +151,34 @@ export class Chat implements OnInit, OnDestroy {
       }
     });
 
+    const accountDeletedSub = this.socketService.onAccountDeletionRequestResolved().subscribe(({ status, username }) => {
+      if (status === 'approved' && username) {
+        this.messages = this.messages.filter((m) => m.senderUserName !== username);
+      }
+    });
+
+    const joinResolvedSub = this.socketService.onJoinRequestResolved().subscribe(({ username, groupName, status }) => {
+      const outcome = status === 'approved' ? 'approved' : 'denied';
+      if (username === this.currentUser) {
+        this.showToast(`Your request to join ${groupName} was ${outcome}`);
+        return;
+      }
+      if (groupName === this.currGroupName) {
+        this.showToast(
+          status === 'approved'
+            ? `${username} was approved to join`
+            : `${username} was denied`
+        );
+      }
+    });
+
     this.subscriptions.add(msgSub);
     this.subscriptions.add(joinSub);
     this.subscriptions.add(leftSub);
     this.subscriptions.add(deletedSub);
     this.subscriptions.add(roomUsersSub);
+    this.subscriptions.add(joinResolvedSub);
+    this.subscriptions.add(accountDeletedSub);
   }
 
   onChatFileSelected(event: Event): void {
@@ -193,6 +222,11 @@ export class Chat implements OnInit, OnDestroy {
   }
 
   private dispatchMessage(content: string, imageUrl?: string): void {
+    if (/(https?:\/\/|www\.)/i.test(content)) {
+      alert('External links are not allowed');
+      return;
+    }
+
     this.chatService.sendMessage({
       groupName: this.currGroupName,
       roomName: this.currentRoom,
@@ -227,8 +261,27 @@ export class Chat implements OnInit, OnDestroy {
     this.displayNotification = false;
   }
 
+  applyChatTheme(): void {
+    const user = this.authService.getUser();
+    if (user?.usePersonalTheme === true) {
+      this.isDarkMode = user.isDarkMode;
+      return;
+    }
+    this.isDarkMode = this.groupThemeColor === 'dark';
+  }
+
   toggleDarkMode(event: Event): void {
     this.isDarkMode = (event.target as HTMLInputElement).checked;
+    const email = this.authService.getUser()?.email;
+    if (!email) return;
+
+    this.accountService.updateTheme(email, this.isDarkMode).subscribe({
+      next: (res) => {
+        if (res.ok && res.user) {
+          this.authService.setUser(res.user);
+        }
+      },
+    });
   }
 
   private scrollToBottom(): void {

@@ -19,6 +19,7 @@ interface JoinRequestResolved {
   requestId: string;
   status: 'approved' | 'rejected';
   groupName: string;
+  username: string;
 }
 
 interface RoomRequestResolved {

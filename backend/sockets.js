@@ -85,6 +85,7 @@ export function initChatSockets(io) {
         const { groupName, roomName, senderUserName, content, imageUrl } = msgData;
         if (!content?.trim() && !imageUrl) return;
         if (await blockedFromChat(senderUserName || socket.data?.username)) return;
+        if (typeof content === "string" && /(https?:\/\/|www\.)/i.test(content)) return;
 
         const newMsg = {
           groupName,
