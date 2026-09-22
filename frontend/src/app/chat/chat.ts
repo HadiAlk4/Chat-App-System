@@ -218,6 +218,11 @@ export class Chat implements OnInit, OnDestroy {
   }
 
   private dispatchMessage(content: string, imageUrl?: string): void {
+    if (/(https?:\/\/|www\.)/i.test(content)) {
+      alert('External links are not allowed');
+      return;
+    }
+
     this.chatService.sendMessage({
       groupName: this.currGroupName,
       roomName: this.currentRoom,
