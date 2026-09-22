@@ -147,6 +147,12 @@ export class Chat implements OnInit, OnDestroy {
       }
     });
 
+    const accountDeletedSub = this.socketService.onAccountDeletionRequestResolved().subscribe(({ status, username }) => {
+      if (status === 'approved' && username) {
+        this.messages = this.messages.filter((m) => m.senderUserName !== username);
+      }
+    });
+
     const joinResolvedSub = this.socketService.onJoinRequestResolved().subscribe(({ username, groupName, status }) => {
       const outcome = status === 'approved' ? 'approved' : 'denied';
       if (username === this.currentUser) {
@@ -168,6 +174,7 @@ export class Chat implements OnInit, OnDestroy {
     this.subscriptions.add(deletedSub);
     this.subscriptions.add(roomUsersSub);
     this.subscriptions.add(joinResolvedSub);
+    this.subscriptions.add(accountDeletedSub);
   }
 
   onChatFileSelected(event: Event): void {
