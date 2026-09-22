@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../services/auth';
 import { GroupService } from '../services/group';
 import { ChatService } from '../services/chat';
+import { SocketService } from '../services/socket';
 import { UploadService } from '../services/upload';
 import { ChatMessage } from '../models/message';
 
@@ -43,6 +44,7 @@ export class Chat implements OnInit, OnDestroy {
     private authService: AuthService,
     private groupService: GroupService,
     private chatService: ChatService,
+    private socketService: SocketService,
     private uploadService: UploadService,
     private route: ActivatedRoute
   ) {}
@@ -145,11 +147,27 @@ export class Chat implements OnInit, OnDestroy {
       }
     });
 
+    const joinResolvedSub = this.socketService.onJoinRequestResolved().subscribe(({ username, groupName, status }) => {
+      const outcome = status === 'approved' ? 'approved' : 'denied';
+      if (username === this.currentUser) {
+        this.showToast(`Your request to join ${groupName} was ${outcome}`);
+        return;
+      }
+      if (groupName === this.currGroupName) {
+        this.showToast(
+          status === 'approved'
+            ? `${username} was approved to join`
+            : `${username} was denied`
+        );
+      }
+    });
+
     this.subscriptions.add(msgSub);
     this.subscriptions.add(joinSub);
     this.subscriptions.add(leftSub);
     this.subscriptions.add(deletedSub);
     this.subscriptions.add(roomUsersSub);
+    this.subscriptions.add(joinResolvedSub);
   }
 
   onChatFileSelected(event: Event): void {
