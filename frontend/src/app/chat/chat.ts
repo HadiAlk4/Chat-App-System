@@ -100,12 +100,18 @@ export class Chat implements OnInit, OnDestroy {
     this.chatService.joinRoom(this.currGroupName, this.currentRoom, this.currentUser);
 
     // Fetch room history from MongoDB
-    this.chatService.getRoomMessages(this.currGroupName, this.currentRoom).subscribe({
+    this.chatService.getRoomMessages(this.currGroupName, this.currentRoom, this.currentUser).subscribe({
       next: (msgs) => {
         this.messages = msgs;
         this.scrollToBottom();
       },
-      error: (err) => console.error('Failed to load room messages:', err)
+      error: (err) => {
+        if (err.status === 403) {
+          this.messages = [];
+          return;
+        }
+        console.error('Failed to load room messages:', err);
+      }
     });
   }
 

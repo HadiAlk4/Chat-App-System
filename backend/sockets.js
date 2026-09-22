@@ -32,10 +32,17 @@ function emitRoomUsers(io, channel, roomName) {
   });
 }
 
+async function blockedFromChat(username) {
+  if (!username) return true;
+  const user = await db.collection("users").findOne({ username });
+  return !user || user.role === "super-admin";
+}
+
 export function initChatSockets(io) {
   io.on("connection", (socket) => {
-    socket.on("join-room", ({ groupName, roomName, username }) => {
+    socket.on("join-room", async ({ groupName, roomName, username }) => {
       if (!groupName || !roomName || !username) return;
+      if (await blockedFromChat(username)) return;
 
       const channel = `${groupName}:${roomName}`;
       socket.join(channel);
@@ -77,6 +84,7 @@ export function initChatSockets(io) {
       try {
         const { groupName, roomName, senderUserName, content, imageUrl } = msgData;
         if (!content?.trim() && !imageUrl) return;
+        if (await blockedFromChat(senderUserName || socket.data?.username)) return;
 
         const newMsg = {
           groupName,
@@ -99,6 +107,7 @@ export function initChatSockets(io) {
     socket.on("delete-message", async ({ groupName, roomName, messageId }) => {
       try {
         if (!messageId || !groupName || !roomName) return;
+        if (await blockedFromChat(socket.data?.username)) return;
 
         await db.collection("messages").deleteOne({
           _id: new ObjectId(messageId)
