@@ -62,7 +62,7 @@ export class AccountService {
   updateTheme(email: string, isDarkMode: boolean): Observable<{ ok: boolean; message: string; user?: any }> {
     return this.http.patch<{ ok: boolean; message: string; user?: any }>(
       `${API_URL}/users/theme`,
-      { email, isDarkMode }
+      { email, isDarkMode, usePersonalTheme: true }
     );
   }
 }
