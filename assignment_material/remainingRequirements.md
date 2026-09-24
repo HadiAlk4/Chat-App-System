@@ -20,14 +20,14 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
 - [x] Ensure proposals route to the Super Admin's queue.
 - [x] Allow the Super Admin to accept the proposal, designate the initial Group Admin (GA), and create the group in the database.
 - [x] Enforce unique group names on proposal and creation.
-- [ ] Super Admin cannot create groups directly without a user proposal.
+- [x] Super Admin cannot create groups directly without a user proposal.
 
 ### 3. Group Join Requests & Age Validation
 
 - [x] Bind a click event to the "Request to Join" button in `dashboard.html` to submit a join request to the group's GA.
 - [x] Add validation blocking any user from requesting to join if their birth year is below the group's `minAge`.
 - [x] Implement logic in the GA settings where updating `minAge` automatically boots existing members who fall below the new age limit.
-- [ ] Pending join requests cannot be cancelled by the requester.
+- [x] Pending join requests cannot be cancelled by the requester.
 
 ### 4. Group Admin Management (Un-mocking `group-settings.ts`)
 
@@ -55,7 +55,7 @@ This ordered checklist covers the missing or mocked Phase 1 features that need t
 
 ### 7. Super Admin Role Restrictions (mocked / incomplete in Phase 1)
 
-- [ ] Super Admin is action-requests only: no chat functions and no access to old chat history.
+- [x] Super Admin is action-requests only: no chat functions and no access to old chat history.
 - [x] Keep Super Admin tools in the main app shell (audit log remains a dedicated filterable page; no separate Super Admin-only product).
 
 ---
@@ -82,8 +82,8 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 - [ ] Implement an initial startup check that verifies if the user collection is empty.
 - [ ] If empty, redirect to a bootstrap view prompting the initial visitor to register the single Super Admin (the only Super Admin, generated via this bootstrap process).
 - [ ] Permanently lock the bootstrap endpoint once the Super Admin account exists.
-- [ ] Super Admin handles action requests only: no chat access and no old chat history.
-- [ ] Super Admin cannot create groups except by approving a user proposal and assigning the initial GA.
+- [x] Super Admin handles action requests only: no chat access and no old chat history.
+- [x] Super Admin cannot create groups except by approving a user proposal and assigning the initial GA.
 - [x] Super Admin cannot delete themselves.
 - [x] Super Admin tools stay integrated in the main app; retain a dedicated filterable audit-log page.
 
@@ -95,7 +95,7 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 - [x] Enable regular users to propose new rooms within a group via `request-history`.
 - [x] Regular users can view a list of all existing groups to potentially join.
 - [x] Enforce unique group names. There is no limit on how many groups a user can join or administer.
-- [ ] Pending join requests cannot be cancelled.
+- [x] Pending join requests cannot be cancelled.
 - [x] Regular users can request the GA to ban a specific user.
 
 ### 5. Un-Mocking Group Admin Controls (`group-settings.ts`)
@@ -127,26 +127,25 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 - [x] Establish room-based socket channels matching group room IDs to isolate message traffic.
 - [x] Emit join and leave events to trigger real-time toast notifications (toasts are dismissible with an 'X').
 - [x] Dynamically update the online room participants list in the chat sidebar via live socket presence tracking (sidebar is for the chat room, not the main group page).
-- [ ] Also fire a toast when a GA verifies a user (join accept/deny).
+- [x] Also fire a toast when a GA verifies a user (join accept/deny).
 
 ### 8. Real-Time Messaging & Media Handling
 
 - [x] **History Buffer:** Persist only the last 5 messages per room (server of record). When a user enters a room, load those 5. If they were not in the room when a message was sent, they will not see it except via this last-5 buffer on rejoin. Re-entry (leave and come back, or switch rooms) reloads those 5; live socket messages are not capped while they stay in the room.
 - [x] **Live Streaming:** Broadcast subsequent messages in real-time without capping the chat display while the user stays active.
 - [x] **Self-Message Deletion:** Allow users to delete their own messages (e.g. right-click), emitting a socket event that removes the message instantly from all active screens and deletes it from MongoDB.
-- [ ] **Cascaded Deletion:** When a user account is deleted (subject to Super Admin approval), broadcast an event to remove all messages sent by that user across all rooms instantly. If those messages were in any room's last-5 buffer, they are removed (the room may then show fewer than 5 messages, or a blank chat if all 5 belonged to them).
+- [x] **Cascaded Deletion:** When a user account is deleted (subject to Super Admin approval), broadcast an event to remove all messages sent by that user across all rooms instantly. If those messages were in any room's last-5 buffer, they are removed (the room may then show fewer than 5 messages, or a blank chat if all 5 belonged to them).
 - [x] **File Attachments:** Enable image uploads (PNG, JPEG, GIF up to 2MB) in chat messages. Text is also allowed. No other file types.
-- [ ] **Channel rules:** Single-channel, single-thread only. No one-on-one private chat, voice, video, markup tags (e.g. `@someone`), or typing indicators.
-- [ ] **Content rules:** No external hyperlinks (no malicious-link detection required) and no automatic parental censoring.
+- [x] **Channel rules:** Single-channel, single-thread only. No one-on-one private chat, voice, video, markup tags (e.g. `@someone`), or typing indicators.
+- [x] **Content rules:** No external hyperlinks (no malicious-link detection required) and no automatic parental censoring.
 - [x] **Message display:** Show timestamp and sender display name, not the unique user ID. No text size limit. No unread indicators.
 - [x] **Empty rooms:** A user joining a completely fresh chat room with no prior history starts with a blank chat interface.
 
 ### 9. UI, Themes & Profiles
 
-- [ ] Apply GA-configured default background-color themes to chat rooms while allowing individual users to apply a unified custom theme across all their groups.
+- [x] Apply GA-configured default background-color themes to chat rooms while allowing individual users to apply a unified custom theme across all their groups.
 - [x] Wire profile settings: changeable username; unchangeable email as unique ID; password change with current-password verification; age/DOB; light/dark screen preference; role; profile picture (up to 2MB); group memberships.
-- [ ] Profiles are completely private. Other users cannot open them (hovering for basic info is optional).
-- [ ] Desktop-first layout that remains usable at tablet sizes.
+- [x] Profiles are completely private. Other users cannot open them (hovering for basic info is optional).
 
 ### 10. Non-Functional Requirements
 
