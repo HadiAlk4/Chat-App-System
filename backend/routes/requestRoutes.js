@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { db } from "../db.js";
+import { isUnderMinAge } from "../lib/ageGate.js";
 
 export function requestRoutes(app, io) {
   app.post("/api/join-requests", async (req, res) => {
@@ -19,7 +20,7 @@ export function requestRoutes(app, io) {
       const group = await db.collection("groups").findOne({ groupName });
       if (!group) return res.send({ ok: false, valid: false, message: "Group not found" });
 
-      if (Number(user.age) < Number(group.minAge)) {
+      if (isUnderMinAge(user.age, group.minAge)) {
         return res.send({ ok: false, valid: false, message: "User is not old enough to join this group" });
       }
 

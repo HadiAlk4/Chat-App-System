@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { db } from "../db.js";
+import { isValidPassword } from "../lib/passwordPolicy.js";
 
 export function authRoutes(app) {
   // Authenticate user
@@ -39,8 +40,7 @@ export function authRoutes(app) {
         return res.send({ ok: false, valid: false, message: "All fields are required" });
       }
 
-      const passwordRegex = /^(?=.*[A-Z])[a-zA-Z0-9]{8,}$/;
-      if (!passwordRegex.test(password)) {
+      if (!isValidPassword(password)) {
         return res.send({
           ok: false,
           valid: false,
