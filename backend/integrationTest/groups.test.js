@@ -100,6 +100,7 @@ describe("group routes", () => {
         groupDescription: "Updated books",
         minAge: 18,
         themeColor: "dark",
+        username: "ada",
       });
 
       expect(res.body.ok).to.equal(true);
@@ -116,10 +117,29 @@ describe("group routes", () => {
         groupDescription: "",
         minAge: 18,
         themeColor: "light",
+        username: "ada",
       });
 
       expect(res.body.ok).to.equal(false);
       expect(res.body.message).to.equal("Group name and description are required");
+    });
+
+    it("rejects a member who is not a Group Admin", async () => {
+      await seedGroup({ admins: ["ada"], members: ["ada", "bea"] });
+
+      const res = await request.execute(app).patch("/api/groups/Readers").send({
+        groupName: "Readers",
+        groupDescription: "Hacked",
+        minAge: 99,
+        themeColor: "dark",
+        username: "bea",
+      });
+
+      expect(res).to.have.status(403);
+      expect(res.body.ok).to.equal(false);
+      expect(res.body.message).to.equal("Only a Group Admin can change these settings");
+      const group = await getDB().collection("groups").findOne({ groupName: "Readers" });
+      expect(group.minAge).to.equal(18);
     });
   });
 });
