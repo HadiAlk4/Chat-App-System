@@ -17,6 +17,16 @@ aside .torn-notepad p {
   line-height: 1;
 }
 
+/* PaperCSS hides every input inside .tabs, including the settings fields. */
+.tabs .content input {
+  display: inline-block;
+}
+
+.tabs .content input.input-block {
+  display: block;
+  width: 100%;
+}
+
 
 
 .dashboard-container {

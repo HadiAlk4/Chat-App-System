@@ -24,6 +24,13 @@ export class GroupSettings implements OnInit, OnDestroy {
   groupDescription: string = '';
   groupMinAge: number = 18;
   groupThemeColor: 'light' | 'dark' = 'light';
+  savedName = '';
+  savedDescription = '';
+  savedMinAge = 18;
+  savedTheme: 'light' | 'dark' = 'light';
+  confirmOpen = false;
+  pendingChanges: string[] = [];
+  ageWillRemoveMembers = false;
 
   joinRequests: (JoinRequest & { rejectReason?: string; requestedOn?: string })[] = [];
   roomRequests: RoomRequest[] = [];
@@ -104,6 +111,10 @@ export class GroupSettings implements OnInit, OnDestroy {
     this.rooms = group.rooms ?? [];
     this.allowedMembers = this.buildAllowedMembers(group);
     this.bannedMembers = (group.bannedMembers ?? []).map((username) => ({ username }));
+    this.savedName = this.groupName;
+    this.savedDescription = this.groupDescription;
+    this.savedMinAge = Number(this.groupMinAge);
+    this.savedTheme = this.groupThemeColor;
     this.cdr.markForCheck();
   }
 
@@ -127,7 +138,37 @@ export class GroupSettings implements OnInit, OnDestroy {
       return;
     }
 
-    const previousName = this.originalGroupName || this.groupName;
+    const nextAge = Number(this.groupMinAge);
+    const changes: string[] = [];
+    if (groupName !== this.savedName) {
+      changes.push(`Group name: ${this.savedName} → ${groupName}`);
+    }
+    if (groupDescription !== this.savedDescription) {
+      changes.push(`Description: ${this.savedDescription} → ${groupDescription}`);
+    }
+    if (nextAge !== this.savedMinAge) {
+      changes.push(`Minimum age: ${this.savedMinAge} → ${nextAge}`);
+    }
+    if (this.groupThemeColor !== this.savedTheme) {
+      changes.push(`Theme color: ${this.themeLabel(this.savedTheme)} → ${this.themeLabel(this.groupThemeColor)}`);
+    }
+    if (!changes.length) {
+      alert('Nothing has changed.');
+      return;
+    }
+
+    this.pendingChanges = changes;
+    this.ageWillRemoveMembers = nextAge > this.savedMinAge;
+    this.confirmOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  confirmSave(): void {
+    const groupName = this.groupName.trim();
+    const groupDescription = this.groupDescription.trim();
+    const previousName = this.originalGroupName || groupName;
+    this.confirmOpen = false;
+
     this.groupService
       .updateGroup(previousName, {
         groupName,
@@ -154,6 +195,10 @@ export class GroupSettings implements OnInit, OnDestroy {
         },
         error: (err) => alert(err.error?.message || 'Failed to save group settings.'),
       });
+  }
+
+  private themeLabel(theme: 'light' | 'dark'): string {
+    return theme === 'dark' ? 'Dark' : 'Light';
   }
 
   private buildAllowedMembers(group: { admins?: string[]; members?: string[] }) {

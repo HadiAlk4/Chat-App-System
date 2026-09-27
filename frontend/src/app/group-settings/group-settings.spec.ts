@@ -75,6 +75,20 @@ describe('GroupSettings', () => {
     expect(fixture.nativeElement.querySelector('#grpSettingsAge').value).toBe('18');
   });
 
+  it('asks for confirmation before saving a higher minimum age', () => {
+    const component = fixture.componentInstance;
+    component.groupMinAge = 21;
+
+    component.saveChanges();
+    fixture.detectChanges();
+
+    expect(component.confirmOpen).toBe(true);
+    expect(component.pendingChanges).toContain('Minimum age: 18 → 21');
+    expect(component.ageWillRemoveMembers).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain('Confirm changes');
+    expect(fixture.nativeElement.textContent).toContain('removes every member who is now too young');
+  });
+
   it('does not call the API when a join rejection has no reason', () => {
     fixture.componentInstance.joinRequests = [
       {

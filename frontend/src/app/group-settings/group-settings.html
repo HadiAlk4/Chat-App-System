@@ -313,3 +313,25 @@
 
     </div>
 </div>
+
+<input class="modal-state" id="modal-confirm-settings" type="checkbox" [(ngModel)]="confirmOpen">
+<div class="modal">
+    <label class="modal-bg" for="modal-confirm-settings"></label>
+    <div class="modal-body" style="width: 450px; max-width: 90vw;">
+        <label class="btn-close" for="modal-confirm-settings">X</label>
+        <h3 class="modal-title" style="margin-top: 0;">Confirm changes</h3>
+        <p style="margin-bottom: 0.6rem;">Save these updates to the group?</p>
+        <ul style="margin-top: 0;">
+            @for (change of pendingChanges; track change) {
+                <li>{{ change }}</li>
+            }
+        </ul>
+        @if (ageWillRemoveMembers) {
+            <p><small>Raising the minimum age removes every member who is now too young.</small></p>
+        }
+        <div style="display: flex; gap: 0.8rem; margin-top: 1.2rem;">
+            <button type="button" class="btn-success" (click)="confirmSave()">Confirm</button>
+            <label class="paper-btn" for="modal-confirm-settings" style="margin: 0;">Cancel</label>
+        </div>
+    </div>
+</div>
