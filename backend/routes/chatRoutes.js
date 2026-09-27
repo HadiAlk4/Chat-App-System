@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { db } from "../db.js";
+import { latestMessagesOldestFirst } from "../lib/messageWindow.js";
 
 export function chatRoutes(app) {
   // Fetch message history for a specific room
@@ -19,11 +20,8 @@ export function chatRoutes(app) {
       // Last 5 on join/re-entry only; live socket messages stay uncapped while the user remains in the room
       const messages = await db.collection("messages")
         .find({ groupName, roomName })
-        .sort({ timestamp: -1 })
-        .limit(5)
         .toArray();
-      messages.reverse();
-      res.send(messages);
+      res.send(latestMessagesOldestFirst(messages));
     } catch (err) {
       res.status(500).send({ ok: false, message: err.message });
     }

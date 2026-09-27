@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import { db } from "./db.js";
+import { containsExternalLink } from "./lib/externalLink.js";
 
 const roomUsers = new Map();
 
@@ -85,7 +86,7 @@ export function initChatSockets(io) {
         const { groupName, roomName, senderUserName, content, imageUrl } = msgData;
         if (!content?.trim() && !imageUrl) return;
         if (await blockedFromChat(senderUserName || socket.data?.username)) return;
-        if (typeof content === "string" && /(https?:\/\/|www\.)/i.test(content)) return;
+        if (containsExternalLink(content)) return;
 
         const newMsg = {
           groupName,

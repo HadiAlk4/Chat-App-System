@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -16,13 +16,13 @@ export class Login
 {
   emailInput: string = '';
   passwordInput: string = '';
-  errorMessage: string = '';
+  errorMessage = signal('');
 
   constructor(private http: HttpClient, private router: Router, private authService: AuthService) {}
 
   loginfunc(): void {
     if (!this.emailInput || !this.passwordInput) {
-      this.errorMessage = 'Please enter both email and password.';
+      this.errorMessage.set('Please enter both email and password.');
       return;
     }
 
@@ -46,11 +46,11 @@ export class Login
             this.router.navigateByUrl('/dashboard');
           }
         } else {
-          this.errorMessage = res.message || 'Invalid email or password.';
+          this.errorMessage.set(res.message || 'Invalid email or password.');
         }
       },
       error: () => {
-        this.errorMessage = 'Cannot connect to backend server on port 3000.';
+        this.errorMessage.set('Cannot connect to backend server on port 3000.');
       }
     });
   }

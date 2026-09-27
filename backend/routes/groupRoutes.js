@@ -1,4 +1,5 @@
 import { db } from "../db.js";
+import { isUnderMinAge } from "../lib/ageGate.js";
 
 const THEME_COLORS = new Set(["light", "dark"]);
 
@@ -152,7 +153,7 @@ export function groupRoutes(app) {
         ? await db.collection("users").find({ username: { $in: usernames } }).toArray()
         : [];
       const tooYoung = users
-        .filter((user) => Number(user.age) < minAge)
+        .filter((user) => isUnderMinAge(user.age, minAge))
         .map((user) => user.username);
       const tooYoungSet = new Set(tooYoung);
       const remainingAdmins = (group.admins || []).filter((admin) => !tooYoungSet.has(admin));

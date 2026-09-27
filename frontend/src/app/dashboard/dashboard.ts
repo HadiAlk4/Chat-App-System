@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
@@ -32,7 +32,11 @@ export class Dashboard implements OnInit
     themeColor: 'light'
   };
 
-  constructor(private authService: AuthService, private groupService: GroupService) {}
+  constructor(
+    private authService: AuthService,
+    private groupService: GroupService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
 
   ngOnInit(): void
@@ -53,6 +57,7 @@ export class Dashboard implements OnInit
       next: (groups) => {
         this.availableGroups = groups;
         this.applySearch();
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading groups:', error);

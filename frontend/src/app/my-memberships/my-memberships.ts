@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -28,7 +28,11 @@ export class MyMemberships implements OnInit
       { label: 'Member Only', value: 'member' }
   ];
 
-  constructor(private authService: AuthService, private groupService: GroupService) {}
+  constructor(
+    private authService: AuthService,
+    private groupService: GroupService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void
   {
@@ -53,6 +57,7 @@ export class MyMemberships implements OnInit
         next: (groups) => {
           this.joinedGroups = groups;
           this.applyFilters();
+          this.cdr.markForCheck();
         },
         error: (err) => {
           console.error('Failed to load memberships:', err);

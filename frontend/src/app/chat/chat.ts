@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
@@ -49,7 +49,8 @@ export class Chat implements OnInit, OnDestroy {
     private chatService: ChatService,
     private socketService: SocketService,
     private uploadService: UploadService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -90,6 +91,7 @@ export class Chat implements OnInit, OnDestroy {
           if (this.rooms.length > 0) {
             this.switchRooms(this.rooms[0]);
           }
+          this.cdr.markForCheck();
         }
       },
       error: (err) => console.error('Failed to load group for chat:', err)
@@ -109,6 +111,7 @@ export class Chat implements OnInit, OnDestroy {
     this.chatService.getRoomMessages(this.currGroupName, this.currentRoom, this.currentUser).subscribe({
       next: (msgs) => {
         this.messages = msgs;
+        this.cdr.markForCheck();
         this.scrollToBottom();
       },
       error: (err) => {
@@ -125,6 +128,7 @@ export class Chat implements OnInit, OnDestroy {
     const msgSub = this.chatService.onNewMessage().subscribe((msg) => {
       if (msg.groupName === this.currGroupName && msg.roomName === this.currentRoom) {
         this.messages.push(msg);
+        this.cdr.markForCheck();
         this.scrollToBottom();
       }
     });
@@ -143,17 +147,20 @@ export class Chat implements OnInit, OnDestroy {
 
     const deletedSub = this.chatService.onMessageDeleted().subscribe(({ messageId }) => {
       this.messages = this.messages.filter((m) => String(m._id) !== String(messageId));
+      this.cdr.markForCheck();
     });
 
     const roomUsersSub = this.chatService.onRoomUsers().subscribe((data) => {
       if (data.roomName === this.currentRoom) {
         this.onlineRoomMembers = data.users || [];
+        this.cdr.markForCheck();
       }
     });
 
     const accountDeletedSub = this.socketService.onAccountDeletionRequestResolved().subscribe(({ status, username }) => {
       if (status === 'approved' && username) {
         this.messages = this.messages.filter((m) => m.senderUserName !== username);
+        this.cdr.markForCheck();
       }
     });
 
@@ -252,8 +259,10 @@ export class Chat implements OnInit, OnDestroy {
   showToast(text: string): void {
     this.systemNotification = text;
     this.displayNotification = true;
+    this.cdr.markForCheck();
     setTimeout(() => {
       this.displayNotification = false;
+      this.cdr.markForCheck();
     }, 4000);
   }
 

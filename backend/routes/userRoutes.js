@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import { db } from "../db.js";
-
-const PASSWORD_REGEX = /^(?=.*[A-Z])[a-zA-Z0-9]{8,}$/;
+import { isValidPassword } from "../lib/passwordPolicy.js";
 
 function stripPassword(user) {
   if (!user) return user;
@@ -90,7 +89,7 @@ export function userRoutes(app) {
         return res.send({ ok: false, message: "Email, current password, and new password are required" });
       }
 
-      if (!PASSWORD_REGEX.test(newPassword)) {
+      if (!isValidPassword(newPassword)) {
         return res.send({
           ok: false,
           message: "Password must be at least 8 characters long and contain at least one uppercase letter",

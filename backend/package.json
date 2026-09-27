@@ -17,7 +17,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "unitTest": "mocha unitTest",
+    "test": "MONGO_DB_NAME=chat-app-test mocha --require ./integrationTest/hooks.js --timeout 20000 \"integrationTest/*.test.js\""
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -30,6 +31,9 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
+    "chai": "^5.3.3",
+    "chai-http": "^5.1.2",
+    "mocha": "^12.0.2",
     "nodemon": "^3.1.14"
   }
 }
