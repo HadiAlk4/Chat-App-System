@@ -25,7 +25,7 @@ describe('Login', () => {
     fixture.nativeElement.querySelector('button').click();
     await fixture.whenStable();
 
-    expect(component.errorMessage).toBe('Please enter both email and password.');
+    expect(component.errorMessage()).toBe('Please enter both email and password.');
     expect(post).not.toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('Please enter both email and password.');
   });
