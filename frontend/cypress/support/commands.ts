@@ -1,43 +1,65 @@
-// ***********************************************
-// This example namespace declaration will help
-// with Intellisense and code completion in your
-// IDE or Text Editor.
-// ***********************************************
-// declare namespace Cypress {
-//   interface Chainable<Subject = any> {
-//     customCommand(param: any): typeof customCommand;
-//   }
-// }
-//
-// function customCommand(param: any): void {
-//   console.warn(param);
-// }
-//
-// NOTE: You can use it like so:
-// Cypress.Commands.add('customCommand', customCommand);
-//
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add("login", (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add("drag", { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add("dismiss", { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
+export const API_URL = 'http://localhost:3000';
+
+export interface TestUser {
+  username: string;
+  email: string;
+  password: string;
+  dob: string;
+  age: number;
+}
+
+export const users = {
+  root: {
+    username: 'root',
+    email: 'root@example.com',
+    password: 'Password1',
+    dob: '1986-01-01',
+    age: 40,
+  },
+  ada: {
+    username: 'ada',
+    email: 'ada@example.com',
+    password: 'Password1',
+    dob: '2000-01-01',
+    age: 26,
+  },
+  bea: {
+    username: 'bea',
+    email: 'bea@example.com',
+    password: 'Password1',
+    dob: '2001-01-01',
+    age: 25,
+  },
+} satisfies Record<string, TestUser>;
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Cypress {
+    interface Chainable {
+      resetDb(): Chainable<void>;
+      signup(user: TestUser): Chainable<void>;
+      loginViaUi(user: TestUser): Chainable<void>;
+    }
+  }
+}
+
+// The first account created on an empty database becomes the Super Admin.
+Cypress.Commands.add('resetDb', () => {
+  cy.task('resetDb');
+  cy.signup(users.root);
+  // Fails if the backend is writing to a database other than chat-app-test.
+  cy.task('countUsers').should('equal', 1);
+});
+
+Cypress.Commands.add('signup', (user: TestUser) => {
+  cy.request('POST', `${API_URL}/api/signup`, user).its('body.ok').should('equal', true);
+});
+
+// Routes are prerendered on the server, where the guard cannot see localStorage,
+// so a logged-in session has to start from the login page.
+Cypress.Commands.add('loginViaUi', (user: TestUser) => {
+  cy.visit('/login');
+  cy.get('#emailInput').type(user.email);
+  cy.get('#passwordInput').type(user.password, { log: false });
+  cy.contains('button', 'Login').click();
+});

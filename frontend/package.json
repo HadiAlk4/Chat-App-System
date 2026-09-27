@@ -36,10 +36,11 @@
     "@cypress/schematic": "^6.0.0",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
+    "cypress": "16.1.0",
     "jsdom": "^28.0.0",
+    "mongodb": "^7.6.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
-    "vitest": "^4.0.8",
-    "cypress": "16.1.0"
+    "vitest": "^4.0.8"
   }
 }
