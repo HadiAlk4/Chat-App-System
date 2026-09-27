@@ -31,6 +31,16 @@ export function authRoutes(app) {
     }
   });
 
+  // Tell the signup page whether the next account becomes the Super Admin
+  app.get("/api/signup/first-user", async (req, res) => {
+    try {
+      const userCount = await db.collection("users").countDocuments();
+      res.send({ ok: true, firstUser: userCount === 0 });
+    } catch (err) {
+      res.status(500).send({ ok: false, message: err.message });
+    }
+  });
+
   // Sign up users
   app.post("/api/signup", async (req, res) => {
     try {
