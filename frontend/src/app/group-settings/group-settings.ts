@@ -9,7 +9,6 @@ import { SocketService } from '../services/socket';
 import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
 import { GroupBanRequest } from '../models/group-ban-request';
-import { GroupBanRequest } from '../models/group-ban-request';
 
 @Component({
   selector: 'app-group-settings',
