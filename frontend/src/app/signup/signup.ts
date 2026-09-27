@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../services/auth';
+import { UploadService } from '../services/upload';
 
 @Component({
   selector: 'app-signup',
@@ -19,8 +20,15 @@ export class Signup implements OnInit
   passwordInput: string = '';
   dobInput: string = '';
   isFirstUser = signal(false);
+  selectedFile: File | null = null;
+  selectedFileName = signal('');
 
-  constructor(private http: HttpClient, private router: Router, private authService: AuthService) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private authService: AuthService,
+    private uploadService: UploadService
+  ) {}
 
   ngOnInit(): void {
     // Skip during prerender so the result is not baked into the static page
@@ -43,6 +51,23 @@ export class Signup implements OnInit
       age--;
     }
     return age;
+  }
+
+  onFileSelected(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File exceeds 2MB limit.');
+      target.value = '';
+      this.selectedFile = null;
+      this.selectedFileName.set('');
+      return;
+    }
+
+    this.selectedFile = file;
+    this.selectedFileName.set(file.name);
   }
 
   registerUser(): void {
@@ -71,18 +96,10 @@ export class Signup implements OnInit
         {
         if (res.ok) 
           {
-          this.authService.setUser(res.user);
-          // store the user data in the session storage so that each page will have access to the user data
-          sessionStorage.setItem('user', JSON.stringify(res.user));
-          sessionStorage.setItem('username', res.user.username);
-          sessionStorage.setItem('role', res.user.role);
-
-          if (res.user.role === 'super-admin') 
-          {
-            this.router.navigateByUrl('/super-admin-dashboard');
-          } else 
-          {
-            this.router.navigateByUrl('/dashboard');
+          if (this.selectedFile) {
+            this.uploadDoodleThenFinish(res.user, this.selectedFile);
+          } else {
+            this.finishSignup(res.user);
           }
         } else {
           alert(res.message || 'Signup failed.');
@@ -92,5 +109,39 @@ export class Signup implements OnInit
         alert('Cannot connect to backend server on port 3000.');
       },
     });
+  }
+
+  // The account already exists at this point, so a failed upload keeps the default doodle
+  private uploadDoodleThenFinish(user: any, file: File): void {
+    this.uploadService.uploadAvatar(file, user.username).subscribe({
+      next: (res) => {
+        if (res.ok) {
+          user.profilePictureUrl = res.profilePictureUrl;
+        } else {
+          alert(res.message || 'Profile doodle upload failed. You can add one later in Account Settings.');
+        }
+        this.finishSignup(user);
+      },
+      error: () => {
+        alert('Profile doodle upload failed. You can add one later in Account Settings.');
+        this.finishSignup(user);
+      },
+    });
+  }
+
+  private finishSignup(user: any): void {
+    this.authService.setUser(user);
+    // store the user data in the session storage so that each page will have access to the user data
+    sessionStorage.setItem('user', JSON.stringify(user));
+    sessionStorage.setItem('username', user.username);
+    sessionStorage.setItem('role', user.role);
+
+    if (user.role === 'super-admin') 
+    {
+      this.router.navigateByUrl('/super-admin-dashboard');
+    } else 
+    {
+      this.router.navigateByUrl('/dashboard');
+    }
   }
 }
