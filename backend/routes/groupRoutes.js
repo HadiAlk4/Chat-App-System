@@ -131,10 +131,22 @@ export function groupRoutes(app) {
         return res.send({ ok: false, message: "Theme must be light or dark" });
       }
 
+      const username = String(req.body.username || "").trim();
+      if (!username) {
+        return res.status(400).send({ ok: false, message: "Username is required" });
+      }
+
       const groupsCollection = db.collection("groups");
       const group = await groupsCollection.findOne({ groupName: oldName });
       if (!group) {
         return res.status(404).send({ ok: false, message: "Group not found" });
+      }
+
+      if (!group.admins?.includes(username)) {
+        return res.status(403).send({
+          ok: false,
+          message: "Only a Group Admin can change these settings",
+        });
       }
 
       if (newName !== oldName) {

@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -17,13 +17,20 @@ import { GroupBanRequest } from '../models/group-ban-request';
   styleUrl: './group-settings.css',
 })
 export class GroupSettings implements OnInit, OnDestroy {
-  userRole: string = 'group-admin';
+  userRole: string = '';
   username: string = '';
   originalGroupName: string = '';
-  groupName: string = 'Sci-Fi Larpers';
-  groupDescription: string = 'when ts not just intersteller and chess videos';
-  groupMinAge: number = 10;
+  groupName: string = '';
+  groupDescription: string = '';
+  groupMinAge: number = 18;
   groupThemeColor: 'light' | 'dark' = 'light';
+  savedName = '';
+  savedDescription = '';
+  savedMinAge = 18;
+  savedTheme: 'light' | 'dark' = 'light';
+  confirmOpen = false;
+  pendingChanges: string[] = [];
+  ageWillRemoveMembers = false;
 
   joinRequests: (JoinRequest & { rejectReason?: string; requestedOn?: string })[] = [];
   roomRequests: RoomRequest[] = [];
@@ -36,7 +43,8 @@ export class GroupSettings implements OnInit, OnDestroy {
     private groupService: GroupService,
     private socketService: SocketService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -49,10 +57,12 @@ export class GroupSettings implements OnInit, OnDestroy {
 
     
     const routeSub = this.route.queryParams.subscribe((params) => {
-      if (params['groupName']) {
-        this.originalGroupName = params['groupName'];
-        this.groupName = params['groupName'];
+      if (!params['groupName']) {
+        this.leaveSettings();
+        return;
       }
+      this.originalGroupName = params['groupName'];
+      this.groupName = params['groupName'];
       this.loadGroup();
       this.loadJoinRequests();
       this.loadRoomRequests();
@@ -69,7 +79,14 @@ export class GroupSettings implements OnInit, OnDestroy {
 
     this.groupService.getGroupByName(groupKey).subscribe({
       next: (res) => {
-        if (!res.ok || !res.group) return;
+        if (!res.ok || !res.group) {
+          this.leaveSettings();
+          return;
+        }
+        if (!res.group.admins?.includes(this.username)) {
+          this.leaveSettings();
+          return;
+        }
         this.applyGroup(res.group);
       },
       error: (err) => console.error('Failed to load group:', err),
@@ -94,6 +111,19 @@ export class GroupSettings implements OnInit, OnDestroy {
     this.rooms = group.rooms ?? [];
     this.allowedMembers = this.buildAllowedMembers(group);
     this.bannedMembers = (group.bannedMembers ?? []).map((username) => ({ username }));
+    this.savedName = this.groupName;
+    this.savedDescription = this.groupDescription;
+    this.savedMinAge = Number(this.groupMinAge);
+    this.savedTheme = this.groupThemeColor;
+    this.cdr.markForCheck();
+  }
+
+  private leaveSettings(): void {
+    if (this.userRole === 'super-admin') {
+      this.router.navigateByUrl('/super-admin-dashboard');
+      return;
+    }
+    this.router.navigateByUrl('/my-memberships');
   }
 
   saveChanges(): void {
@@ -108,13 +138,44 @@ export class GroupSettings implements OnInit, OnDestroy {
       return;
     }
 
-    const previousName = this.originalGroupName || this.groupName;
+    const nextAge = Number(this.groupMinAge);
+    const changes: string[] = [];
+    if (groupName !== this.savedName) {
+      changes.push(`Group name: ${this.savedName} → ${groupName}`);
+    }
+    if (groupDescription !== this.savedDescription) {
+      changes.push(`Description: ${this.savedDescription} → ${groupDescription}`);
+    }
+    if (nextAge !== this.savedMinAge) {
+      changes.push(`Minimum age: ${this.savedMinAge} → ${nextAge}`);
+    }
+    if (this.groupThemeColor !== this.savedTheme) {
+      changes.push(`Theme color: ${this.themeLabel(this.savedTheme)} → ${this.themeLabel(this.groupThemeColor)}`);
+    }
+    if (!changes.length) {
+      alert('Nothing has changed.');
+      return;
+    }
+
+    this.pendingChanges = changes;
+    this.ageWillRemoveMembers = nextAge > this.savedMinAge;
+    this.confirmOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  confirmSave(): void {
+    const groupName = this.groupName.trim();
+    const groupDescription = this.groupDescription.trim();
+    const previousName = this.originalGroupName || groupName;
+    this.confirmOpen = false;
+
     this.groupService
       .updateGroup(previousName, {
         groupName,
         groupDescription,
         minAge: Number(this.groupMinAge),
         themeColor: this.groupThemeColor,
+        username: this.username,
       })
       .subscribe({
         next: (res) => {
@@ -136,6 +197,10 @@ export class GroupSettings implements OnInit, OnDestroy {
       });
   }
 
+  private themeLabel(theme: 'light' | 'dark'): string {
+    return theme === 'dark' ? 'Dark' : 'Light';
+  }
+
   private buildAllowedMembers(group: { admins?: string[]; members?: string[] }) {
     const admins = group.admins ?? [];
     const members = group.members ?? [];
@@ -152,6 +217,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       .subscribe({
         next: (requests) => {
           this.joinRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
+          this.cdr.markForCheck();
         },
         error: (err) => console.error('Failed to load join requests:', err),
       });
@@ -163,6 +229,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       .subscribe({
         next: (requests) => {
           this.roomRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
+          this.cdr.markForCheck();
         },
         error: (err) => console.error('Failed to load room requests:', err),
       });
@@ -178,6 +245,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       .subscribe({
         next: (requests) => {
           this.banRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
+          this.cdr.markForCheck();
         },
         error: (err) => console.error('Failed to load ban requests:', err),
       });

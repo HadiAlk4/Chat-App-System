@@ -39,7 +39,7 @@ export class GroupService // why not group
 
     updateGroup(
         currentGroupName: string,
-        payload: { groupName: string; groupDescription: string; minAge: number; themeColor: 'light' | 'dark' }
+        payload: { groupName: string; groupDescription: string; minAge: number; themeColor: 'light' | 'dark'; username: string }
     ): Observable<{ ok: boolean; message: string; group: Group }> {
         return this.http.patch<{ ok: boolean; message: string; group: Group }>(
             `${API_URL}/groups/${encodeURIComponent(currentGroupName)}`,
