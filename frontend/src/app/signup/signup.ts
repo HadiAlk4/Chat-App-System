@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -12,14 +12,25 @@ import { AuthService } from '../services/auth';
 })
 
 // adminPass123 - userPass123 - Password123
-export class Signup 
+export class Signup implements OnInit
 {
   usernameInput: string = '';
   emailInput: string = '';
   passwordInput: string = '';
   dobInput: string = '';
+  isFirstUser = signal(false);
 
   constructor(private http: HttpClient, private router: Router, private authService: AuthService) {}
+
+  ngOnInit(): void {
+    // Skip during prerender so the result is not baked into the static page
+    if (typeof window === 'undefined') return;
+
+    this.http.get<{ ok: boolean; firstUser: boolean }>('http://localhost:3000/api/signup/first-user').subscribe({
+      next: (res) => this.isFirstUser.set(res.ok && res.firstUser),
+      error: () => this.isFirstUser.set(false),
+    });
+  }
 
   calculateAge(dob: string): number {
     if (!dob) return -1;

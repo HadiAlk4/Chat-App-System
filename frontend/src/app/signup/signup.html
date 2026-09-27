@@ -2,6 +2,12 @@
     <div class="torn-notepad">
         <h1 class="text-center" style="font-size: 3.5rem; margin-bottom: 2rem;">Join Fabulari</h1>
 
+        @if (isFirstUser()) {
+            <p class="text-center" style="margin-top: -1rem; margin-bottom: 1.5rem;">
+                <small>No accounts exist yet, so you are signing up as the Super Admin.</small>
+            </p>
+        }
+
         <div class="form-group">          
         <label for="regUsername"> Username </label>         
         <input class="input-block" type="text" placeholder="e.g. hadialk04" id="regUsername" [(ngModel)]="usernameInput">          
