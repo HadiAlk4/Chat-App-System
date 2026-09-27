@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -17,12 +17,12 @@ import { GroupBanRequest } from '../models/group-ban-request';
   styleUrl: './group-settings.css',
 })
 export class GroupSettings implements OnInit, OnDestroy {
-  userRole: string = 'group-admin';
+  userRole: string = '';
   username: string = '';
   originalGroupName: string = '';
-  groupName: string = 'Sci-Fi Larpers';
-  groupDescription: string = 'when ts not just intersteller and chess videos';
-  groupMinAge: number = 10;
+  groupName: string = '';
+  groupDescription: string = '';
+  groupMinAge: number = 18;
   groupThemeColor: 'light' | 'dark' = 'light';
 
   joinRequests: (JoinRequest & { rejectReason?: string; requestedOn?: string })[] = [];
@@ -36,7 +36,8 @@ export class GroupSettings implements OnInit, OnDestroy {
     private groupService: GroupService,
     private socketService: SocketService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -49,10 +50,12 @@ export class GroupSettings implements OnInit, OnDestroy {
 
     
     const routeSub = this.route.queryParams.subscribe((params) => {
-      if (params['groupName']) {
-        this.originalGroupName = params['groupName'];
-        this.groupName = params['groupName'];
+      if (!params['groupName']) {
+        this.leaveSettings();
+        return;
       }
+      this.originalGroupName = params['groupName'];
+      this.groupName = params['groupName'];
       this.loadGroup();
       this.loadJoinRequests();
       this.loadRoomRequests();
@@ -69,7 +72,14 @@ export class GroupSettings implements OnInit, OnDestroy {
 
     this.groupService.getGroupByName(groupKey).subscribe({
       next: (res) => {
-        if (!res.ok || !res.group) return;
+        if (!res.ok || !res.group) {
+          this.leaveSettings();
+          return;
+        }
+        if (!res.group.admins?.includes(this.username)) {
+          this.leaveSettings();
+          return;
+        }
         this.applyGroup(res.group);
       },
       error: (err) => console.error('Failed to load group:', err),
@@ -94,6 +104,15 @@ export class GroupSettings implements OnInit, OnDestroy {
     this.rooms = group.rooms ?? [];
     this.allowedMembers = this.buildAllowedMembers(group);
     this.bannedMembers = (group.bannedMembers ?? []).map((username) => ({ username }));
+    this.cdr.markForCheck();
+  }
+
+  private leaveSettings(): void {
+    if (this.userRole === 'super-admin') {
+      this.router.navigateByUrl('/super-admin-dashboard');
+      return;
+    }
+    this.router.navigateByUrl('/my-memberships');
   }
 
   saveChanges(): void {
@@ -115,6 +134,7 @@ export class GroupSettings implements OnInit, OnDestroy {
         groupDescription,
         minAge: Number(this.groupMinAge),
         themeColor: this.groupThemeColor,
+        username: this.username,
       })
       .subscribe({
         next: (res) => {
@@ -152,6 +172,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       .subscribe({
         next: (requests) => {
           this.joinRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
+          this.cdr.markForCheck();
         },
         error: (err) => console.error('Failed to load join requests:', err),
       });
@@ -163,6 +184,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       .subscribe({
         next: (requests) => {
           this.roomRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
+          this.cdr.markForCheck();
         },
         error: (err) => console.error('Failed to load room requests:', err),
       });
@@ -178,6 +200,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       .subscribe({
         next: (requests) => {
           this.banRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
+          this.cdr.markForCheck();
         },
         error: (err) => console.error('Failed to load ban requests:', err),
       });
