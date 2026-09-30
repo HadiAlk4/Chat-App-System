@@ -122,6 +122,10 @@ export class GroupService // why not group
         return this.http.get<GroupRequest[]>(`${API_URL}/group-requests?status=pending`);
     }
 
+    getGroupRequests(params: { status?: string; creatorUserName?: string } = {}): Observable<GroupRequest[]> {
+        return this.http.get<GroupRequest[]>(`${API_URL}/group-requests`, { params });
+    }
+
     approveRequest(requestId: string): Observable<{ok: boolean, message: string}> {
         return this.http.patch<{ok: boolean, message: string}>(`${API_URL}/group-requests/${requestId}/approve`, {});
     }

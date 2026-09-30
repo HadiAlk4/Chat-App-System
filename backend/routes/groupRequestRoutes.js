@@ -54,7 +54,9 @@ export function groupRequestRoutes(app, io) {
 
   app.get("/api/group-requests", async (req, res) => {
     try {
-      const filter = req.query.status ? { status: req.query.status } : {};
+      const filter = {};
+      if (req.query.status) filter.status = req.query.status;
+      if (req.query.creatorUserName) filter.creatorUserName = req.query.creatorUserName;
       const requests = await db.collection("groupRequests").find(filter).toArray();
       res.send(requests);
     } catch (err) {

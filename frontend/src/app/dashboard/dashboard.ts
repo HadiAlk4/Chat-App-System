@@ -55,7 +55,9 @@ export class Dashboard implements OnInit
   {
     this.groupService.getGroups().subscribe({
       next: (groups) => {
-        this.availableGroups = groups;
+        this.availableGroups = this.userRole === 'super-admin'
+          ? groups
+          : groups.filter(group => !this.isInGroup(group));
         this.applySearch();
         this.cdr.markForCheck();
       },
@@ -63,6 +65,10 @@ export class Dashboard implements OnInit
         console.error('Error loading groups:', error);
       }
     });
+  }
+
+  private isInGroup(group: Group): boolean {
+    return Boolean(group.members?.includes(this.username) || group.admins?.includes(this.username));
   }
 
   proposeGroup(): void {

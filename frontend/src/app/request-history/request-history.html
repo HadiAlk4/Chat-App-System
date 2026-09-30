@@ -61,6 +61,52 @@
             </tbody>
           </table>
 
+          <h4 style="margin-top: 2rem;">Pending Group Proposals</h4>
+          <table class="table-hover">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Group Name</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of pendingGroupRequests; track req._id ?? req.groupName) {
+                <tr>
+                  <td>{{ req.createdAt | date:'dd/MM/yy' }}</td>
+                  <td>{{ req.groupName }}</td>
+                  <td><span class="badge secondary">Pending</span></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="3" style="text-align: center;">No pending group proposals.</td></tr>
+              }
+            </tbody>
+          </table>
+
+          <h4 style="margin-top: 2rem;">Pending Group Deletion Requests</h4>
+          <table class="table-hover">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Group Name</th>
+                <th>Your Reason</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of pendingDeletionRequests; track req._id ?? req.groupName) {
+                <tr>
+                  <td>{{ req.createdAt | date:'dd/MM/yy' }}</td>
+                  <td>{{ req.groupName }}</td>
+                  <td>{{ req.reason }}</td>
+                  <td><span class="badge secondary">Pending</span></td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" style="text-align: center;">No pending group deletion requests.</td></tr>
+              }
+            </tbody>
+          </table>
+
           <h4 style="margin-top: 2rem;">Pending Room Proposals</h4>
           <table class="table-hover">
             <thead>
@@ -132,6 +178,50 @@
                 </tr>
               } @empty {
                 <tr><td colspan="3" style="text-align: center;">No rejected join requests.</td></tr>
+              }
+            </tbody>
+          </table>
+
+          <h4 style="margin-top: 2rem;">Rejected Group Proposals</h4>
+          <table class="table-alternating">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Group Name</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of rejectedGroupRequests; track req._id ?? req.groupName) {
+                <tr>
+                  <td>{{ req.reviewedAt | date:'dd/MM/yy' }}</td>
+                  <td>{{ req.groupName }}</td>
+                  <td>{{ req.rejectionReason }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="3" style="text-align: center;">No rejected group proposals.</td></tr>
+              }
+            </tbody>
+          </table>
+
+          <h4 style="margin-top: 2rem;">Rejected Group Deletion Requests</h4>
+          <table class="table-alternating">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Group Name</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (req of rejectedDeletionRequests; track req._id ?? req.groupName) {
+                <tr>
+                  <td>{{ req.reviewedAt | date:'dd/MM/yy' }}</td>
+                  <td>{{ req.groupName }}</td>
+                  <td>{{ req.rejectionReason }}</td>
+                </tr>
+              } @empty {
+                <tr><td colspan="3" style="text-align: center;">No rejected group deletion requests.</td></tr>
               }
             </tbody>
           </table>
@@ -217,39 +307,15 @@
               </tr>
             </thead>
             <tbody>
-              @for (prop of pendingRoomRequests; track prop._id ?? prop.roomName) {
+              @for (prop of roomRequests; track prop._id ?? prop.roomName) {
                 <tr>
                   <td>{{ prop.createdAt | date:'dd/MM/yy' }}</td>
                   <td>{{ prop.groupName }}</td>
                   <td>#{{ prop.roomName }}</td>
-                  <td><span class="badge secondary">Pending</span></td>
+                  <td><span class="badge" [class]="statusBadge(prop.status)">{{ prop.status }}</span></td>
                 </tr>
               } @empty {
-                <tr><td colspan="4" style="text-align: center;">No pending room proposals.</td></tr>
-              }
-            </tbody>
-          </table>
-
-          <h4 style="margin-top: 2rem;">Pending Ban Requests</h4>
-          <table class="table-hover">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Group Name</th>
-                <th>User</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (req of pendingBanRequests; track req._id ?? req.targetUsername) {
-                <tr>
-                  <td>{{ req.createdAt | date:'dd/MM/yy' }}</td>
-                  <td>{{ req.groupName }}</td>
-                  <td>{{ req.targetUsername }}</td>
-                  <td><span class="badge secondary">Pending</span></td>
-                </tr>
-              } @empty {
-                <tr><td colspan="4" style="text-align: center;">No pending ban requests.</td></tr>
+                <tr><td colspan="4" style="text-align: center;">No room proposals yet.</td></tr>
               }
             </tbody>
           </table>
@@ -287,15 +353,15 @@
               </tr>
             </thead>
             <tbody>
-              @for (req of pendingBanRequests; track req._id ?? req.targetUsername) {
+              @for (req of banRequests; track req._id ?? req.targetUsername) {
                 <tr>
                   <td>{{ req.createdAt | date:'dd/MM/yy' }}</td>
                   <td>{{ req.groupName }}</td>
                   <td>{{ req.targetUsername }}</td>
-                  <td><span class="badge secondary">Pending</span></td>
+                  <td><span class="badge" [class]="statusBadge(req.status)">{{ req.status }}</span></td>
                 </tr>
               } @empty {
-                <tr><td colspan="4" style="text-align: center;">No pending ban requests.</td></tr>
+                <tr><td colspan="4" style="text-align: center;">No ban requests yet.</td></tr>
               }
             </tbody>
           </table>

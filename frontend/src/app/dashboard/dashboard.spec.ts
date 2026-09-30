@@ -6,6 +6,7 @@ import { Dashboard } from './dashboard';
 describe('Dashboard', () => {
   let fixture: ComponentFixture<Dashboard>;
   let submitProposal: ReturnType<typeof vi.fn>;
+  let getGroups: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     sessionStorage.setItem(
@@ -13,6 +14,7 @@ describe('Dashboard', () => {
       JSON.stringify({ username: 'ada', email: 'ada@example.com', role: 'user' })
     );
     submitProposal = vi.fn(() => of({ ok: true, message: 'Group request submitted successfully' }));
+    getGroups = vi.fn(() => of([]));
     vi.spyOn(window, 'alert').mockImplementation(() => undefined);
 
     await TestBed.configureTestingModule({
@@ -21,7 +23,7 @@ describe('Dashboard', () => {
         {
           provide: GroupService,
           useValue: {
-            getGroups: vi.fn(() => of([])),
+            getGroups,
             submitProposal,
           },
         },
@@ -50,5 +52,18 @@ describe('Dashboard', () => {
     component.proposeGroup();
 
     expect(submitProposal).toHaveBeenCalledWith(proposal, 'ada', 'ada@example.com');
+  });
+
+  it('hides groups the user already belongs to from the join list', () => {
+    const base = { groupDescription: '', minAge: 18, themeColor: 'light' as const };
+    getGroups.mockReturnValue(of([
+      { ...base, groupName: 'Mine', admins: ['ada'], members: ['ada'] },
+      { ...base, groupName: 'Joined', admins: ['bob'], members: ['bob', 'ada'] },
+      { ...base, groupName: 'Open', admins: ['bob'], members: ['bob'] },
+    ]));
+
+    fixture.componentInstance.loadGroups();
+
+    expect(fixture.componentInstance.displayedGroups.map(g => g.groupName)).toEqual(['Open']);
   });
 });

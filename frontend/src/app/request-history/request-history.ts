@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -10,6 +10,8 @@ import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
 import { Group } from '../models/group';
 import { GroupBanRequest } from '../models/group-ban-request';
+import { GroupRequest } from '../models/group-request';
+import { GroupDeletionRequest } from '../models/group-deletion-request';
 
 @Component({
   selector: 'app-request-history',
@@ -24,6 +26,13 @@ export class RequestHistory implements OnInit, OnDestroy {
   pendingJoinRequests: JoinRequest[] = [];
   rejectedJoinRequests: JoinRequest[] = [];
 
+  pendingGroupRequests: GroupRequest[] = [];
+  rejectedGroupRequests: GroupRequest[] = [];
+
+  pendingDeletionRequests: GroupDeletionRequest[] = [];
+  rejectedDeletionRequests: GroupDeletionRequest[] = [];
+
+  roomRequests: RoomRequest[] = [];
   pendingRoomRequests: RoomRequest[] = [];
   rejectedRoomRequests: RoomRequest[] = [];
 
@@ -31,6 +40,7 @@ export class RequestHistory implements OnInit, OnDestroy {
   selectedGroupForRoom: string = '';
   newRoomNameInput: string = '';
 
+  banRequests: GroupBanRequest[] = [];
   pendingBanRequests: GroupBanRequest[] = [];
   rejectedBanRequests: GroupBanRequest[] = [];
   selectedGroupForBan: string = '';
@@ -41,7 +51,8 @@ export class RequestHistory implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private groupService: GroupService,
-    private socketService: SocketService
+    private socketService: SocketService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -50,6 +61,8 @@ export class RequestHistory implements OnInit, OnDestroy {
       this.userName = user.username;
       this.userRole = user.role;
     }
+
+    if (!this.userName) return;
 
     this.loadHistory();
     this.loadUserGroups();
@@ -61,22 +74,45 @@ export class RequestHistory implements OnInit, OnDestroy {
       next: (requests) => {
         this.pendingJoinRequests = requests.filter((r) => r.status === 'pending');
         this.rejectedJoinRequests = requests.filter((r) => r.status === 'rejected');
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Failed to load join requests:', err),
     });
 
+    this.groupService.getGroupRequests({ creatorUserName: this.userName }).subscribe({
+      next: (requests) => {
+        this.pendingGroupRequests = requests.filter((r) => r.status === 'pending');
+        this.rejectedGroupRequests = requests.filter((r) => r.status === 'rejected');
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Failed to load group proposals:', err),
+    });
+
+    this.groupService.getGroupDeletionRequests({ requestedBy: this.userName }).subscribe({
+      next: (requests) => {
+        this.pendingDeletionRequests = requests.filter((r) => r.status === 'pending');
+        this.rejectedDeletionRequests = requests.filter((r) => r.status === 'rejected');
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Failed to load group deletion requests:', err),
+    });
+
     this.groupService.getRoomRequests({ username: this.userName }).subscribe({
       next: (requests) => {
+        this.roomRequests = requests;
         this.pendingRoomRequests = requests.filter((r) => r.status === 'pending');
         this.rejectedRoomRequests = requests.filter((r) => r.status === 'rejected');
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Failed to load room requests:', err),
     });
 
     this.groupService.getGroupBanRequests({ requestedBy: this.userName }).subscribe({
       next: (requests) => {
+        this.banRequests = requests;
         this.pendingBanRequests = requests.filter((r) => r.status === 'pending');
         this.rejectedBanRequests = requests.filter((r) => r.status === 'rejected');
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Failed to load ban requests:', err),
     });
@@ -88,6 +124,7 @@ export class RequestHistory implements OnInit, OnDestroy {
         this.userJoinedGroups = groups.filter(
           (g) => g.members?.includes(this.userName) || g.admins?.includes(this.userName)
         );
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Failed to load user groups:', err),
     });
@@ -130,32 +167,44 @@ export class RequestHistory implements OnInit, OnDestroy {
             this.loadHistory();
           }
         },
-        error: () => alert('Failed to submit room proposal.'),
+        error: (err) => alert(err.error?.message || 'Failed to submit room proposal.'),
       });
   }
 
   listenToSockets(): void {
-    const resolvedJoin = this.socketService.onJoinRequestResolved().subscribe(() => {
-      this.loadHistory();
-      this.loadUserGroups();
-    });
+    const refresh = () => this.loadHistory();
 
-    const resolvedRoom = this.socketService.onRoomRequestResolved().subscribe(() => {
-      this.loadHistory();
-    });
+    this.subs.add(this.socketService.onJoinRequestCreated().subscribe(refresh));
+    this.subs.add(
+      this.socketService.onJoinRequestResolved().subscribe(() => {
+        this.loadHistory();
+        this.loadUserGroups();
+      })
+    );
+    this.subs.add(this.socketService.onGroupRequestCreated().subscribe(refresh));
+    this.subs.add(
+      this.socketService.onGroupRequestResolved().subscribe(() => {
+        this.loadHistory();
+        this.loadUserGroups();
+      })
+    );
+    this.subs.add(this.socketService.onRoomRequestCreated().subscribe(refresh));
+    this.subs.add(this.socketService.onRoomRequestResolved().subscribe(refresh));
+    this.subs.add(this.socketService.onGroupBanRequestCreated().subscribe(refresh));
+    this.subs.add(this.socketService.onGroupBanRequestResolved().subscribe(refresh));
+    this.subs.add(this.socketService.onGroupDeletionRequestCreated().subscribe(refresh));
+    this.subs.add(
+      this.socketService.onGroupDeletionRequestResolved().subscribe(() => {
+        this.loadHistory();
+        this.loadUserGroups();
+      })
+    );
+  }
 
-    const banCreated = this.socketService.onGroupBanRequestCreated().subscribe(() => {
-      this.loadHistory();
-    });
-
-    const banResolved = this.socketService.onGroupBanRequestResolved().subscribe(() => {
-      this.loadHistory();
-    });
-
-    this.subs.add(resolvedJoin);
-    this.subs.add(resolvedRoom);
-    this.subs.add(banCreated);
-    this.subs.add(banResolved);
+  statusBadge(status: string): string {
+    if (status === 'approved') return 'success';
+    if (status === 'rejected') return 'danger';
+    return 'secondary';
   }
 
   onLogout(): void {
