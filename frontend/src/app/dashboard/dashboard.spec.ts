@@ -8,7 +8,7 @@ describe('Dashboard', () => {
   let submitProposal: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    localStorage.setItem(
+    sessionStorage.setItem(
       'currentUser',
       JSON.stringify({ username: 'ada', email: 'ada@example.com', role: 'user' })
     );
@@ -33,7 +33,7 @@ describe('Dashboard', () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('sends a named proposal through the group service', () => {

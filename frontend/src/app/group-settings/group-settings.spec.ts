@@ -10,7 +10,7 @@ describe('GroupSettings', () => {
   let rejectJoinRequest: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    localStorage.setItem(
+    sessionStorage.setItem(
       'currentUser',
       JSON.stringify({ username: 'ada', email: 'ada@example.com', role: 'group-admin' })
     );
@@ -63,7 +63,7 @@ describe('GroupSettings', () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('fills the form from the loaded group', () => {
@@ -112,11 +112,11 @@ describe('GroupSettings', () => {
 
 describe('GroupSettings access', () => {
   afterEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('sends a regular member away from group settings', async () => {
-    localStorage.setItem(
+    sessionStorage.setItem(
       'currentUser',
       JSON.stringify({ username: 'bea', email: 'bea@example.com', role: 'user' })
     );

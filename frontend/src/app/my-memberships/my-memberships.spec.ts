@@ -7,7 +7,7 @@ describe('MyMemberships', () => {
   let fixture: ComponentFixture<MyMemberships>;
 
   beforeEach(async () => {
-    localStorage.setItem(
+    sessionStorage.setItem(
       'currentUser',
       JSON.stringify({ username: 'ada', email: 'ada@example.com', role: 'user' })
     );
@@ -41,7 +41,7 @@ describe('MyMemberships', () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('renders the mocked membership', () => {

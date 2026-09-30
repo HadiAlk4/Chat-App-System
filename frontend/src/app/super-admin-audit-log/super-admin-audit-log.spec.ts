@@ -23,7 +23,7 @@ describe('SuperAdminAuditLog', () => {
   let fixture: ComponentFixture<SuperAdminAuditLog>;
 
   beforeEach(async () => {
-    localStorage.setItem(
+    sessionStorage.setItem(
       'currentUser',
       JSON.stringify({ username: 'root', email: 'root@example.com', role: 'super-admin' })
     );
@@ -54,7 +54,7 @@ describe('SuperAdminAuditLog', () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   function tableText(): string {

@@ -23,7 +23,7 @@ describe('Chat', () => {
   let sendMessage: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    localStorage.setItem(
+    sessionStorage.setItem(
       'currentUser',
       JSON.stringify({ username: 'ada', email: 'ada@example.com', role: 'user' })
     );
@@ -83,7 +83,7 @@ describe('Chat', () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('does not send a message that contains an external link', () => {

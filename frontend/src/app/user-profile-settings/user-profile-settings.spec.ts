@@ -8,7 +8,7 @@ describe('UserProfileSettings', () => {
   let updatePassword: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    localStorage.setItem(
+    sessionStorage.setItem(
       'currentUser',
       JSON.stringify({
         username: 'ada',
@@ -30,7 +30,7 @@ describe('UserProfileSettings', () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('shows the service error when the current password is wrong', () => {
