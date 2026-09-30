@@ -9,7 +9,7 @@ describe('SuperAdminDashboard', () => {
   let fixture: ComponentFixture<SuperAdminDashboard>;
 
   beforeEach(async () => {
-    localStorage.setItem(
+    sessionStorage.setItem(
       'currentUser',
       JSON.stringify({ username: 'root', email: 'root@example.com', role: 'super-admin' })
     );
@@ -67,7 +67,7 @@ describe('SuperAdminDashboard', () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('renders pending group proposals from the group service', () => {

@@ -12,14 +12,15 @@ export class AuthService
     {
         if(typeof window !== 'undefined')
         {
-            localStorage.setItem('currentUser', JSON.stringify(user));
+            sessionStorage.setItem('currentUser', JSON.stringify(user));
         }
     }
 
+    // sessionStorage is per tab, so logging in elsewhere can't swap this tab's user
     getUser(): any
     {
         if(typeof window === 'undefined') return null;
-        const data = localStorage.getItem('currentUser');
+        const data = sessionStorage.getItem('currentUser');
         return data ? JSON.parse(data) : null;
     }
 
@@ -27,6 +28,7 @@ export class AuthService
     {
         if(typeof window !== 'undefined')
         {
+            sessionStorage.removeItem('currentUser');
             localStorage.removeItem('currentUser');
             sessionStorage.removeItem('user');
             sessionStorage.removeItem('username');

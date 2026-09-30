@@ -8,7 +8,7 @@ describe('RequestHistory', () => {
   let fixture: ComponentFixture<RequestHistory>;
 
   beforeEach(async () => {
-    localStorage.setItem(
+    sessionStorage.setItem(
       'currentUser',
       JSON.stringify({ username: 'ada', email: 'ada@example.com', role: 'user' })
     );
@@ -55,7 +55,7 @@ describe('RequestHistory', () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
   it('renders the mocked join request', () => {
