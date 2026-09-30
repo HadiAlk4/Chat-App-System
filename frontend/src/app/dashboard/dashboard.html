@@ -59,7 +59,11 @@
                     <h5 class="card-subtitle">Minimum Age: {{ group.minAge }}</h5>
                     <p class="card-text">{{ group.groupDescription }}</p>
                     @if (userRole !== 'super-admin') {
-                        <button class="btn-primary" (click)="requestToJoin(group)">Request to Join</button>
+                        @if (group.bannedMembers?.includes(username)) {
+                            <button class="btn-danger-outline" disabled>Banned from Group</button>
+                        } @else {
+                            <button class="btn-primary" (click)="requestToJoin(group)">Request to Join</button>
+                        }
                     }
                 </div>
             </div>

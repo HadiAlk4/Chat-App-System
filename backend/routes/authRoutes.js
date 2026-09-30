@@ -11,6 +11,17 @@ export function authRoutes(app) {
         return res.send({ ok: false, valid: false, message: "Email and password are required" });
       }
 
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const banned = await db.collection("bannedEmails").findOne({ email: normalizedEmail });
+      if (banned) {
+        return res.send({
+          ok: false,
+          valid: false,
+          banned: true,
+          message: "This account has been permanently banned and can no longer log in",
+        });
+      }
+
       const usersCollection = db.collection("users");
       const user = await usersCollection.findOne({ email });
 

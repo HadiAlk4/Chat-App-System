@@ -32,6 +32,19 @@ describe("auth routes", () => {
       expect(res.body.valid).to.equal(false);
       expect(res.body.message).to.equal("Invalid Credentials");
     });
+
+    it("tells a permanently banned account it cannot log in", async () => {
+      await getDB().collection("bannedEmails").insertOne({ email: "ada@example.com" });
+
+      const res = await request.execute(app).post("/api/auth").send({
+        email: "ada@example.com",
+        password: "Password1",
+      });
+
+      expect(res.body.ok).to.equal(false);
+      expect(res.body.banned).to.equal(true);
+      expect(res.body.message).to.match(/permanently banned/);
+    });
   });
 
   describe("POST /api/signup", () => {

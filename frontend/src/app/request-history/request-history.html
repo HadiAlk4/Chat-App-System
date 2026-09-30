@@ -327,7 +327,7 @@
         <div class="paper container container-sm">
           <div class="form-group">
             <label>Select Group You Belong To</label>
-            <select [(ngModel)]="selectedGroupForBan" class="input-block">
+            <select [(ngModel)]="selectedGroupForBan" (ngModelChange)="onBanGroupChange()" class="input-block">
               <option value="" disabled selected>Choose Group</option>
               @for (grp of userJoinedGroups; track grp.groupName) {
                 <option [value]="grp.groupName">{{ grp.groupName }}</option>
@@ -337,7 +337,14 @@
 
           <div class="row">
             <div class="form-group col-9">
-              <input [(ngModel)]="banTargetUsername" placeholder="Username to ban" class="input-block">
+              <select [(ngModel)]="banTargetUsername" class="input-block" [disabled]="!selectedGroupForBan">
+                <option value="" disabled>
+                  {{ !selectedGroupForBan ? 'Choose a group first' : banCandidates.length ? 'Choose User' : 'No members to ban' }}
+                </option>
+                @for (member of banCandidates; track member) {
+                  <option [value]="member">{{ member }}</option>
+                }
+              </select>
             </div>
             <button (click)="submitBanRequest()" class="btn-danger col-3">Submit Ban Request</button>
           </div>

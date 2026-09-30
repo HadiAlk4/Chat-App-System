@@ -77,6 +77,11 @@ export function requestRoutes(app, io) {
 
       if (!request) return res.send({ ok: false, message: "Pending join request not found" });
 
+      const group = await db.collection("groups").findOne({ groupName: request.groupName });
+      if (group?.bannedMembers?.includes(request.username)) {
+        return res.send({ ok: false, message: "User is permanently banned from this group" });
+      }
+
       await db.collection("groups").updateOne(
         { groupName: request.groupName },
         { $addToSet: { members: request.username } }

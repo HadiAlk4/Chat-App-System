@@ -130,6 +130,17 @@ export class RequestHistory implements OnInit, OnDestroy {
     });
   }
 
+  get banCandidates(): string[] {
+    const group = this.userJoinedGroups.find((g) => g.groupName === this.selectedGroupForBan);
+    if (!group) return [];
+    const admins = group.admins ?? [];
+    return (group.members ?? []).filter((m) => !admins.includes(m) && m !== this.userName);
+  }
+
+  onBanGroupChange(): void {
+    this.banTargetUsername = '';
+  }
+
   submitBanRequest(): void {
     const targetUsername = this.banTargetUsername.trim();
     if (!this.selectedGroupForBan || !targetUsername) {
