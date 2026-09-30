@@ -31,7 +31,7 @@ describe('Group approval', () => {
 
     cy.loginViaUi(users.ada);
     cy.location('pathname').should('equal', '/dashboard');
-    cy.contains('.card-title', 'Writers Guild');
+    cy.contains('No available groups found.');
     cy.contains('button', 'My Memberships').click();
     cy.contains('.card-title', 'Writers Guild');
   });
