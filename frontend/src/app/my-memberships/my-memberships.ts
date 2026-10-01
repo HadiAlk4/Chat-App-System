@@ -1,10 +1,12 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../services/auth';
 import { DialogService } from '../services/dialog';
 import { GroupService } from '../services/group';
+import { SocketService } from '../services/socket';
 import { ToastService } from '../services/toast';
 import { Group } from '../models/group';
 
@@ -19,7 +21,7 @@ export class MyMemberships implements OnInit
   currentUserRole: string = '';
   currentUsername: string = '';
   joinedGroups: Group[] = [];
-  displayedGroups: Group[] = [];
+  readonly displayedGroups = signal<Group[]>([]);
   searchQuery: string = '';
   roleFilter: string = 'All Roles';
 
@@ -35,7 +37,8 @@ export class MyMemberships implements OnInit
     private groupService: GroupService,
     private toast: ToastService,
     private dialog: DialogService,
-    private cdr: ChangeDetectorRef
+    private socketService: SocketService,
+    private destroyRef: DestroyRef
   ) {}
 
   ngOnInit(): void
@@ -47,13 +50,21 @@ export class MyMemberships implements OnInit
         this.currentUsername = user.username;
       }
       this.loadMemberships();
+      this.socketService
+        .onJoinRequestResolved()
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.loadMemberships());
+      this.socketService
+        .onGroupRequestResolved()
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.loadMemberships());
   }
 
   loadMemberships(): void
   {
       if (!this.currentUsername) {
         this.joinedGroups = [];
-        this.displayedGroups = [];
+        this.displayedGroups.set([]);
         return;
       }
 
@@ -61,12 +72,11 @@ export class MyMemberships implements OnInit
         next: (groups) => {
           this.joinedGroups = groups;
           this.applyFilters();
-          this.cdr.markForCheck();
         },
         error: (err) => {
           console.error('Failed to load memberships:', err);
           this.joinedGroups = [];
-          this.displayedGroups = [];
+          this.displayedGroups.set([]);
         }
       });
   }
@@ -117,7 +127,7 @@ export class MyMemberships implements OnInit
   applyFilters() {
       const lowerCaseQuery = this.searchQuery.toLowerCase().trim();
 
-      this.displayedGroups = this.joinedGroups.filter(group =>
+      this.displayedGroups.set(this.joinedGroups.filter(group =>
         {
           const matchesName = group.groupName.toLowerCase().includes(lowerCaseQuery);
           let matchesRole = true;
@@ -126,6 +136,6 @@ export class MyMemberships implements OnInit
               matchesRole = this.roleFilter === 'group-admin' ? isAdmin : !isAdmin;
           }
           return matchesName && matchesRole;
-      });
+      }));
   }
 }

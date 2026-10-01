@@ -43,7 +43,7 @@ export function createApp(io = createIoStub()) {
   authRoutes(app);
   userRoutes(app);
   groupRoutes(app);
-  roomRoutes(app);
+  roomRoutes(app, io);
   memberRoutes(app);
   groupRequestRoutes(app, io);
   requestRoutes(app, io);

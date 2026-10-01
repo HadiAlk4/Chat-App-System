@@ -49,6 +49,11 @@ interface GroupDeletionRequestResolved {
   groupName: string;
 }
 
+interface RoomsUpdated {
+  groupName: string;
+  rooms: string[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -102,6 +107,10 @@ export class SocketService {
 
   onGroupDeletionRequestResolved(): Observable<GroupDeletionRequestResolved> {
     return this.listen<GroupDeletionRequestResolved>('group-deletion-request-resolved');
+  }
+
+  onRoomsUpdated(): Observable<RoomsUpdated> {
+    return this.listen<RoomsUpdated>('rooms-updated');
   }
 
   private listen<T>(eventName: string): Observable<T> {

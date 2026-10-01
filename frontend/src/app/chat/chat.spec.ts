@@ -56,6 +56,8 @@ describe('Chat', () => {
           useValue: {
             onAccountDeletionRequestResolved: () => EMPTY,
             onJoinRequestResolved: () => EMPTY,
+            onRoomRequestResolved: () => EMPTY,
+            onRoomsUpdated: () => EMPTY,
           },
         },
         {

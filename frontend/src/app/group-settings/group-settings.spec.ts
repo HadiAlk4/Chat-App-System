@@ -67,7 +67,7 @@ describe('GroupSettings', () => {
   });
 
   it('does not call the API when a join rejection has no reason', () => {
-    fixture.componentInstance.joinRequests = [
+    fixture.componentInstance.joinRequests.set([
       {
         _id: '1',
         groupName: 'Readers',
@@ -78,7 +78,7 @@ describe('GroupSettings', () => {
         createdAt: '2026-01-01T00:00:00.000Z',
         rejectReason: '   ',
       },
-    ];
+    ]);
 
     fixture.componentInstance.rejectRequest(0);
 

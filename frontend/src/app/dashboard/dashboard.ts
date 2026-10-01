@@ -1,9 +1,11 @@
-import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { GroupService } from '../services/group';
 import { PendingRequestsService } from '../services/pending-requests';
+import { SocketService } from '../services/socket';
 import { ToastService } from '../services/toast';
 import { Group } from '../models/group';
 
@@ -24,7 +26,7 @@ export class Dashboard implements OnInit
   email: string = '';
 
   availableGroups: Group[] = [];
-  displayedGroups: Group[] = [];
+  readonly displayedGroups = signal<Group[]>([]);
   searchQuery: string = '';
 
   newGroup: Group = {
@@ -41,8 +43,8 @@ export class Dashboard implements OnInit
     private authService: AuthService,
     private groupService: GroupService,
     private toast: ToastService,
-    private destroyRef: DestroyRef,
-    private cdr: ChangeDetectorRef
+    private socketService: SocketService,
+    private destroyRef: DestroyRef
   ) {}
 
 
@@ -57,6 +59,10 @@ export class Dashboard implements OnInit
     } 
     this.loadGroups();
     this.pendingRequests.track(this.username, this.destroyRef);
+    this.socketService
+      .onGroupRequestResolved()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.loadGroups());
   }
 
   loadGroups(): void
@@ -67,7 +73,6 @@ export class Dashboard implements OnInit
           ? groups
           : groups.filter(group => !this.isInGroup(group));
         this.applySearch();
-        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading groups:', error);
@@ -110,13 +115,13 @@ export class Dashboard implements OnInit
     const query = this.searchQuery.trim().toLowerCase();
   
     if (!query) {
-      this.displayedGroups = [...this.availableGroups];
+      this.displayedGroups.set([...this.availableGroups]);
       return;
     }
   
-    this.displayedGroups = this.availableGroups.filter(group =>
+    this.displayedGroups.set(this.availableGroups.filter(group =>
       group.groupName.toLowerCase().includes(query)
-    );
+    ));
   }
 
   requestToJoin(group: Group): void {

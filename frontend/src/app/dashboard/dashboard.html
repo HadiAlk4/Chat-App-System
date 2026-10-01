@@ -57,7 +57,7 @@
     </div>
 
     <div class="row" style="gap: 1.5rem;">
-        @for (group of displayedGroups; track group._id ?? group.groupName) 
+        @for (group of displayedGroups(); track group._id ?? group.groupName) 
         {
             <div class="card" style="width: 20rem; color: grey; background-color: rgb(245, 242, 242);">
                 <div class="card-body">

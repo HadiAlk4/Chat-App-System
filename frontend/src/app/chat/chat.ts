@@ -31,7 +31,7 @@ export class Chat implements OnInit, OnDestroy {
   currentUser = '';
   currentUserRole = 'user';
 
-  rooms: string[] = [];
+  readonly rooms = signal<string[]>([]);
   groupMembers: { userName: string; isAdmin: boolean }[] = [];
   readonly onlineRoomMembers = signal<string[]>([]);
   readonly messages = signal<ChatMessage[]>([]);
@@ -106,7 +106,7 @@ export class Chat implements OnInit, OnDestroy {
           const g = res.group;
           this.groupThemeColor = g.themeColor;
           this.applyChatTheme();
-          this.rooms = g.rooms || ['Main Room'];
+          this.applyRoomList(g.rooms || ['Main Room'], true);
 
           const admins = new Set(g.admins || []);
           const allMembers = Array.from(new Set([...(g.members || []), ...(g.admins || [])]));
@@ -115,14 +115,31 @@ export class Chat implements OnInit, OnDestroy {
             isAdmin: admins.has(u),
           }));
 
-          // Default to first room
-          if (this.rooms.length > 0) {
-            this.switchRooms(this.rooms[0]);
-          }
           this.cdr.markForCheck();
         }
       },
       error: (err) => console.error('Failed to load group for chat:', err)
+    });
+  }
+
+  private applyRoomList(nextRooms: string[], resetToFirst: boolean): void {
+    const rooms = nextRooms ?? [];
+    this.rooms.set(rooms);
+    if (!rooms.length) return;
+    if (resetToFirst || !rooms.includes(this.currentRoom)) {
+      this.switchRooms(rooms[0]);
+    }
+  }
+
+  private refreshRooms(): void {
+    if (!this.currGroupName) return;
+    this.groupService.getGroupByName(this.currGroupName).subscribe({
+      next: (res) => {
+        if (res.ok && res.group) {
+          this.applyRoomList(res.group.rooms || [], false);
+        }
+      },
+      error: (err) => console.error('Failed to refresh rooms:', err),
     });
   }
 
@@ -215,8 +232,20 @@ export class Chat implements OnInit, OnDestroy {
     this.subscriptions.add(deletedSub);
     this.subscriptions.add(roomUsersSub);
     this.subscriptions.add(typingSub);
+    const roomsUpdatedSub = this.socketService.onRoomsUpdated().subscribe(({ groupName, rooms }) => {
+      if (groupName !== this.currGroupName) return;
+      this.applyRoomList(rooms || [], false);
+    });
+
+    const roomResolvedSub = this.socketService.onRoomRequestResolved().subscribe(({ groupName, status }) => {
+      if (groupName !== this.currGroupName || status !== 'approved') return;
+      this.refreshRooms();
+    });
+
     this.subscriptions.add(joinResolvedSub);
     this.subscriptions.add(accountDeletedSub);
+    this.subscriptions.add(roomsUpdatedSub);
+    this.subscriptions.add(roomResolvedSub);
   }
 
   onChatFileSelected(event: Event): void {

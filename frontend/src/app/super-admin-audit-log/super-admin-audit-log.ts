@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -14,7 +14,7 @@ import { AuditLog } from '../models/audit-log';
 })
 export class SuperAdminAuditLog implements OnInit {
   userName = 'Super_mAllen';
-  displayedAuditLog: AuditLog[] = [];
+  displayedAuditLog = signal<AuditLog[]>([]);
 
   startDate = '';
   endDate = '';
@@ -60,11 +60,11 @@ export class SuperAdminAuditLog implements OnInit {
       })
       .subscribe({
         next: (logs) => {
-          this.displayedAuditLog = logs;
+          this.displayedAuditLog.set(logs);
         },
         error: (err) => {
           console.error('Failed to load audit logs:', err);
-          this.displayedAuditLog = [];
+          this.displayedAuditLog.set([]);
         },
       });
   }

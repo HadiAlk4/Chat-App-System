@@ -4,7 +4,7 @@
     <h3 style="margin: 0; white-space: nowrap; font-size: 1.4rem; text-align: center;">{{ currGroupName || 'Chat' }}</h3>
     <hr>
     <div>
-      @for (room of rooms; track room) {
+      @for (room of rooms(); track room) {
         <button
           (click)="switchRooms(room)"
           class="btn-block"

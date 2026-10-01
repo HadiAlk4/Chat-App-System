@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -34,9 +34,12 @@ export class GroupSettings implements OnInit, OnDestroy {
   pendingChanges: string[] = [];
   ageWillRemoveMembers = false;
 
-  joinRequests: (JoinRequest & { rejectReason?: string; requestedOn?: string })[] = [];
-  roomRequests: RoomRequest[] = [];
-  banRequests: (GroupBanRequest & { rejectReason?: string })[] = [];
+  readonly joinRequests = signal<(JoinRequest & { rejectReason?: string; requestedOn?: string })[]>([]);
+  readonly roomRequests = signal<(RoomRequest & { rejectReason?: string })[]>([]);
+  readonly banRequests = signal<(GroupBanRequest & { rejectReason?: string })[]>([]);
+  readonly rooms = signal<string[]>([]);
+  readonly allowedMembers = signal<{ username: string; role: string }[]>([]);
+  readonly bannedMembers = signal<{ username: string }[]>([]);
 
   private subscriptions = new Subscription();
 
@@ -112,9 +115,9 @@ export class GroupSettings implements OnInit, OnDestroy {
     this.groupDescription = group.groupDescription;
     this.groupMinAge = group.minAge;
     this.groupThemeColor = group.themeColor === 'dark' ? 'dark' : 'light';
-    this.rooms = group.rooms ?? [];
-    this.allowedMembers = this.buildAllowedMembers(group);
-    this.bannedMembers = (group.bannedMembers ?? []).map((username) => ({ username }));
+    this.rooms.set(group.rooms ?? []);
+    this.allowedMembers.set(this.buildAllowedMembers(group));
+    this.bannedMembers.set((group.bannedMembers ?? []).map((username) => ({ username })));
     this.savedName = this.groupName;
     this.savedDescription = this.groupDescription;
     this.savedMinAge = Number(this.groupMinAge);
@@ -220,8 +223,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       .getJoinRequests({ groupName: this.originalGroupName || this.groupName, status: 'pending' })
       .subscribe({
         next: (requests) => {
-          this.joinRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
-          this.cdr.markForCheck();
+          this.joinRequests.set(requests.map((req) => ({ ...req, rejectReason: '' })));
         },
         error: (err) => console.error('Failed to load join requests:', err),
       });
@@ -232,8 +234,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       .getRoomRequests({ groupName: this.originalGroupName || this.groupName, status: 'pending' })
       .subscribe({
         next: (requests) => {
-          this.roomRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
-          this.cdr.markForCheck();
+          this.roomRequests.set(requests.map((req) => ({ ...req, rejectReason: '' })));
         },
         error: (err) => console.error('Failed to load room requests:', err),
       });
@@ -248,8 +249,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       })
       .subscribe({
         next: (requests) => {
-          this.banRequests = requests.map((req) => ({ ...req, rejectReason: '' }));
-          this.cdr.markForCheck();
+          this.banRequests.set(requests.map((req) => ({ ...req, rejectReason: '' })));
         },
         error: (err) => console.error('Failed to load ban requests:', err),
       });
@@ -258,38 +258,44 @@ export class GroupSettings implements OnInit, OnDestroy {
   listenToSockets(): void {
     const joinCreatedSub = this.socketService.onJoinRequestCreated().subscribe((request) => {
       if (request.groupName !== (this.originalGroupName || this.groupName)) return;
-      if (this.joinRequests.some((item) => item._id === request._id)) return;
-      this.joinRequests.unshift({ ...request, rejectReason: '' });
+      this.joinRequests.update((list) => {
+        if (list.some((item) => item._id === request._id)) return list;
+        return [{ ...request, rejectReason: '' }, ...list];
+      });
     });
 
     const joinResolvedSub = this.socketService.onJoinRequestResolved().subscribe(({ requestId, groupName }) => {
       if (groupName !== (this.originalGroupName || this.groupName)) return;
-      this.joinRequests = this.joinRequests.filter((req) => req._id !== requestId);
+      this.joinRequests.update((list) => list.filter((req) => req._id !== requestId));
       this.loadGroup();
     });
 
     const roomCreatedSub = this.socketService.onRoomRequestCreated().subscribe((request) => {
       if (request.groupName !== (this.originalGroupName || this.groupName)) return;
-      if (this.roomRequests.some((item) => item._id === request._id)) return;
-      this.roomRequests.unshift({ ...request, rejectReason: '' });
+      this.roomRequests.update((list) => {
+        if (list.some((item) => item._id === request._id)) return list;
+        return [{ ...request, rejectReason: '' }, ...list];
+      });
     });
 
     const roomResolvedSub = this.socketService.onRoomRequestResolved().subscribe(({ requestId, groupName }) => {
       if (groupName !== (this.originalGroupName || this.groupName)) return;
-      this.roomRequests = this.roomRequests.filter((req) => req._id !== requestId);
+      this.roomRequests.update((list) => list.filter((req) => req._id !== requestId));
       this.loadGroup();
     });
 
     const banCreatedSub = this.socketService.onGroupBanRequestCreated().subscribe((request) => {
       if (request.groupName !== (this.originalGroupName || this.groupName)) return;
       if (request.destination !== 'group-admin') return;
-      if (this.banRequests.some((item) => item._id === request._id)) return;
-      this.banRequests.unshift({ ...request, rejectReason: '' });
+      this.banRequests.update((list) => {
+        if (list.some((item) => item._id === request._id)) return list;
+        return [{ ...request, rejectReason: '' }, ...list];
+      });
     });
 
     const banResolvedSub = this.socketService.onGroupBanRequestResolved().subscribe(({ requestId, groupName }) => {
       if (groupName !== (this.originalGroupName || this.groupName)) return;
-      this.banRequests = this.banRequests.filter((req) => req._id !== requestId);
+      this.banRequests.update((list) => list.filter((req) => req._id !== requestId));
       this.loadGroup();
     });
 
@@ -302,7 +308,7 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   approveRequest(index: number): void {
-    const request = this.joinRequests[index];
+    const request = this.joinRequests()[index];
     if (!request?._id) return;
 
     this.groupService.approveJoinRequest(request._id).subscribe({
@@ -318,7 +324,7 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   rejectRequest(index: number): void {
-    const request = this.joinRequests[index];
+    const request = this.joinRequests()[index];
     const reason = request?.rejectReason?.trim();
     if (!request?._id || !reason) {
       this.toast.error('A rejection reason is required');
@@ -335,7 +341,7 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   approveRoomRequest(index: number): void {
-    const request = this.roomRequests[index];
+    const request = this.roomRequests()[index];
     if (!request?._id) return;
 
     this.groupService.approveRoomRequest(request._id).subscribe({
@@ -351,7 +357,7 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   rejectRoomRequest(index: number): void {
-    const request = this.roomRequests[index];
+    const request = this.roomRequests()[index];
     const reason = request?.rejectReason?.trim();
     if (!request?._id || !reason) {
       this.toast.error('A rejection reason is required');
@@ -368,7 +374,7 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   approveBanRequest(index: number): void {
-    const request = this.banRequests[index];
+    const request = this.banRequests()[index];
     if (!request?._id) return;
 
     this.groupService.approveGroupBanRequest(request._id).subscribe({
@@ -384,7 +390,7 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   rejectBanRequest(index: number): void {
-    const request = this.banRequests[index];
+    const request = this.banRequests()[index];
     const reason = request?.rejectReason?.trim();
     if (!request?._id || !reason) {
       this.toast.error('A rejection reason is required');
@@ -408,17 +414,13 @@ export class GroupSettings implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  rooms: string[] = [];
-  allowedMembers: { username: string; role: string }[] = [];
-  bannedMembers: { username: string }[] = [];
-
   async addRoom(): Promise<void> {
     const roomName = await this.dialog.prompt('Enter a name for the new room.', { title: 'Add room', confirmLabel: 'Add', placeholder: 'e.g. Book Club' });
     if (!roomName) return;
 
     this.groupService.addRoomDirect(this.originalGroupName || this.groupName, roomName).subscribe({
       next: (res) => {
-        if (res.ok) this.rooms = res.rooms;
+        if (res.ok) this.rooms.set(res.rooms);
         else this.toast.error(res.message || 'Failed to add room.');
       },
       error: (err) => this.toast.error(err.error?.message || 'Failed to add room.'),
@@ -426,13 +428,13 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   async editRoom(index: number): Promise<void> {
-    const oldName = this.rooms[index];
+    const oldName = this.rooms()[index];
     const newName = await this.dialog.prompt(`Rename #${oldName} to:`, { title: 'Rename room', confirmLabel: 'Rename', initialValue: oldName });
     if (!newName || newName === oldName) return;
 
     this.groupService.renameRoom(this.originalGroupName || this.groupName, oldName, newName).subscribe({
       next: (res) => {
-        if (res.ok) this.rooms = res.rooms;
+        if (res.ok) this.rooms.set(res.rooms);
         else this.toast.error(res.message || 'Failed to rename room.');
       },
       error: (err) => this.toast.error(err.error?.message || 'Failed to rename room.'),
@@ -440,12 +442,12 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   async deleteRoom(index: number): Promise<void> {
-    const roomName = this.rooms[index];
+    const roomName = this.rooms()[index];
     if (!(await this.dialog.confirm(`Are you sure you want to delete #${roomName}?`, { title: 'Delete room', confirmLabel: 'Delete' }))) return;
 
     this.groupService.deleteRoom(this.originalGroupName || this.groupName, roomName).subscribe({
       next: (res) => {
-        if (res.ok) this.rooms = res.rooms;
+        if (res.ok) this.rooms.set(res.rooms);
         else this.toast.error(res.message || 'Failed to delete room.');
       },
       error: (err) => this.toast.error(err.error?.message || 'Failed to delete room.'),
@@ -453,13 +455,15 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   promoteToGA(index: number): void {
-    const member = this.allowedMembers[index];
+    const member = this.allowedMembers()[index];
     if (!member || member.role === 'group-admin') return;
 
     this.groupService.promoteMember(this.originalGroupName || this.groupName, member.username).subscribe({
       next: (res) => {
         if (res.ok) {
-          this.allowedMembers[index].role = 'group-admin';
+          this.allowedMembers.update((list) =>
+            list.map((entry, i) => (i === index ? { ...entry, role: 'group-admin' } : entry))
+          );
         } else {
           this.toast.error(res.message || 'Failed to promote member.');
         }
@@ -469,7 +473,7 @@ export class GroupSettings implements OnInit, OnDestroy {
   }
 
   async banMember(index: number): Promise<void> {
-    const user = this.allowedMembers[index];
+    const user = this.allowedMembers()[index];
     if (!user) return;
 
     const groupKey = this.originalGroupName || this.groupName;
@@ -492,11 +496,11 @@ export class GroupSettings implements OnInit, OnDestroy {
     this.groupService.banMember(groupKey, user.username).subscribe({
       next: (res) => {
         if (res.ok) {
-          this.allowedMembers = this.buildAllowedMembers({
+          this.allowedMembers.set(this.buildAllowedMembers({
             members: res.members,
             admins: res.admins,
-          });
-          this.bannedMembers = (res.bannedMembers ?? []).map((username) => ({ username }));
+          }));
+          this.bannedMembers.set((res.bannedMembers ?? []).map((username) => ({ username })));
         } else {
           this.toast.error(res.message || 'Failed to ban member.');
         }

@@ -1,8 +1,9 @@
 import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { EMPTY, of } from 'rxjs';
 import { GroupService } from '../services/group';
 import { PendingRequestsService } from '../services/pending-requests';
+import { SocketService } from '../services/socket';
 import { Dashboard } from './dashboard';
 
 describe('Dashboard', () => {
@@ -33,6 +34,10 @@ describe('Dashboard', () => {
         {
           provide: PendingRequestsService,
           useValue: { pendingCount, track: vi.fn() },
+        },
+        {
+          provide: SocketService,
+          useValue: { onGroupRequestResolved: () => EMPTY },
         },
       ],
     }).compileComponents();

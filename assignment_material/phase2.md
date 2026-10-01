@@ -109,7 +109,8 @@ Room channels are named `groupName:roomName`. The server ignores chat events fro
 | client→server | `typing` | `{groupName, roomName, username, isTyping}`. Relayed to everyone else in the room and not stored. Shows "… is typing". |
 | server→room | `new-message`, `message-deleted` | The saved message, or `{messageId}`. |
 | server→room | `user-joined`, `user-left`, `room-users` | Trigger toasts and the live participant list. |
-| server→all | `<queue>-created`, `<queue>-resolved` | For group, join, room, group-ban, group-deletion and account-deletion requests. Queues and Request History refresh live. `join-request-resolved` triggers the accept/deny toast. `account-deletion-request-resolved` removes the deleted user's messages from open chats. |
+| server→all | `<queue>-created`, `<queue>-resolved` | For group, join, room, group-ban, group-deletion and account-deletion requests. Queues and Request History refresh live. `join-request-resolved` triggers the accept/deny toast. `account-deletion-request-resolved` removes the deleted user's messages from open chats. An approved `room-request-resolved` reloads that group's room list in open chats. |
+| server→all | `rooms-updated` | `{groupName, rooms}`. Sent when a Group Admin adds, renames, or deletes a room directly. Open chats replace the room list and stay in the current room when that name is still there. |
 
 ## Angular Architecture
 
@@ -193,7 +194,7 @@ flowchart LR
 
 Before any tests were written, the logic was moved into testable helpers and the app setup was split from `listen()`. The end-to-end tests found four screens that did not refresh after data loaded (login errors, dashboard, memberships, chat), and these were fixed.
 
-**Results (run 1 Oct 2026):** all 123 automated tests pass: backend unit 8/8, backend integration 96/96, Angular 16/16 and Cypress 3/3. The full output of each run is in Section [Test run output](#test-run-output).
+**Results (run 1 Oct 2026):** all 129 automated tests pass: backend unit 8/8, backend integration 96/96, Angular 16/16 and Cypress 9/9. The full output of each run is in Section [Test run output](#test-run-output).
 
 ### Automated tests
 
@@ -228,6 +229,9 @@ Before any tests were written, the logic was moved into testable helpers and the
 | Angular | `SuperAdminAuditLog` | 1 | applies action and date filters |
 | Angular | `UserProfileSettings` | 1 | weak new password not sent |
 | E2E | `login.cy.ts` | 3 | logs in and fills dashboard; spies on the auth request; error on empty submit |
+| E2E | `access.cy.ts` | 3 | logged-out visitor sent to login; memberships after login; bad password stays on login |
+| E2E | `admin-group.cy.ts` | 1 | user proposes a group, Super Admin approves it, creator sees it in memberships |
+| E2E | `chat.cy.ts` | 2 | other member's message shows their name; a message with an external link is not shown |
 
 ### Test run output
 
@@ -541,7 +545,7 @@ NG0912: Component ID generation collision detected. Components '_Signup' and '_S
   | Cypress:        16.1.0                                                                         |
   | Browser:        Electron 146 (headless) (deprecated)                                           |
   | Node Version:   v26.8.2 (/opt/homebrew/Cellar/node/26.8.2/bin/node)                            |
-  | Specs:          1 found (login.cy.ts)                                                          |
+  | Specs:          4 found (access.cy.ts, admin-group.cy.ts, chat.cy.ts, login.cy.ts)             |
   | Searched:       cypress/e2e/**/*.cy.{js,jsx,ts,tsx}                                            |
   +------------------------------------------------------------------------------------------------+
 
@@ -553,14 +557,86 @@ Read more about supported browsers: https://on.cypress.io/launching-browsers
 
 ----------------------------------------------------------------------------------------------------
 
-  Running:  login.cy.ts                                                                     (1 of 1)
+  Running:  access.cy.ts                                                                    (1 of 4)
 
-  Login
-    ok logs in and fills the dashboard (1773ms)
-    ok sends the credentials to the auth API (673ms)
-    ok shows an error when submitted empty (349ms)
+  Access control
+    ok redirects a logged-out visit to the dashboard back to login (1337ms)
+    ok lets a logged-in user reach the dashboard (980ms)
+    ok keeps a user with bad credentials on the login page (655ms)
 
   3 passing (3s)
+
+  (Results)
+
+  +------------------------------------------------------------------------------------------------+
+  | Tests:        3                                                                                |
+  | Passing:      3                                                                                |
+  | Failing:      0                                                                                |
+  | Pending:      0                                                                                |
+  | Skipped:      0                                                                                |
+  | Screenshots:  0                                                                                |
+  | Video:        false                                                                            |
+  | Duration:     3 seconds                                                                        |
+  | Spec Ran:     access.cy.ts                                                                     |
+  +------------------------------------------------------------------------------------------------+
+
+----------------------------------------------------------------------------------------------------
+
+  Running:  admin-group.cy.ts                                                               (2 of 4)
+
+  Group approval
+    ok shows a group to its creator once the Super Admin approves it (3042ms)
+
+  1 passing (3s)
+
+  (Results)
+
+  +------------------------------------------------------------------------------------------------+
+  | Tests:        1                                                                                |
+  | Passing:      1                                                                                |
+  | Failing:      0                                                                                |
+  | Pending:      0                                                                                |
+  | Skipped:      0                                                                                |
+  | Screenshots:  0                                                                                |
+  | Video:        false                                                                            |
+  | Duration:     3 seconds                                                                        |
+  | Spec Ran:     admin-group.cy.ts                                                                |
+  +------------------------------------------------------------------------------------------------+
+
+----------------------------------------------------------------------------------------------------
+
+  Running:  chat.cy.ts                                                                      (3 of 4)
+
+  Chat
+    ok shows another member's message with their display name (1494ms)
+    ok does not show a message that contains an external link (1039ms)
+
+  2 passing (3s)
+
+  (Results)
+
+  +------------------------------------------------------------------------------------------------+
+  | Tests:        2                                                                                |
+  | Passing:      2                                                                                |
+  | Failing:      0                                                                                |
+  | Pending:      0                                                                                |
+  | Skipped:      0                                                                                |
+  | Screenshots:  0                                                                                |
+  | Video:        false                                                                            |
+  | Duration:     2 seconds                                                                        |
+  | Spec Ran:     chat.cy.ts                                                                       |
+  +------------------------------------------------------------------------------------------------+
+
+----------------------------------------------------------------------------------------------------
+
+  Running:  login.cy.ts                                                                     (4 of 4)
+
+  Login
+    ok logs in and fills the dashboard (1100ms)
+    ok sends the credentials to the auth API (654ms)
+    ok shows an error when submitted empty (353ms)
+
+  3 passing (2s)
 
   (Results)
 
@@ -582,9 +658,12 @@ Read more about supported browsers: https://on.cypress.io/launching-browsers
 
        Spec                                              Tests  Passing  Failing  Pending  Skipped
   +------------------------------------------------------------------------------------------------+
+  | ok  access.cy.ts                             00:03        3        3        -        -        - |
+  | ok  admin-group.cy.ts                        00:03        1        1        -        -        - |
+  | ok  chat.cy.ts                               00:02        2        2        -        -        - |
   | ok  login.cy.ts                              00:02        3        3        -        -        - |
   +------------------------------------------------------------------------------------------------+
-    ok  All specs passed!                        00:02        3        3        -        -        -
+    ok  All specs passed!                        00:10        9        9        -        -        -
 ```
 
 ## Git Workflow

@@ -80,7 +80,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (room of rooms; track room; let i = $index) {
+                            @for (room of rooms(); track room; let i = $index) {
                             <tr>
                                 <td style="font-size: 1.1rem; font-weight: 500; vertical-align: middle;">
                                     #{{ room }}
@@ -124,7 +124,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (req of joinRequests; track req._id ?? req.username; let i = $index) {
+                            @for (req of joinRequests(); track req._id ?? req.username; let i = $index) {
                             <tr>
                                 <td style="vertical-align: middle;">{{ req.username }}</td>
                                 <td style="vertical-align: middle; color: #555;">{{ req.requestedOn || (req.createdAt | date:'mediumDate') }}</td>
@@ -165,7 +165,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (req of roomRequests; track req._id ?? req.roomName; let i = $index) {
+                            @for (req of roomRequests(); track req._id ?? req.roomName; let i = $index) {
                             <tr>
                                 <td style="vertical-align: middle;">{{ req.username }}</td>
                                 <td style="vertical-align: middle; color: #555;">{{ req.createdAt | date:'dd/MM/yy' }}</td>
@@ -206,7 +206,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (member of allowedMembers; track member.username; let i = $index) {
+                            @for (member of allowedMembers(); track member.username; let i = $index) {
                             <tr>
                                 <td style="vertical-align: middle;">{{ member.username }}</td>
                                 <td style="vertical-align: middle; color: #555;">{{ member.role }}</td>
@@ -243,7 +243,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (req of banRequests; track req._id ?? req.targetUsername; let i = $index) {
+                            @for (req of banRequests(); track req._id ?? req.targetUsername; let i = $index) {
                             <tr>
                                 <td style="vertical-align: middle;">{{ req.targetUsername }}</td>
                                 <td style="vertical-align: middle; color: #555;">{{ req.requestedBy }}</td>
@@ -280,7 +280,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for (banned of bannedMembers; track banned.username; let i = $index) {
+                            @for (banned of bannedMembers(); track banned.username; let i = $index) {
                             <tr>
                                 <td style="vertical-align: middle; color: #777; text-decoration: line-through;">
                                     {{ banned.username }}

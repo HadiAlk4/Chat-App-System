@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { EMPTY, of } from 'rxjs';
 import { GroupService } from '../services/group';
+import { SocketService } from '../services/socket';
 import { MyMemberships } from './my-memberships';
 
 describe('MyMemberships', () => {
@@ -30,6 +31,13 @@ describe('MyMemberships', () => {
                 },
               ])
             ),
+          },
+        },
+        {
+          provide: SocketService,
+          useValue: {
+            onJoinRequestResolved: () => EMPTY,
+            onGroupRequestResolved: () => EMPTY,
           },
         },
       ],

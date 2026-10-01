@@ -1,6 +1,10 @@
 import { db } from "../db.js";
 
-export function roomRoutes(app) {
+export function roomRoutes(app, io = { emit() {} }) {
+  function publishRooms(groupName, rooms) {
+    io.emit("rooms-updated", { groupName, rooms });
+  }
+
   // GA: add a room directly (no proposal approval)
   app.post("/api/groups/:groupName/rooms/direct", async (req, res) => {
     try {
@@ -28,6 +32,7 @@ export function roomRoutes(app) {
       );
 
       const updatedGroup = await groupsCollection.findOne({ groupName });
+      publishRooms(groupName, updatedGroup.rooms);
       res.send({ ok: true, rooms: updatedGroup.rooms });
     } catch (err) {
       res.status(500).send({ ok: false, message: err.message });
@@ -71,6 +76,7 @@ export function roomRoutes(app) {
       );
 
       const updatedGroup = await groupsCollection.findOne({ groupName });
+      publishRooms(groupName, updatedGroup.rooms);
       res.send({ ok: true, rooms: updatedGroup.rooms });
     } catch (err) {
       res.status(500).send({ ok: false, message: err.message });
@@ -99,6 +105,7 @@ export function roomRoutes(app) {
       );
 
       const updatedGroup = await groupsCollection.findOne({ groupName });
+      publishRooms(groupName, updatedGroup.rooms);
       res.send({ ok: true, rooms: updatedGroup.rooms });
     } catch (err) {
       res.status(500).send({ ok: false, message: err.message });
