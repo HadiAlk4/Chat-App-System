@@ -66,7 +66,7 @@ This checklist combines the missing and un-mocked Phase 1 features with all Phas
 
 ### 1. MongoDB Migration & Data Modeling
 
-- [x] Set up a MongoDB connection (via Mongoose) and remove all `fakeData.json` file reading/writing logic.
+- [x] Set up a MongoDB connection (via the native `mongodb` driver, `MongoClient`) and remove all `fakeData.json` file reading/writing logic.
 - [ ] Define schemas for Users, Groups, Rooms, Messages, Requests (Join, Room, Deletion, Ban), and Audit Logs.
 - [ ] Migrate existing seed records into MongoDB collections.
 
