@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth';
 import { UploadService } from '../services/upload';
 import { AccountService } from '../services/account';
+import { FormMessage, isValidPassword, PASSWORD_RULE_MESSAGE } from '../validators';
 
 const BACKEND_URL = 'http://localhost:3000';
 
@@ -29,6 +30,11 @@ export class UserProfileSettings implements OnInit {
   newPasswordInput = '';
   confirmPasswordInput = '';
   originalUsername = '';
+  deleteConfirmOpen = false;
+
+  identityMessage = signal<FormMessage>(null);
+  doodleMessage = signal<FormMessage>(null);
+  passwordMessage = signal<FormMessage>(null);
 
   constructor(
     private authService: AuthService,
@@ -62,18 +68,19 @@ export class UserProfileSettings implements OnInit {
     if (target.files && target.files.length > 0) {
       const file = target.files[0];
       if (file.size > 2 * 1024 * 1024) {
-        alert('File exceeds 2MB limit.');
+        this.doodleMessage.set({ type: 'danger', text: 'Profile doodle must be 2MB or smaller.' });
         target.value = '';
         this.selectedFile = null;
         return;
       }
+      this.doodleMessage.set(null);
       this.selectedFile = file;
     }
   }
 
   uploadDoodle(): void {
     if (!this.selectedFile) {
-      alert('Please select an image file first.');
+      this.doodleMessage.set({ type: 'danger', text: 'Please select an image file first.' });
       return;
     }
 
@@ -88,13 +95,13 @@ export class UserProfileSettings implements OnInit {
             this.authService.setUser(currentUser);
           }
 
-          alert('Doodle updated successfully!');
+          this.doodleMessage.set({ type: 'success', text: 'Doodle updated successfully!' });
           this.selectedFile = null;
         } else {
-          alert(res.message || 'Upload failed');
+          this.doodleMessage.set({ type: 'danger', text: res.message || 'Upload failed.' });
         }
       },
-      error: () => alert('Failed to connect to backend upload endpoint.'),
+      error: () => this.doodleMessage.set({ type: 'danger', text: 'Failed to connect to backend upload endpoint.' }),
     });
   }
 
@@ -102,27 +109,35 @@ export class UserProfileSettings implements OnInit {
     return this.userProfile.role === 'super-admin';
   }
 
+  // Opens the confirm dialog; the request is only sent from confirmAccountDeletion()
   requestAccountDeletion(): void {
     if (this.isSuperAdmin) {
-      alert('Super Admin cannot request account deletion.');
+      this.identityMessage.set({ type: 'danger', text: 'Super Admin cannot request account deletion.' });
       return;
     }
 
     if (!this.userProfile.username) {
-      alert('You must be logged in to request account deletion.');
+      this.identityMessage.set({ type: 'danger', text: 'You must be logged in to request account deletion.' });
       return;
     }
 
-    if (!confirm('Submit an account deletion request to Super Admin? This cannot be undone once approved.')) {
-      return;
-    }
+    this.deleteConfirmOpen = true;
+  }
 
+  confirmAccountDeletion(): void {
+    this.deleteConfirmOpen = false;
     this.accountService.requestAccountDeletion(this.originalUsername || this.userProfile.username).subscribe({
       next: (res) => {
-        alert(res.message || (res.ok ? 'Account deletion request submitted.' : 'Request failed.'));
+        this.identityMessage.set({
+          type: res.ok ? 'success' : 'danger',
+          text: res.message || (res.ok ? 'Account deletion request submitted.' : 'Request failed.'),
+        });
       },
       error: (err) => {
-        alert(err?.error?.message || 'Failed to submit account deletion request.');
+        this.identityMessage.set({
+          type: 'danger',
+          text: err?.error?.message || 'Failed to submit account deletion request.',
+        });
       },
     });
   }
@@ -130,18 +145,21 @@ export class UserProfileSettings implements OnInit {
   saveUsername(): void {
     const nextUsername = this.userProfile.username.trim();
     if (!this.userProfile.email || !nextUsername) {
-      alert('Username is required.');
+      this.identityMessage.set({ type: 'danger', text: 'Username is required.' });
       return;
     }
 
     this.accountService.updateUsername(this.userProfile.email, nextUsername).subscribe({
       next: (res) => {
-        alert(res.message || (res.ok ? 'Username updated' : 'Failed to update username'));
+        this.identityMessage.set({
+          type: res.ok ? 'success' : 'danger',
+          text: res.message || (res.ok ? 'Username updated' : 'Failed to update username'),
+        });
         if (res.ok && res.user) {
           this.syncSession(res.user);
         }
       },
-      error: (err) => alert(err?.error?.message || 'Failed to update username.'),
+      error: (err) => this.identityMessage.set({ type: 'danger', text: err?.error?.message || 'Failed to update username.' }),
     });
   }
 
@@ -154,21 +172,28 @@ export class UserProfileSettings implements OnInit {
         if (res.ok && res.user) {
           this.syncSession(res.user);
         } else {
-          alert(res.message || 'Failed to update chat theme');
+          this.identityMessage.set({ type: 'danger', text: res.message || 'Failed to update chat theme.' });
         }
       },
-      error: (err) => alert(err?.error?.message || 'Failed to update chat theme.'),
+      error: (err) => this.identityMessage.set({ type: 'danger', text: err?.error?.message || 'Failed to update chat theme.' }),
     });
   }
 
   savePassword(): void {
+    this.passwordMessage.set(null);
+
     if (!this.currentPasswordInput || !this.newPasswordInput || !this.confirmPasswordInput) {
-      alert('Please fill in all password fields.');
+      this.passwordMessage.set({ type: 'danger', text: 'Please fill in all password fields.' });
+      return;
+    }
+
+    if (!isValidPassword(this.newPasswordInput)) {
+      this.passwordMessage.set({ type: 'danger', text: PASSWORD_RULE_MESSAGE });
       return;
     }
 
     if (this.newPasswordInput !== this.confirmPasswordInput) {
-      alert('New password and confirmation do not match.');
+      this.passwordMessage.set({ type: 'danger', text: 'New password and confirmation do not match.' });
       return;
     }
 
@@ -176,14 +201,17 @@ export class UserProfileSettings implements OnInit {
       .updatePassword(this.userProfile.email, this.currentPasswordInput, this.newPasswordInput)
       .subscribe({
         next: (res) => {
-          alert(res.message || (res.ok ? 'Password updated' : 'Failed to update password'));
+          this.passwordMessage.set({
+            type: res.ok ? 'success' : 'danger',
+            text: res.message || (res.ok ? 'Password updated' : 'Failed to update password'),
+          });
           if (res.ok) {
             this.currentPasswordInput = '';
             this.newPasswordInput = '';
             this.confirmPasswordInput = '';
           }
         },
-        error: (err) => alert(err?.error?.message || 'Failed to update password.'),
+        error: (err) => this.passwordMessage.set({ type: 'danger', text: err?.error?.message || 'Failed to update password.' }),
       });
   }
 

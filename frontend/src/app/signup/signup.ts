@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../services/auth';
 import { UploadService } from '../services/upload';
+import { isValidEmail, isValidPassword, PASSWORD_RULE_MESSAGE } from '../validators';
 
 @Component({
   selector: 'app-signup',
@@ -22,6 +23,7 @@ export class Signup implements OnInit
   isFirstUser = signal(false);
   selectedFile: File | null = null;
   selectedFileName = signal('');
+  errorMessage = signal('');
 
   constructor(
     private http: HttpClient,
@@ -59,27 +61,40 @@ export class Signup implements OnInit
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      alert('File exceeds 2MB limit.');
+      this.errorMessage.set('Profile doodle must be 2MB or smaller.');
       target.value = '';
       this.selectedFile = null;
       this.selectedFileName.set('');
       return;
     }
 
+    this.errorMessage.set('');
     this.selectedFile = file;
     this.selectedFileName.set(file.name);
   }
 
   registerUser(): void {
-    if (!this.usernameInput || !this.emailInput || !this.passwordInput || !this.dobInput) {
-      alert('Please fill in all required fields.');
+    this.errorMessage.set('');
+
+    if (!this.usernameInput.trim() || !this.emailInput || !this.passwordInput || !this.dobInput) {
+      this.errorMessage.set('Please fill in all required fields.');
+      return;
+    }
+
+    if (!isValidEmail(this.emailInput)) {
+      this.errorMessage.set('Please enter a valid email address.');
+      return;
+    }
+
+    if (!isValidPassword(this.passwordInput)) {
+      this.errorMessage.set(PASSWORD_RULE_MESSAGE);
       return;
     }
 
     const calculatedAge = this.calculateAge(this.dobInput);
     if (calculatedAge < 0) 
     {
-      alert('Please enter a valid Date of Birth (cannot be in the future).');
+      this.errorMessage.set('Please enter a valid Date of Birth (cannot be in the future).');
       return;
     }
 
@@ -102,11 +117,11 @@ export class Signup implements OnInit
             this.finishSignup(res.user);
           }
         } else {
-          alert(res.message || 'Signup failed.');
+          this.errorMessage.set(res.message || 'Signup failed.');
         }
       },
       error: () => {
-        alert('Cannot connect to backend server on port 3000.');
+        this.errorMessage.set('Cannot connect to backend server on port 3000.');
       },
     });
   }
@@ -117,16 +132,19 @@ export class Signup implements OnInit
       next: (res) => {
         if (res.ok) {
           user.profilePictureUrl = res.profilePictureUrl;
+          this.finishSignup(user);
         } else {
-          alert(res.message || 'Profile doodle upload failed. You can add one later in Account Settings.');
+          this.finishSignupAfterUploadError(user);
         }
-        this.finishSignup(user);
       },
-      error: () => {
-        alert('Profile doodle upload failed. You can add one later in Account Settings.');
-        this.finishSignup(user);
-      },
+      error: () => this.finishSignupAfterUploadError(user),
     });
+  }
+
+  // Leave the message on screen briefly before moving on, since the account was still created
+  private finishSignupAfterUploadError(user: any): void {
+    this.errorMessage.set('Account created, but the profile doodle upload failed. You can add one later in Account Settings.');
+    setTimeout(() => this.finishSignup(user), 2500);
   }
 
   private finishSignup(user: any): void {

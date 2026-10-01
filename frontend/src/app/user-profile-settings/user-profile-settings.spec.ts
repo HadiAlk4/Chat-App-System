@@ -18,7 +18,6 @@ describe('UserProfileSettings', () => {
       })
     );
     updatePassword = vi.fn(() => of({ ok: false, message: 'Current password is incorrect' }));
-    vi.spyOn(window, 'alert').mockImplementation(() => undefined);
 
     await TestBed.configureTestingModule({
       imports: [UserProfileSettings],
@@ -42,6 +41,18 @@ describe('UserProfileSettings', () => {
     component.savePassword();
 
     expect(updatePassword).toHaveBeenCalledWith('ada@example.com', 'WrongPass1', 'Password2');
-    expect(window.alert).toHaveBeenCalledWith('Current password is incorrect');
+    expect(component.passwordMessage()).toEqual({ type: 'danger', text: 'Current password is incorrect' });
+  });
+
+  it('does not call the API when the new password breaks the password rule', () => {
+    const component = fixture.componentInstance;
+    component.currentPasswordInput = 'Password1';
+    component.newPasswordInput = 'short';
+    component.confirmPasswordInput = 'short';
+
+    component.savePassword();
+
+    expect(updatePassword).not.toHaveBeenCalled();
+    expect(component.passwordMessage()?.type).toBe('danger');
   });
 });

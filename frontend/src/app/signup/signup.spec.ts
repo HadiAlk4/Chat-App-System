@@ -14,7 +14,6 @@ describe('Signup', () => {
     fixture = TestBed.createComponent(Signup);
     component = fixture.componentInstance;
     await fixture.whenStable();
-    vi.spyOn(window, 'alert').mockImplementation(() => undefined);
   });
 
   it('calculates a positive age for a past date of birth', () => {
@@ -36,6 +35,34 @@ describe('Signup', () => {
     component.registerUser();
 
     expect(post).not.toHaveBeenCalled();
-    expect(window.alert).toHaveBeenCalledWith('Please fill in all required fields.');
+    expect(component.errorMessage()).toBe('Please fill in all required fields.');
+  });
+
+  it('does not post a password that breaks the password rule', () => {
+    const http = TestBed.inject(HttpClient);
+    const post = vi.spyOn(http, 'post');
+    component.usernameInput = 'ada';
+    component.emailInput = 'ada@example.com';
+    component.passwordInput = 'password1';
+    component.dobInput = '2000-01-01';
+
+    component.registerUser();
+
+    expect(post).not.toHaveBeenCalled();
+    expect(component.errorMessage()).toContain('at least one uppercase letter');
+  });
+
+  it('does not post an invalid email address', () => {
+    const http = TestBed.inject(HttpClient);
+    const post = vi.spyOn(http, 'post');
+    component.usernameInput = 'ada';
+    component.emailInput = 'not-an-email';
+    component.passwordInput = 'Password1';
+    component.dobInput = '2000-01-01';
+
+    component.registerUser();
+
+    expect(post).not.toHaveBeenCalled();
+    expect(component.errorMessage()).toBe('Please enter a valid email address.');
   });
 });

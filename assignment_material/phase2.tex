@@ -45,7 +45,7 @@ Requirements come from the brief, the client meeting (Week 2) and the published 
 \endhead
 Stack & MEAN stack. MongoDB replaces \ep{fakeData.json}. Socket.io handles real-time events. & Done\\
 Auth & Basic email and password login. Passwords are hashed with bcrypt. OAuth is not used. & Done\\
-Password rule & At least 8 characters, alphanumeric only, at least one uppercase letter. Checked on signup and password change. & Done\\
+Password rule & At least 8 characters, alphanumeric only, at least one uppercase letter. Checked in the browser before sending and again on the server, on signup and password change. Errors show inline in the PaperCSS alert style. & Done\\
 Bootstrap & The first account registered becomes the only Super Admin. Signup shows a note when the database has no users. & Done\\
 Super Admin & Handles requests only. Cannot chat, read chat history, join or propose groups. Creates a group only by approving a user proposal, and the proposer becomes the first GA. Cannot delete or ban themselves. & Done\\
 Global ban & Approving an account deletion removes the user and all their messages, and adds their email to a permanent ban list. Banned emails cannot log in or register again. & Done\\
@@ -247,7 +247,7 @@ The Phase 1 storyboards (desktop and tablet) still describe the layout, so they 
 \end{itemize}
 Before any tests were written, the logic was moved into testable helpers and the app setup was split from \ep{listen()}. The end-to-end tests found four screens that did not refresh after data loaded (login errors, dashboard, memberships, chat), and these were fixed.
 
-\textbf{Results (run 1 Oct 2026):} all 150 automated tests pass: backend unit 14/14, backend integration 100/100, Angular 27/27 and Cypress 9/9. The full output of each run is in Section~\ref{sec:runs}.
+\textbf{Results (run 1 Oct 2026):} all 153 automated tests pass: backend unit 14/14, backend integration 100/100, Angular 30/30 and Cypress 9/9. The full output of each run is in Section~\ref{sec:runs}.
 
 \subsection{Automated tests}
 \small
@@ -279,14 +279,14 @@ Integration & \route{/api/audit-logs} & 2 & returns logs; filters by action\\
 Angular & \ep{App} & 2 & creates root; renders router outlet\\
 Angular & \ep{authGuard} & 3 & logged out to login; user blocked from Super Admin page; Super Admin blocked from chat\\
 Angular & \ep{Login} & 3 & empty fields no HTTP; user to dashboard; Super Admin to Super Admin dashboard\\
-Angular & \ep{Signup} & 4 & age for past, empty and future DOB; empty form not posted\\
+Angular & \ep{Signup} & 6 & age for past, empty and future DOB; empty form not posted; weak password not posted; invalid email not posted\\
 Angular & \ep{Dashboard} & 2 & proposal sent via service; joined groups hidden\\
 Angular & \ep{Chat} & 3 & link not sent; plain text sent; history shows sender name\\
 Angular & \ep{GroupSettings} & 4 & form filled from group; confirm before raising min age; rejection needs reason; non-GA redirected\\
 Angular & \ep{RequestHistory}, \ep{MyMemberships} & 2 & renders a join request; renders a membership\\
 Angular & \ep{SuperAdminDashboard} & 1 & renders pending proposals\\
 Angular & \ep{SuperAdminAuditLog} & 2 & renders logs; applies action and date filters\\
-Angular & \ep{UserProfileSettings} & 1 & shows error on wrong current password\\
+Angular & \ep{UserProfileSettings} & 2 & shows error on wrong current password; weak new password not sent\\
 \midrule
 E2E & \ep{login.cy.ts} & 3 & logs in and fills dashboard; sends credentials to API; error on empty submit\\
 E2E & \ep{access.cy.ts} & 3 & logged-out redirect; logged-in reaches dashboard; bad credentials stay on login\\
@@ -350,13 +350,13 @@ Output from the four test commands, pasted as printed. Colour codes, Node/npm wa
 
   account deletion routes
     POST /api/account-deletion-requests
-      ok queues a deletion request (46ms)
+      ok queues a deletion request (99ms)
       ok rejects a super admin deletion request
     GET /api/account-deletion-requests
       ok returns pending requests
       ok returns an empty list when the status filter matches nothing
     PATCH /api/account-deletion-requests/:id/approve
-      ok deletes the user and bans the email
+      ok deletes the user and bans the email (78ms)
       ok returns 404 when the request is not pending
     PATCH /api/account-deletion-requests/:id/reject
       ok stores the rejection reason
@@ -376,13 +376,13 @@ Output from the four test commands, pasted as printed. Colour codes, Node/npm wa
       ok rejects a wrong password
       ok tells a permanently banned account it cannot log in
     POST /api/signup
-      ok creates the first account as super admin (102ms)
+      ok creates the first account as super admin (114ms)
       ok rejects a password without an uppercase letter
       ok rejects a permanently banned email
 
   chat routes
     GET /api/messages/:groupName/:roomName
-      ok returns the latest five messages oldest first
+      ok returns the latest five messages oldest first (46ms)
       ok rejects a history request with no username
       ok forbids a super admin from reading chat history
     DELETE /api/messages/:id
@@ -391,7 +391,7 @@ Output from the four test commands, pasted as printed. Colour codes, Node/npm wa
 
   group ban request routes
     POST /api/group-ban-requests
-      ok queues a ban request against another member
+      ok queues a ban request against another member (84ms)
       ok rejects a request that is missing fields
     GET /api/group-ban-requests
       ok returns pending requests for a destination
@@ -405,7 +405,7 @@ Output from the four test commands, pasted as printed. Colour codes, Node/npm wa
 
   group deletion routes
     POST /api/group-deletion-requests
-      ok queues a deletion request from a group admin
+      ok queues a deletion request from a group admin (45ms)
       ok rejects a request that is missing a reason
     GET /api/group-deletion-requests
       ok returns pending requests
@@ -419,7 +419,7 @@ Output from the four test commands, pasted as printed. Colour codes, Node/npm wa
 
   group request routes
     POST /api/group-requests
-      ok queues a proposal
+      ok queues a proposal (46ms)
       ok rejects a proposal that is missing fields
     GET /api/group-requests
       ok returns pending proposals
@@ -445,7 +445,7 @@ Output from the four test commands, pasted as printed. Colour codes, Node/npm wa
       ok removes a member who is not the sole admin
       ok rejects a leave request with no username
     PATCH /api/groups/:groupName
-      ok saves settings and removes members under the new minimum age (39ms)
+      ok saves settings and removes members under the new minimum age
       ok rejects a description that is missing
       ok rejects a member who is not a Group Admin
 
@@ -518,7 +518,7 @@ Output from the four test commands, pasted as printed. Colour codes, Node/npm wa
       ok renames the account
       ok rejects a missing new username
     PATCH /api/users/password
-      ok changes the password when the current password matches (166ms)
+      ok changes the password when the current password matches (262ms)
       ok rejects a wrong current password
     PATCH /api/users/theme
       ok saves the chat theme flags
@@ -534,16 +534,16 @@ Database connection closed
 > Building...
 ok Building...
 Initial chunk files                                     | Names                                                |  Raw size
-init-testbed.js                                         | init-testbed                                         | 335.90 kB |
+init-testbed.js                                         | init-testbed                                         | 346.04 kB |
 spec-app-group-settings-group-settings.js               | spec-app-group-settings-group-settings               |  87.05 kB |
 spec-app-request-history-request-history.js             | spec-app-request-history-request-history             |  72.27 kB |
 styles.css                                              | styles                                               |  66.10 kB |
 spec-app-chat-chat.js                                   | spec-app-chat-chat                                   |  57.30 kB |
 spec-app-super-admin-dashboard-super-admin-dashboard.js | spec-app-super-admin-dashboard-super-admin-dashboard |  51.99 kB |
+spec-app-user-profile-settings-user-profile-settings.js | spec-app-user-profile-settings-user-profile-settings |  39.74 kB |
 spec-app-dashboard-dashboard.js                         | spec-app-dashboard-dashboard                         |  33.15 kB |
-spec-app-user-profile-settings-user-profile-settings.js | spec-app-user-profile-settings-user-profile-settings |  31.10 kB |
 spec-app-my-memberships-my-memberships.js               | spec-app-my-memberships-my-memberships               |  24.00 kB |
-spec-app-signup-signup.js                               | spec-app-signup-signup                               |  19.75 kB |
+spec-app-signup-signup.js                               | spec-app-signup-signup                               |  22.81 kB |
 spec-app-super-admin-audit-log-super-admin-audit-log.js | spec-app-super-admin-audit-log-super-admin-audit-log |  18.54 kB |
 spec-app-login-login.js                                 | spec-app-login-login                                 |  12.28 kB |
 spec-app-guards-auth-guard.js                           | spec-app-guards-auth-guard                           |   4.16 kB |
@@ -551,14 +551,23 @@ spec-app-app.js                                         | spec-app-app          
 vitest-mock-patch.js                                    | vitest-mock-patch                                    | 988 bytes |
 setup-test-setup.js                                     | setup-test-setup                                     | 777 bytes |
 
-                                                        | Initial total                                        | 817.28 kB
+                                                        | Initial total                                        | 839.12 kB
 
-Application bundle generation complete. [1.170 seconds] - 2026-09-30T23:30:21.570Z
+Application bundle generation complete. [1.917 seconds] - 2026-10-01T00:01:21.705Z
 
  RUN  v4.1.11 /Users/abdalhadialkhub/Desktop/ChatApp System/Chat-App-System/frontend
 
+stderr | src/app/chat/chat.spec.ts
+NG0912: Component ID generation collision detected. Components '_Chat' and '_Chat' with selector 'app-chat' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
+
 stderr | src/app/login/login.spec.ts
 NG0912: Component ID generation collision detected. Components '_Login' and '_Login' with selector 'app-login' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
+
+stderr | src/app/group-settings/group-settings.spec.ts
+NG0912: Component ID generation collision detected. Components '_GroupSettings' and '_GroupSettings' with selector 'app-group-settings' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
+
+stderr | src/app/signup/signup.spec.ts
+NG0912: Component ID generation collision detected. Components '_Signup' and '_Signup' with selector 'app-signup' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
 
 stderr | src/app/super-admin-dashboard/super-admin-dashboard.spec.ts
 NG0912: Component ID generation collision detected. Components '_SuperAdminDashboard' and '_SuperAdminDashboard' with selector 'app-super-admin-dashboard' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
@@ -566,59 +575,53 @@ NG0912: Component ID generation collision detected. Components '_SuperAdminDashb
 stderr | src/app/super-admin-audit-log/super-admin-audit-log.spec.ts
 NG0912: Component ID generation collision detected. Components '_SuperAdminAuditLog' and '_SuperAdminAuditLog' with selector 'app-super-admin-audit-log' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
 
-stderr | src/app/group-settings/group-settings.spec.ts
-NG0912: Component ID generation collision detected. Components '_GroupSettings' and '_GroupSettings' with selector 'app-group-settings' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
-
-stderr | src/app/chat/chat.spec.ts
-NG0912: Component ID generation collision detected. Components '_Chat' and '_Chat' with selector 'app-chat' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
-
 stderr | src/app/request-history/request-history.spec.ts
 NG0912: Component ID generation collision detected. Components '_RequestHistory' and '_RequestHistory' with selector 'app-request-history' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
 
+ ok |frontend| src/app/login/login.spec.ts > Login > shows an error and does not call HTTP when the fields are empty 100ms
+ ok |frontend| src/app/login/login.spec.ts > Login > navigates a regular user to the dashboard after a successful login 12ms
+ ok |frontend| src/app/login/login.spec.ts > Login > navigates a super admin to the super admin dashboard 49ms
 stderr | src/app/dashboard/dashboard.spec.ts
 NG0912: Component ID generation collision detected. Components '_Dashboard' and '_Dashboard' with selector 'app-dashboard' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
 
- ok |frontend| src/app/login/login.spec.ts > Login > shows an error and does not call HTTP when the fields are empty 95ms
- ok |frontend| src/app/super-admin-dashboard/super-admin-dashboard.spec.ts > SuperAdminDashboard > renders pending group proposals from the group service 111ms
- ok |frontend| src/app/login/login.spec.ts > Login > navigates a regular user to the dashboard after a successful login 7ms
- ok |frontend| src/app/login/login.spec.ts > Login > navigates a super admin to the super admin dashboard 10ms
- ok |frontend| src/app/group-settings/group-settings.spec.ts > GroupSettings > fills the form from the loaded group 93ms
- ok |frontend| src/app/super-admin-audit-log/super-admin-audit-log.spec.ts > SuperAdminAuditLog > renders the mocked audit log 60ms
- ok |frontend| src/app/super-admin-audit-log/super-admin-audit-log.spec.ts > SuperAdminAuditLog > applies the action and date filters to the mocked list 61ms
+ ok |frontend| src/app/super-admin-dashboard/super-admin-dashboard.spec.ts > SuperAdminDashboard > renders pending group proposals from the group service 144ms
 stderr | src/app/user-profile-settings/user-profile-settings.spec.ts
 NG0912: Component ID generation collision detected. Components '_UserProfileSettings' and '_UserProfileSettings' with selector 'app-user-profile-settings' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
 
- ok |frontend| src/app/guards/auth-guard.spec.ts > authGuard > sends a logged-out visitor to the login page 3ms
+ ok |frontend| src/app/dashboard/dashboard.spec.ts > Dashboard > sends a named proposal through the group service 44ms
+ ok |frontend| src/app/dashboard/dashboard.spec.ts > Dashboard > hides groups the user already belongs to from the join list 21ms
+ ok |frontend| src/app/group-settings/group-settings.spec.ts > GroupSettings > fills the form from the loaded group 165ms
+ ok |frontend| src/app/group-settings/group-settings.spec.ts > GroupSettings > asks for confirmation before saving a higher minimum age 64ms
+ ok |frontend| src/app/chat/chat.spec.ts > Chat > does not send a message that contains an external link 280ms
+ ok |frontend| src/app/super-admin-audit-log/super-admin-audit-log.spec.ts > SuperAdminAuditLog > renders the mocked audit log 176ms
+ ok |frontend| src/app/super-admin-audit-log/super-admin-audit-log.spec.ts > SuperAdminAuditLog > applies the action and date filters to the mocked list 49ms
+ ok |frontend| src/app/chat/chat.spec.ts > Chat > sends a plain text message 52ms
+ ok |frontend| src/app/chat/chat.spec.ts > Chat > renders the room history with the sender display name 14ms
+ ok |frontend| src/app/group-settings/group-settings.spec.ts > GroupSettings > does not call the API when a join rejection has no reason 48ms
+ ok |frontend| src/app/group-settings/group-settings.spec.ts > GroupSettings access > sends a regular member away from group settings 35ms
+ ok |frontend| src/app/guards/auth-guard.spec.ts > authGuard > sends a logged-out visitor to the login page 2ms
  ok |frontend| src/app/guards/auth-guard.spec.ts > authGuard > sends a user away from a super admin page 1ms
  ok |frontend| src/app/guards/auth-guard.spec.ts > authGuard > sends a super admin away from chat 1ms
- ok |frontend| src/app/group-settings/group-settings.spec.ts > GroupSettings > asks for confirmation before saving a higher minimum age 24ms
- ok |frontend| src/app/group-settings/group-settings.spec.ts > GroupSettings > does not call the API when a join rejection has no reason 15ms
- ok |frontend| src/app/group-settings/group-settings.spec.ts > GroupSettings access > sends a regular member away from group settings 12ms
 stderr | src/app/my-memberships/my-memberships.spec.ts
 NG0912: Component ID generation collision detected. Components '_MyMemberships' and '_MyMemberships' with selector 'app-my-memberships' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
 
- ok |frontend| src/app/request-history/request-history.spec.ts > RequestHistory > renders the mocked join request 128ms
- ok |frontend| src/app/chat/chat.spec.ts > Chat > does not send a message that contains an external link 140ms
- ok |frontend| src/app/chat/chat.spec.ts > Chat > sends a plain text message 22ms
- ok |frontend| src/app/chat/chat.spec.ts > Chat > renders the room history with the sender display name 10ms
- ok |frontend| src/app/dashboard/dashboard.spec.ts > Dashboard > sends a named proposal through the group service 120ms
- ok |frontend| src/app/dashboard/dashboard.spec.ts > Dashboard > hides groups the user already belongs to from the join list 11ms
- ok |frontend| src/app/user-profile-settings/user-profile-settings.spec.ts > UserProfileSettings > shows the service error when the current password is wrong 48ms
-stderr | src/app/signup/signup.spec.ts
-NG0912: Component ID generation collision detected. Components '_Signup' and '_Signup' with selector 'app-signup' generated the same component ID. To fix this, you can change the selector of one of those components or add an extra host attribute to force a different ID. Find more at https://v22.angular.dev/errors/NG0912
-
- ok |frontend| src/app/my-memberships/my-memberships.spec.ts > MyMemberships > renders the mocked membership 27ms
+ ok |frontend| src/app/request-history/request-history.spec.ts > RequestHistory > renders the mocked join request 204ms
  ok |frontend| src/app/app.spec.ts > App > creates the root component 3ms
  ok |frontend| src/app/app.spec.ts > App > renders the router outlet 3ms
- ok |frontend| src/app/signup/signup.spec.ts > Signup > calculates a positive age for a past date of birth 30ms
- ok |frontend| src/app/signup/signup.spec.ts > Signup > returns -1 when the date of birth is empty 8ms
- ok |frontend| src/app/signup/signup.spec.ts > Signup > returns a negative age for a future date of birth 8ms
- ok |frontend| src/app/signup/signup.spec.ts > Signup > does not post when the form is empty 7ms
+ ok |frontend| src/app/my-memberships/my-memberships.spec.ts > MyMemberships > renders the mocked membership 18ms
+ ok |frontend| src/app/user-profile-settings/user-profile-settings.spec.ts > UserProfileSettings > shows the service error when the current password is wrong 80ms
+ ok |frontend| src/app/user-profile-settings/user-profile-settings.spec.ts > UserProfileSettings > does not call the API when the new password breaks the password rule 15ms
+ ok |frontend| src/app/signup/signup.spec.ts > Signup > calculates a positive age for a past date of birth 377ms
+ ok |frontend| src/app/signup/signup.spec.ts > Signup > returns -1 when the date of birth is empty 17ms
+ ok |frontend| src/app/signup/signup.spec.ts > Signup > returns a negative age for a future date of birth 17ms
+ ok |frontend| src/app/signup/signup.spec.ts > Signup > does not post when the form is empty 17ms
+ ok |frontend| src/app/signup/signup.spec.ts > Signup > does not post a password that breaks the password rule 18ms
+ ok |frontend| src/app/signup/signup.spec.ts > Signup > does not post an invalid email address 15ms
 
  Test Files  12 passed (12)
-      Tests  27 passed (27)
-   Start at  09:30:21
-   Duration  1.64s (transform 1.38s, setup 4.26s, import 619ms, tests 1.07s, environment 6.98s)
+      Tests  30 passed (30)
+   Start at  10:01:21
+   Duration  3.08s (transform 1.74s, setup 6.54s, import 823ms, tests 2.06s, environment 15.34s)
 \end{Verbatim}
 
 \subsubsection*{End-to-end tests (\ep{cd frontend \&\& npx cypress run})}
@@ -646,11 +649,11 @@ Read more about supported browsers: https://on.cypress.io/launching-browsers
   Running:  access.cy.ts                                                                    (1 of 4)
 
   Access control
-    ok redirects a logged-out visit to the dashboard back to login (2875ms)
-    ok lets a logged-in user reach the dashboard (846ms)
-    ok keeps a user with bad credentials on the login page (634ms)
+    ok redirects a logged-out visit to the dashboard back to login (1417ms)
+    ok lets a logged-in user reach the dashboard (787ms)
+    ok keeps a user with bad credentials on the login page (628ms)
 
-  3 passing (4s)
+  3 passing (3s)
 
   (Results)
 
@@ -662,7 +665,7 @@ Read more about supported browsers: https://on.cypress.io/launching-browsers
   | Skipped:      0                                                                                |
   | Screenshots:  0                                                                                |
   | Video:        false                                                                            |
-  | Duration:     4 seconds                                                                        |
+  | Duration:     2 seconds                                                                        |
   | Spec Ran:     access.cy.ts                                                                     |
   +------------------------------------------------------------------------------------------------+
 
@@ -671,7 +674,7 @@ Read more about supported browsers: https://on.cypress.io/launching-browsers
   Running:  admin-group.cy.ts                                                               (2 of 4)
 
   Group approval
-    ok shows a group to its creator once the Super Admin approves it (3064ms)
+    ok shows a group to its creator once the Super Admin approves it (3030ms)
 
   1 passing (3s)
 
@@ -694,8 +697,8 @@ Read more about supported browsers: https://on.cypress.io/launching-browsers
   Running:  chat.cy.ts                                                                      (3 of 4)
 
   Chat
-    ok shows another member's message with their display name (1494ms)
-    ok does not show a message that contains an external link (1042ms)
+    ok shows another member's message with their display name (1482ms)
+    ok does not show a message that contains an external link (1083ms)
 
   2 passing (3s)
 
@@ -718,9 +721,9 @@ Read more about supported browsers: https://on.cypress.io/launching-browsers
   Running:  login.cy.ts                                                                     (4 of 4)
 
   Login
-    ok logs in and fills the dashboard (1083ms)
-    ok sends the credentials to the auth API (635ms)
-    ok shows an error when submitted empty (320ms)
+    ok logs in and fills the dashboard (1141ms)
+    ok sends the credentials to the auth API (655ms)
+    ok shows an error when submitted empty (314ms)
 
   3 passing (2s)
 
@@ -744,7 +747,7 @@ Read more about supported browsers: https://on.cypress.io/launching-browsers
 
        Spec                                              Tests  Passing  Failing  Pending  Skipped
   +------------------------------------------------------------------------------------------------+
-  | ok  access.cy.ts                             00:04        3        3        -        -        - |
+  | ok  access.cy.ts                             00:02        3        3        -        -        - |
   +------------------------------------------------------------------------------------------------+
   | ok  admin-group.cy.ts                        00:03        1        1        -        -        - |
   +------------------------------------------------------------------------------------------------+
@@ -752,7 +755,7 @@ Read more about supported browsers: https://on.cypress.io/launching-browsers
   +------------------------------------------------------------------------------------------------+
   | ok  login.cy.ts                              00:02        3        3        -        -        - |
   +------------------------------------------------------------------------------------------------+
-    ok  All specs passed!                        00:12        9        9        -        -        -
+    ok  All specs passed!                        00:10        9        9        -        -        -
 \end{Verbatim}
 
 \section{Git Workflow}

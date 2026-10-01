@@ -26,7 +26,7 @@
         <div>         
         <small> Min 8 chars, 1 uppercase, alphanumeric</small>         
         </div>         
-        <input class="input-block" type="password" placeholder="your secret password" id="regPassword" [(ngModel)]="passwordInput">          
+        <input class="input-block" type="password" placeholder="your secret password" id="regPassword" [(ngModel)]="passwordInput" (keyup.enter)="registerUser()">          
         </div>         
 
         <div class="form-group">         
@@ -41,6 +41,12 @@
         </label>         
         <input type="file" id="regDoodle" accept="image/*" (change)="onFileSelected($event)" style="display: none;">         
         </div>         
+
+        @if (errorMessage()) {
+            <div class="alert alert-danger" role="alert" style="margin-bottom: 1rem;">
+                {{ errorMessage() }}
+            </div>
+        }
 
         <button class="btn-secondary btn-block" (click)="registerUser()">Sign Up</button>     
 
