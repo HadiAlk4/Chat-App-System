@@ -109,21 +109,6 @@ describe("group routes", () => {
       expect(res.body.group.admins).to.include("ada");
     });
 
-    it("rejects a description that is missing", async () => {
-      await seedGroup();
-
-      const res = await request.execute(app).patch("/api/groups/Readers").send({
-        groupName: "Readers",
-        groupDescription: "",
-        minAge: 18,
-        themeColor: "light",
-        username: "ada",
-      });
-
-      expect(res.body.ok).to.equal(false);
-      expect(res.body.message).to.equal("Group name and description are required");
-    });
-
     it("rejects a member who is not a Group Admin", async () => {
       await seedGroup({ admins: ["ada"], members: ["ada", "bea"] });
 

@@ -1,10 +1,12 @@
-import { Component, DestroyRef, signal } from '@angular/core';
+import { Component, DestroyRef, computed, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { GroupService } from '../services/group';
 import { AccountService } from '../services/account';
 import { SocketService } from '../services/socket';
+import { DialogService } from '../services/dialog';
+import { ToastService } from '../services/toast';
 import { GroupRequest } from '../models/group-request';
 import { AccountDeletionRequest } from '../models/account-deletion-request';
 import { GroupBanRequest } from '../models/group-ban-request';
@@ -27,6 +29,8 @@ export class SuperAdminDashboard
     private groupService: GroupService,
     private accountService: AccountService,
     private socketService: SocketService,
+    private toast: ToastService,
+    private dialog: DialogService,
     private destroyRef: DestroyRef
   ) {}
 
@@ -94,6 +98,13 @@ export class SuperAdminDashboard
 
   accountDeletionRequests = signal<AccountDeletionRequest[]>([]);
   bannedEmails = signal<BannedEmail[]>([]);
+
+  readonly pendingTotal = computed(() =>
+    this.groupCreationRequests().length +
+    this.groupDeletionRequests().length +
+    this.userBanRequests().length +
+    this.accountDeletionRequests().length
+  );
 
   loadAccountDeletionRequests(): void
   {
@@ -198,26 +209,26 @@ export class SuperAdminDashboard
   }
 
 
-  rejectGroupCreationRequest(request: GroupRequest): void
+  async rejectGroupCreationRequest(request: GroupRequest): Promise<void>
   {
     if (!request._id) {
       return;
     }
 
-    const reason = prompt('Enter a rejection reason:')?.trim();
+    const reason = await this.dialog.prompt('Enter a rejection reason:', { title: 'Reject request', confirmLabel: 'Reject', danger: true, placeholder: 'Reason...' });
     if (!reason) {
       return;
     }
 
     this.groupService.rejectRequest(request._id, reason).subscribe({
       next: response => {
-        alert(response.message);
+        this.toast.fromResponse(response);
         if (response.ok) {
           this.loadGroupRequests();
         }
       },
       error: () => {
-        alert('Failed to reject group request.');
+        this.toast.error('Failed to reject group request.');
       }
     });
   }
@@ -230,13 +241,13 @@ export class SuperAdminDashboard
 
     this.groupService.approveRequest(request._id).subscribe({
       next: response => {
-        alert(response.message);
+        this.toast.fromResponse(response);
         if (response.ok) {
           this.loadGroupRequests();
         }
       },
       error: () => {
-        alert('Failed to approve group request.');
+        this.toast.error('Failed to approve group request.');
       }
     });
   }
@@ -249,37 +260,37 @@ export class SuperAdminDashboard
 
     this.groupService.approveGroupDeletionRequest(request._id, this.userName).subscribe({
       next: response => {
-        alert(response.message);
+        this.toast.fromResponse(response);
         if (response.ok) {
           this.loadGroupDeletionRequests();
         }
       },
       error: (err) => {
-        alert(err?.error?.message || 'Failed to approve group deletion request.');
+        this.toast.error(err?.error?.message || 'Failed to approve group deletion request.');
       }
     });
   }
 
-  rejectGroupDeletionRequest(request: GroupDeletionRequest): void
+  async rejectGroupDeletionRequest(request: GroupDeletionRequest): Promise<void>
   {
     if (!request._id) {
       return;
     }
 
-    const reason = prompt('Enter a rejection reason:')?.trim();
+    const reason = await this.dialog.prompt('Enter a rejection reason:', { title: 'Reject request', confirmLabel: 'Reject', danger: true, placeholder: 'Reason...' });
     if (!reason) {
       return;
     }
 
     this.groupService.rejectGroupDeletionRequest(request._id, reason, this.userName).subscribe({
       next: response => {
-        alert(response.message);
+        this.toast.fromResponse(response);
         if (response.ok) {
           this.loadGroupDeletionRequests();
         }
       },
       error: (err) => {
-        alert(err?.error?.message || 'Failed to reject group deletion request.');
+        this.toast.error(err?.error?.message || 'Failed to reject group deletion request.');
       }
     });
   }
@@ -292,38 +303,38 @@ export class SuperAdminDashboard
 
     this.accountService.approveDeletion(request._id).subscribe({
       next: response => {
-        alert(response.message);
+        this.toast.fromResponse(response);
         if (response.ok) {
           this.loadAccountDeletionRequests();
           this.loadBannedEmails();
         }
       },
       error: (err) => {
-        alert(err?.error?.message || 'Failed to approve account deletion request.');
+        this.toast.error(err?.error?.message || 'Failed to approve account deletion request.');
       }
     });
   }
 
-  rejectAccountDeletionRequest(request: AccountDeletionRequest): void
+  async rejectAccountDeletionRequest(request: AccountDeletionRequest): Promise<void>
   {
     if (!request._id) {
       return;
     }
 
-    const reason = prompt('Enter a rejection reason:')?.trim();
+    const reason = await this.dialog.prompt('Enter a rejection reason:', { title: 'Reject request', confirmLabel: 'Reject', danger: true, placeholder: 'Reason...' });
     if (!reason) {
       return;
     }
 
     this.accountService.rejectDeletion(request._id, reason).subscribe({
       next: response => {
-        alert(response.message);
+        this.toast.fromResponse(response);
         if (response.ok) {
           this.loadAccountDeletionRequests();
         }
       },
       error: (err) => {
-        alert(err?.error?.message || 'Failed to reject account deletion request.');
+        this.toast.error(err?.error?.message || 'Failed to reject account deletion request.');
       }
     });
   }
@@ -336,37 +347,37 @@ export class SuperAdminDashboard
 
     this.groupService.approveGroupBanRequest(request._id).subscribe({
       next: response => {
-        alert(response.message);
+        this.toast.fromResponse(response);
         if (response.ok) {
           this.loadGroupBanRequests();
         }
       },
       error: (err) => {
-        alert(err?.error?.message || 'Failed to approve ban request.');
+        this.toast.error(err?.error?.message || 'Failed to approve ban request.');
       }
     });
   }
 
-  rejectUserBanRequest(request: GroupBanRequest): void
+  async rejectUserBanRequest(request: GroupBanRequest): Promise<void>
   {
     if (!request._id) {
       return;
     }
 
-    const reason = prompt('Enter a rejection reason:')?.trim();
+    const reason = await this.dialog.prompt('Enter a rejection reason:', { title: 'Reject request', confirmLabel: 'Reject', danger: true, placeholder: 'Reason...' });
     if (!reason) {
       return;
     }
 
     this.groupService.rejectGroupBanRequest(request._id, reason).subscribe({
       next: response => {
-        alert(response.message);
+        this.toast.fromResponse(response);
         if (response.ok) {
           this.loadGroupBanRequests();
         }
       },
       error: (err) => {
-        alert(err?.error?.message || 'Failed to reject ban request.');
+        this.toast.error(err?.error?.message || 'Failed to reject ban request.');
       }
     });
   }

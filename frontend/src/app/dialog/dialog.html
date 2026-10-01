@@ -1,0 +1,37 @@
+@if (dialog.current(); as request) {
+  <input class="modal-state" id="app-dialog" type="checkbox" checked (change)="dialog.cancel()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="app-dialog-title" aria-describedby="app-dialog-message">
+    <label class="modal-bg" for="app-dialog"></label>
+    <div class="modal-body" style="width: 450px; max-width: 90vw;">
+      <label class="btn-close" for="app-dialog" aria-label="Close">X</label>
+      <h3 class="modal-title" id="app-dialog-title" style="margin-top: 0;">{{ request.title }}</h3>
+      <p id="app-dialog-message">{{ request.message }}</p>
+
+      @if (request.kind === 'prompt') {
+        <input
+          class="input-block"
+          type="text"
+          aria-labelledby="app-dialog-message"
+          [placeholder]="request.placeholder"
+          [(ngModel)]="request.value"
+          (keyup.enter)="dialog.submit()"
+        />
+      }
+
+      <div class="row flex-right" style="gap: 0.5rem; margin-top: 1rem;">
+        <button type="button" class="paper-btn" style="margin: 0;" (click)="dialog.cancel()">Cancel</button>
+        <button
+          type="button"
+          class="dialog-confirm"
+          style="margin: 0;"
+          [class.btn-danger]="request.danger"
+          [class.btn-success]="!request.danger"
+          [disabled]="request.kind === 'prompt' && !request.value.trim()"
+          (click)="dialog.submit()"
+        >
+          {{ request.confirmLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

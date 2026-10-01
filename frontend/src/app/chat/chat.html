@@ -30,8 +30,17 @@
         </span>
       </div>
 
+      <input
+        type="search"
+        class="chat-search"
+        placeholder="Search messages..."
+        aria-label="Search messages in this room"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+
       <label for="paperSwitch1" class="paper-switch-tile">
-        <input id="paperSwitch1" type="checkbox" [checked]="isDarkMode" (change)="toggleDarkMode($event)" />
+        <input id="paperSwitch1" type="checkbox" aria-label="Dark mode" [checked]="isDarkMode" (change)="toggleDarkMode($event)" />
         <div class="paper-switch-tile-card border">
           <div class="paper-switch-tile-card-front">Light</div>
           <div class="paper-switch-tile-card-back">Dark</div>
@@ -39,24 +48,16 @@
       </label>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
-    @if (displayNotification) {
-      <div class="alert alert-secondary dismissible" style="margin-bottom: 0.5rem;">
-        {{ systemNotification }}
-        <label class="btn-close" (click)="dismissToast()">X</label>
-      </div>
-    }
-
     <!-- MESSAGE STREAM -->
-    <div #scroll style="gap: 1rem; display: flex; flex-direction: column; overflow-y: auto; flex: 1; min-height: 0;">
-      @for (msg of messages; track msg._id) {
+    <div #scroll role="log" aria-live="polite" [attr.aria-label]="'Messages in #' + currentRoom" style="gap: 1rem; display: flex; flex-direction: column; overflow-y: auto; flex: 1; min-height: 0;">
+      @for (msg of visibleMessages(); track msg._id) {
         @if (msg.senderUserName === currentUser) {
           <div class="card sender-bubble" style="align-self: flex-end; width: fit-content; max-width: 70%; min-width: 250px; padding: 0.6rem 1rem; margin: 0;">
             <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.8rem;">
               <p style="margin: 0; font-weight: bold; font-size: 0.95rem;">
                 {{ msg.senderUserName }} - {{ msg.timestamp | date:'shortTime' }}
               </p>
-              <button (click)="deleteContent(msg._id)" class="btn-danger btn-small" style="padding: 0.1rem 0.4rem; font-size: 0.75rem;">
+              <button (click)="deleteContent(msg._id)" class="btn-danger btn-small" aria-label="Delete message" style="padding: 0.1rem 0.4rem; font-size: 0.75rem;">
                 X
               </button>
             </div>
@@ -81,14 +82,25 @@
           </div>
         }
       } @empty {
-        <p style="text-align: center; color: #777; margin-top: 2rem;">No messages in this room yet. Say hello!</p>
+        @if (searchTerm().trim()) {
+          <p style="text-align: center; color: #777; margin-top: 2rem;">No messages match "{{ searchTerm().trim() }}".</p>
+        } @else {
+          <p style="text-align: center; color: #777; margin-top: 2rem;">No messages in this room yet. Say hello!</p>
+        }
       }
     </div>
 
+    <p class="typing-indicator" aria-live="polite">
+      @if (typingLabel()) {
+        {{ typingLabel() }}
+        <span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+      }
+    </p>
+
     <!-- MESSAGE INPUT & FILE ATTACHMENT -->
     <div style="display: flex; padding-top: 1rem; align-items: center; gap: 0.5rem;">
-      <label class="paper-btn btn-small" style="margin: 0; cursor: pointer; padding: 0.6rem 0.8rem;">
-        📎
+      <label class="paper-btn btn-small" style="margin: 0; cursor: pointer; padding: 0.6rem 0.8rem;" aria-label="Attach an image">
+        <span aria-hidden="true">📎</span>
         <input #chatFileInput type="file" accept="image/*" (change)="onChatFileSelected($event)" style="display: none;" />
       </label>
       @if (selectedChatFile) {
@@ -99,8 +111,10 @@
       <input
         type="text"
         [(ngModel)]="newMessageContent"
+        (input)="onMessageInput()"
         (keyup.enter)="sendContent()"
         placeholder="Type a message..."
+        aria-label="Message"
         style="flex: 1; height: 3rem;"
         class="card chat-input"
       />
@@ -126,7 +140,7 @@
     <hr>
     <h3 style="margin: 0; white-space: nowrap; font-size: 1.2rem; text-align: center;">In this room</h3>
     <div>
-      @for (username of onlineRoomMembers; track username) {
+      @for (username of onlineRoomMembers(); track username) {
         <p class="text-secondary">{{ username }}</p>
       } @empty {
         <p style="color: #777; font-style: italic;">No one in this room yet.</p>

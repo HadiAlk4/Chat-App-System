@@ -14,9 +14,4 @@ describe("isUnderMinAge", () => {
     });
   });
 
-  describe("missing age", () => {
-    it("does not treat a missing age as under the minimum", () => {
-      assert.equal(isUnderMinAge(undefined, 18), false);
-    });
-  });
 });

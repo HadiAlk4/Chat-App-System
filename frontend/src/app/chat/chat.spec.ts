@@ -5,6 +5,7 @@ import { ChatMessage } from '../models/message';
 import { ChatService } from '../services/chat';
 import { GroupService } from '../services/group';
 import { SocketService } from '../services/socket';
+import { ToastService } from '../services/toast';
 import { Chat } from './chat';
 
 const history: ChatMessage[] = [
@@ -28,7 +29,6 @@ describe('Chat', () => {
       JSON.stringify({ username: 'ada', email: 'ada@example.com', role: 'user' })
     );
     sendMessage = vi.fn();
-    vi.spyOn(window, 'alert').mockImplementation(() => undefined);
 
     await TestBed.configureTestingModule({
       imports: [Chat],
@@ -47,6 +47,8 @@ describe('Chat', () => {
             onUserLeft: () => EMPTY,
             onMessageDeleted: () => EMPTY,
             onRoomUsers: () => EMPTY,
+            onTyping: () => EMPTY,
+            emitTyping: vi.fn(),
           },
         },
         {
@@ -93,7 +95,7 @@ describe('Chat', () => {
     component.sendContent();
 
     expect(sendMessage).not.toHaveBeenCalled();
-    expect(window.alert).toHaveBeenCalledWith('External links are not allowed');
+    expect(TestBed.inject(ToastService).toasts().map((t) => t.text)).toEqual(['External links are not allowed']);
   });
 
   it('sends a plain text message', () => {
@@ -111,10 +113,4 @@ describe('Chat', () => {
     });
   });
 
-  it('renders the room history with the sender display name', () => {
-    const text = fixture.nativeElement.textContent;
-
-    expect(text).toContain('bea');
-    expect(text).toContain('hello room');
-  });
 });

@@ -1,0 +1,15 @@
+<div class="toast-stack" role="status" aria-live="polite" aria-atomic="false">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div
+      class="alert toast"
+      [class.alert-success]="toast.type === 'success'"
+      [class.alert-danger]="toast.type === 'danger'"
+      [class.alert-secondary]="toast.type === 'secondary'"
+      [class.leaving]="toast.leaving"
+      [attr.role]="toast.type === 'danger' ? 'alert' : null"
+    >
+      <span>{{ toast.text }}</span>
+      <button type="button" class="toast-close" aria-label="Dismiss notification" (click)="toastService.dismiss(toast.id)">X</button>
+    </div>
+  }
+</div>

@@ -1,0 +1,17 @@
+.modal-body .input-block {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-body {
+  animation: dialog-in 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translate(-50%, -40%) scale(0.95); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-body { animation: none; }
+}

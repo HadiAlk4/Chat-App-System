@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, OnDestroy, ViewChild, computed, effect, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
@@ -9,9 +9,12 @@ import { GroupService } from '../services/group';
 import { ChatService } from '../services/chat';
 import { SocketService } from '../services/socket';
 import { UploadService } from '../services/upload';
+import { DialogService } from '../services/dialog';
+import { ToastService } from '../services/toast';
 import { ChatMessage } from '../models/message';
 
 const BACKEND_URL = 'http://localhost:3000';
+const TYPING_IDLE_MS = 2000;
 
 @Component({
   imports: [RouterLink, FormsModule, DatePipe],
@@ -30,17 +33,35 @@ export class Chat implements OnInit, OnDestroy {
 
   rooms: string[] = [];
   groupMembers: { userName: string; isAdmin: boolean }[] = [];
-  onlineRoomMembers: string[] = [];
-  messages: ChatMessage[] = [];
+  readonly onlineRoomMembers = signal<string[]>([]);
+  readonly messages = signal<ChatMessage[]>([]);
+  readonly searchTerm = signal('');
+  readonly typingUsers = signal<Set<string>>(new Set());
+
+  readonly visibleMessages = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    if (!term) return this.messages();
+    return this.messages().filter(
+      (m) => m.content?.toLowerCase().includes(term) || m.senderUserName.toLowerCase().includes(term)
+    );
+  });
+
+  readonly typingLabel = computed(() => {
+    const names = [...this.typingUsers()];
+    if (names.length === 0) return '';
+    if (names.length === 1) return `${names[0]} is typing`;
+    if (names.length === 2) return `${names[0]} and ${names[1]} are typing`;
+    return 'Several people are typing';
+  });
+
   newMessageContent = '';
   selectedChatFile: File | null = null;
-
-  systemNotification = '';
-  displayNotification = false;
   isDarkMode = false;
   groupThemeColor = '';
 
   private subscriptions = new Subscription();
+  private isTyping = false;
+  private typingTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private authService: AuthService,
@@ -49,9 +70,16 @@ export class Chat implements OnInit, OnDestroy {
     private chatService: ChatService,
     private socketService: SocketService,
     private uploadService: UploadService,
+    private toast: ToastService,
+    private dialog: DialogService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    effect(() => {
+      this.messages();
+      this.scrollToBottom();
+    });
+  }
 
   ngOnInit(): void {
     const user = this.authService.getUser();
@@ -100,23 +128,22 @@ export class Chat implements OnInit, OnDestroy {
 
   switchRooms(room: string): void {
     if (this.currentRoom && this.currGroupName) {
+      this.stopTyping();
       this.chatService.leaveRoom(this.currGroupName, this.currentRoom, this.currentUser);
     }
 
     this.currentRoom = room;
-    this.onlineRoomMembers = [];
+    this.onlineRoomMembers.set([]);
+    this.typingUsers.set(new Set());
+    this.searchTerm.set('');
     this.chatService.joinRoom(this.currGroupName, this.currentRoom, this.currentUser);
 
     // Fetch room history from MongoDB
     this.chatService.getRoomMessages(this.currGroupName, this.currentRoom, this.currentUser).subscribe({
-      next: (msgs) => {
-        this.messages = msgs;
-        this.cdr.markForCheck();
-        this.scrollToBottom();
-      },
+      next: (msgs) => this.messages.set(msgs),
       error: (err) => {
         if (err.status === 403) {
-          this.messages = [];
+          this.messages.set([]);
           return;
         }
         console.error('Failed to load room messages:', err);
@@ -127,51 +154,54 @@ export class Chat implements OnInit, OnDestroy {
   listenToSocketEvents(): void {
     const msgSub = this.chatService.onNewMessage().subscribe((msg) => {
       if (msg.groupName === this.currGroupName && msg.roomName === this.currentRoom) {
-        this.messages.push(msg);
-        this.cdr.markForCheck();
-        this.scrollToBottom();
+        this.messages.update((list) => [...list, msg]);
+        this.setTyping(msg.senderUserName, false);
       }
     });
 
     const joinSub = this.chatService.onUserJoined().subscribe((data) => {
       if (data.roomName === this.currentRoom && data.username !== this.currentUser) {
-        this.showToast(`${data.username} joined the room`);
+        this.toast.info(`${data.username} joined the room`);
       }
     });
 
     const leftSub = this.chatService.onUserLeft().subscribe((data) => {
       if (data.roomName === this.currentRoom && data.username !== this.currentUser) {
-        this.showToast(`${data.username} left the room`);
+        this.setTyping(data.username, false);
+        this.toast.info(`${data.username} left the room`);
       }
     });
 
     const deletedSub = this.chatService.onMessageDeleted().subscribe(({ messageId }) => {
-      this.messages = this.messages.filter((m) => String(m._id) !== String(messageId));
-      this.cdr.markForCheck();
+      this.messages.update((list) => list.filter((m) => String(m._id) !== String(messageId)));
     });
 
     const roomUsersSub = this.chatService.onRoomUsers().subscribe((data) => {
       if (data.roomName === this.currentRoom) {
-        this.onlineRoomMembers = data.users || [];
-        this.cdr.markForCheck();
+        this.onlineRoomMembers.set(data.users || []);
+      }
+    });
+
+    const typingSub = this.chatService.onTyping().subscribe(({ username, roomName, isTyping }) => {
+      if (roomName === this.currentRoom && username !== this.currentUser) {
+        this.setTyping(username, isTyping);
       }
     });
 
     const accountDeletedSub = this.socketService.onAccountDeletionRequestResolved().subscribe(({ status, username }) => {
       if (status === 'approved' && username) {
-        this.messages = this.messages.filter((m) => m.senderUserName !== username);
-        this.cdr.markForCheck();
+        this.messages.update((list) => list.filter((m) => m.senderUserName !== username));
       }
     });
 
     const joinResolvedSub = this.socketService.onJoinRequestResolved().subscribe(({ username, groupName, status }) => {
       const outcome = status === 'approved' ? 'approved' : 'denied';
       if (username === this.currentUser) {
-        this.showToast(`Your request to join ${groupName} was ${outcome}`);
+        this.toast.info(`Your request to join ${groupName} was ${outcome}`);
         return;
       }
       if (groupName === this.currGroupName) {
-        this.showToast(
+        this.toast.info(
           status === 'approved'
             ? `${username} was approved to join`
             : `${username} was denied`
@@ -184,6 +214,7 @@ export class Chat implements OnInit, OnDestroy {
     this.subscriptions.add(leftSub);
     this.subscriptions.add(deletedSub);
     this.subscriptions.add(roomUsersSub);
+    this.subscriptions.add(typingSub);
     this.subscriptions.add(joinResolvedSub);
     this.subscriptions.add(accountDeletedSub);
   }
@@ -193,7 +224,7 @@ export class Chat implements OnInit, OnDestroy {
     if (target.files && target.files.length > 0) {
       const file = target.files[0];
       if (file.size > 2 * 1024 * 1024) {
-        alert('File exceeds 2MB limit.');
+        this.toast.error('File exceeds 2MB limit.');
         target.value = '';
         this.selectedChatFile = null;
         return;
@@ -221,7 +252,7 @@ export class Chat implements OnInit, OnDestroy {
             this.dispatchMessage(content, res.fileUrl);
           }
         },
-        error: () => alert('Failed to upload image attachment.'),
+        error: () => this.toast.error('Failed to upload image attachment.'),
       });
     } else {
       this.dispatchMessage(content);
@@ -230,10 +261,11 @@ export class Chat implements OnInit, OnDestroy {
 
   private dispatchMessage(content: string, imageUrl?: string): void {
     if (/(https?:\/\/|www\.)/i.test(content)) {
-      alert('External links are not allowed');
+      this.toast.error('External links are not allowed');
       return;
     }
 
+    this.stopTyping();
     this.chatService.sendMessage({
       groupName: this.currGroupName,
       roomName: this.currentRoom,
@@ -249,25 +281,48 @@ export class Chat implements OnInit, OnDestroy {
     }
   }
 
-  deleteContent(msgId?: string): void {
+  async deleteContent(msgId?: string): Promise<void> {
     if (!msgId) return;
-    if (confirm('Delete this message?')) {
+    const confirmed = await this.dialog.confirm('Delete this message for everyone in the room?', {
+      title: 'Delete message',
+      confirmLabel: 'Delete',
+    });
+    if (confirmed) {
       this.chatService.emitDeleteMessage(this.currGroupName, this.currentRoom, msgId);
     }
   }
 
-  showToast(text: string): void {
-    this.systemNotification = text;
-    this.displayNotification = true;
-    this.cdr.markForCheck();
-    setTimeout(() => {
-      this.displayNotification = false;
-      this.cdr.markForCheck();
-    }, 4000);
+  onMessageInput(): void {
+    if (!this.newMessageContent.trim()) {
+      this.stopTyping();
+      return;
+    }
+    if (!this.isTyping) {
+      this.isTyping = true;
+      this.chatService.emitTyping(this.currGroupName, this.currentRoom, this.currentUser, true);
+    }
+    if (this.typingTimer) clearTimeout(this.typingTimer);
+    this.typingTimer = setTimeout(() => this.stopTyping(), TYPING_IDLE_MS);
   }
 
-  dismissToast(): void {
-    this.displayNotification = false;
+  private stopTyping(): void {
+    if (this.typingTimer) {
+      clearTimeout(this.typingTimer);
+      this.typingTimer = null;
+    }
+    if (!this.isTyping) return;
+    this.isTyping = false;
+    this.chatService.emitTyping(this.currGroupName, this.currentRoom, this.currentUser, false);
+  }
+
+  private setTyping(username: string, isTyping: boolean): void {
+    this.typingUsers.update((current) => {
+      if (current.has(username) === isTyping) return current;
+      const next = new Set(current);
+      if (isTyping) next.add(username);
+      else next.delete(username);
+      return next;
+    });
   }
 
   applyChatTheme(): void {
@@ -304,6 +359,7 @@ export class Chat implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.currGroupName && this.currentRoom) {
+      this.stopTyping();
       this.chatService.leaveRoom(this.currGroupName, this.currentRoom, this.currentUser);
     }
     this.subscriptions.unsubscribe();

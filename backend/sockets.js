@@ -81,6 +81,16 @@ export function initChatSockets(io) {
       emitRoomUsers(io, channel, roomName);
     });
 
+    // Relayed to everyone else in the room; nothing is stored
+    socket.on("typing", ({ groupName, roomName, username, isTyping }) => {
+      if (!groupName || !roomName || !username) return;
+      socket.to(`${groupName}:${roomName}`).emit("typing", {
+        username,
+        roomName,
+        isTyping: Boolean(isTyping),
+      });
+    });
+
     socket.on("send-message", async (msgData) => {
       try {
         const { groupName, roomName, senderUserName, content, imageUrl } = msgData;

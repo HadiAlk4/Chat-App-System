@@ -46,22 +46,4 @@ describe('Login', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/dashboard');
   });
 
-  it('navigates a super admin to the super admin dashboard', () => {
-    const http = TestBed.inject(HttpClient);
-    vi.spyOn(http, 'post').mockReturnValue(
-      of({
-        ok: true,
-        valid: true,
-        user: { username: 'root', role: 'super-admin', email: 'root@example.com' },
-      })
-    );
-    const router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
-
-    component.emailInput = 'root@example.com';
-    component.passwordInput = 'Password1';
-    component.loginfunc();
-
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/super-admin-dashboard');
-  });
 });

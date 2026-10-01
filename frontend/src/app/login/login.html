@@ -1,5 +1,13 @@
+@if (showSplash) {
+    <div class="splash" aria-hidden="true">
+        <h1 class="splash-title"><span>Fabulari</span></h1>
+        <p class="splash-tagline">grab a pen, start a chat</p>
+        <div class="splash-dots"><span></span><span></span><span></span></div>
+    </div>
+}
+
 <div class="centered-layout">      
-    <div class="torn-notepad">
+    <div class="torn-notepad" [class.after-splash]="showSplash">
         <h1 class="text-center" style="font-size: 3.5rem; margin-bottom: 2rem;">Log In</h1>
         
         @if (errorMessage()) {

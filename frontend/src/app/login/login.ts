@@ -1,10 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, PLATFORM_ID, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../services/auth';
 
 const BACKEND_URL = 'http://localhost:3000';
+
+// Module state resets on a full page load, so the splash plays on refresh but not on in-app navigation
+let splashPlayed = false;
 
 @Component({
   selector: 'app-login',
@@ -17,8 +21,14 @@ export class Login
   emailInput: string = '';
   passwordInput: string = '';
   errorMessage = signal('');
+  readonly showSplash = !splashPlayed;
 
-  constructor(private http: HttpClient, private router: Router, private authService: AuthService) {}
+  constructor(private http: HttpClient, private router: Router, private authService: AuthService) {
+    // The server keeps module state between requests, so only the browser marks the splash as played
+    if (isPlatformBrowser(inject(PLATFORM_ID))) {
+      splashPlayed = true;
+    }
+  }
 
   loginfunc(): void {
     if (!this.emailInput || !this.passwordInput) {

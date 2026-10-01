@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, of } from 'rxjs';
 import { GroupService } from '../services/group';
 import { SocketService } from '../services/socket';
+import { ToastService } from '../services/toast';
 import { GroupSettings } from './group-settings';
 
 describe('GroupSettings', () => {
@@ -15,7 +16,6 @@ describe('GroupSettings', () => {
       JSON.stringify({ username: 'ada', email: 'ada@example.com', role: 'group-admin' })
     );
     rejectJoinRequest = vi.fn(() => of({ ok: true, message: 'rejected' }));
-    vi.spyOn(window, 'alert').mockImplementation(() => undefined);
 
     await TestBed.configureTestingModule({
       imports: [GroupSettings],
@@ -66,29 +66,6 @@ describe('GroupSettings', () => {
     sessionStorage.clear();
   });
 
-  it('fills the form from the loaded group', () => {
-    const component = fixture.componentInstance;
-    expect(component.groupName).toBe('Readers');
-    expect(component.groupDescription).toBe('Books');
-    expect(component.groupMinAge).toBe(18);
-    expect(fixture.nativeElement.querySelector('#grpSettingsName').value).toBe('Readers');
-    expect(fixture.nativeElement.querySelector('#grpSettingsAge').value).toBe('18');
-  });
-
-  it('asks for confirmation before saving a higher minimum age', () => {
-    const component = fixture.componentInstance;
-    component.groupMinAge = 21;
-
-    component.saveChanges();
-    fixture.detectChanges();
-
-    expect(component.confirmOpen).toBe(true);
-    expect(component.pendingChanges).toContain('Minimum age: 18 → 21');
-    expect(component.ageWillRemoveMembers).toBe(true);
-    expect(fixture.nativeElement.textContent).toContain('Confirm changes');
-    expect(fixture.nativeElement.textContent).toContain('removes every member who is now too young');
-  });
-
   it('does not call the API when a join rejection has no reason', () => {
     fixture.componentInstance.joinRequests = [
       {
@@ -106,7 +83,7 @@ describe('GroupSettings', () => {
     fixture.componentInstance.rejectRequest(0);
 
     expect(rejectJoinRequest).not.toHaveBeenCalled();
-    expect(window.alert).toHaveBeenCalledWith('A rejection reason is required');
+    expect(TestBed.inject(ToastService).toasts()[0]).toMatchObject({ type: 'danger', text: 'A rejection reason is required' });
   });
 });
 

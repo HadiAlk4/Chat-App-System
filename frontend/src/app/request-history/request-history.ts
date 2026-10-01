@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../services/auth';
 import { GroupService } from '../services/group';
 import { SocketService } from '../services/socket';
+import { ToastService } from '../services/toast';
 import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
 import { Group } from '../models/group';
@@ -52,6 +53,7 @@ export class RequestHistory implements OnInit, OnDestroy {
     private authService: AuthService,
     private groupService: GroupService,
     private socketService: SocketService,
+    private toast: ToastService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -144,7 +146,7 @@ export class RequestHistory implements OnInit, OnDestroy {
   submitBanRequest(): void {
     const targetUsername = this.banTargetUsername.trim();
     if (!this.selectedGroupForBan || !targetUsername) {
-      alert('Please select a group and enter a username to ban.');
+      this.toast.error('Please select a group and enter a username to ban.');
       return;
     }
 
@@ -152,19 +154,19 @@ export class RequestHistory implements OnInit, OnDestroy {
       .submitGroupBanRequest(this.selectedGroupForBan, targetUsername, this.userName)
       .subscribe({
         next: (res) => {
-          alert(res.message);
+          this.toast.fromResponse(res);
           if (res.ok) {
             this.banTargetUsername = '';
             this.loadHistory();
           }
         },
-        error: (err) => alert(err.error?.message || 'Failed to submit ban request.'),
+        error: (err) => this.toast.error(err.error?.message || 'Failed to submit ban request.'),
       });
   }
 
   submitRoomProposal(): void {
     if (!this.selectedGroupForRoom || !this.newRoomNameInput.trim()) {
-      alert('Please select a group and enter a room name.');
+      this.toast.error('Please select a group and enter a room name.');
       return;
     }
 
@@ -172,13 +174,13 @@ export class RequestHistory implements OnInit, OnDestroy {
       .submitRoomRequest(this.selectedGroupForRoom, this.newRoomNameInput.trim(), this.userName)
       .subscribe({
         next: (res) => {
-          alert(res.message);
+          this.toast.fromResponse(res);
           if (res.ok) {
             this.newRoomNameInput = '';
             this.loadHistory();
           }
         },
-        error: (err) => alert(err.error?.message || 'Failed to submit room proposal.'),
+        error: (err) => this.toast.error(err.error?.message || 'Failed to submit room proposal.'),
       });
   }
 

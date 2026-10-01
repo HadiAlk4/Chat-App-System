@@ -3,7 +3,9 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../services/auth';
+import { DialogService } from '../services/dialog';
 import { GroupService } from '../services/group';
+import { ToastService } from '../services/toast';
 import { Group } from '../models/group';
 
 @Component({
@@ -31,6 +33,8 @@ export class MyMemberships implements OnInit
   constructor(
     private authService: AuthService,
     private groupService: GroupService,
+    private toast: ToastService,
+    private dialog: DialogService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -77,27 +81,30 @@ export class MyMemberships implements OnInit
       return group.admins?.length === 1 && group.admins[0] === this.currentUsername;
   }
 
-  leaveGroup(group: Group): void
+  async leaveGroup(group: Group): Promise<void>
   {
       if (this.isSoleAdmin(group)) {
-        alert('Cannot leave group as sole admin');
+        this.toast.error('Cannot leave group as sole admin');
         return;
       }
 
-      const confirmed = confirm(`Are you sure you want to leave ${group.groupName}? This cannot be undone.`);
+      const confirmed = await this.dialog.confirm(
+        `Are you sure you want to leave ${group.groupName}? This cannot be undone.`,
+        { title: 'Leave group', confirmLabel: 'Leave' }
+      );
       if (!confirmed) {
         return;
       }
 
       this.groupService.leaveGroup(group.groupName, this.currentUsername).subscribe({
         next: (response) => {
-          alert(response.message);
+          this.toast.fromResponse(response);
           if (response.ok) {
             this.loadMemberships();
           }
         },
         error: (err) => {
-          alert(err.error?.message || 'Failed to leave group');
+          this.toast.error(err.error?.message || 'Failed to leave group');
         }
       });
   }

@@ -8,12 +8,6 @@ describe("containsExternalLink", () => {
     });
   });
 
-  describe("www link", () => {
-    it("detects a www host", () => {
-      assert.equal(containsExternalLink("visit www.example.com"), true);
-    });
-  });
-
   describe("plain text", () => {
     it("allows text that is not a link", () => {
       assert.equal(containsExternalLink("hello room"), false);

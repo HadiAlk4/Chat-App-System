@@ -1,8 +1,10 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { GroupService } from '../services/group';
+import { PendingRequestsService } from '../services/pending-requests';
+import { ToastService } from '../services/toast';
 import { Group } from '../models/group';
 
 
@@ -32,9 +34,14 @@ export class Dashboard implements OnInit
     themeColor: 'light'
   };
 
+  private readonly pendingRequests = inject(PendingRequestsService);
+  readonly pendingCount = this.pendingRequests.pendingCount;
+
   constructor(
     private authService: AuthService,
     private groupService: GroupService,
+    private toast: ToastService,
+    private destroyRef: DestroyRef,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -49,6 +56,7 @@ export class Dashboard implements OnInit
       this.email = user.email;
     } 
     this.loadGroups();
+    this.pendingRequests.track(this.username, this.destroyRef);
   }
 
   loadGroups(): void
@@ -73,7 +81,7 @@ export class Dashboard implements OnInit
 
   proposeGroup(): void {
     if (!this.newGroup.groupName.trim()) {
-      alert('Group name is required.');
+      this.toast.error('Group name is required.');
       return;
     }
 
@@ -81,7 +89,7 @@ export class Dashboard implements OnInit
       .submitProposal(this.newGroup, this.username, this.email)
       .subscribe({
         next: response => {
-          alert(response.message);
+          this.toast.fromResponse(response);
 
           if (response.ok) {
             this.newGroup = {
@@ -93,7 +101,7 @@ export class Dashboard implements OnInit
           }
         },
         error: () => {
-          alert('Cannot connect to backend server.');
+          this.toast.error('Cannot connect to backend server.');
         }
       });
   }
@@ -113,8 +121,8 @@ export class Dashboard implements OnInit
 
   requestToJoin(group: Group): void {
     this.groupService.submitJoinRequest(group.groupName, this.username).subscribe({
-      next: response => alert(response.message),
-      error: () => alert('Cannot connect to backend server.')
+      next: response => this.toast.fromResponse(response),
+      error: (err) => this.toast.error(err.error?.message || 'Cannot connect to backend server.')
     });
   }
   

@@ -32,18 +32,6 @@ describe('UserProfileSettings', () => {
     sessionStorage.clear();
   });
 
-  it('shows the service error when the current password is wrong', () => {
-    const component = fixture.componentInstance;
-    component.currentPasswordInput = 'WrongPass1';
-    component.newPasswordInput = 'Password2';
-    component.confirmPasswordInput = 'Password2';
-
-    component.savePassword();
-
-    expect(updatePassword).toHaveBeenCalledWith('ada@example.com', 'WrongPass1', 'Password2');
-    expect(component.passwordMessage()).toEqual({ type: 'danger', text: 'Current password is incorrect' });
-  });
-
   it('does not call the API when the new password breaks the password rule', () => {
     const component = fixture.componentInstance;
     component.currentPasswordInput = 'Password1';

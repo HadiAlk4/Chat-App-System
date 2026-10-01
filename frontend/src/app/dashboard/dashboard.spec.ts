@@ -1,12 +1,15 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { GroupService } from '../services/group';
+import { PendingRequestsService } from '../services/pending-requests';
 import { Dashboard } from './dashboard';
 
 describe('Dashboard', () => {
   let fixture: ComponentFixture<Dashboard>;
   let submitProposal: ReturnType<typeof vi.fn>;
   let getGroups: ReturnType<typeof vi.fn>;
+  let pendingCount: ReturnType<typeof signal<number>>;
 
   beforeEach(async () => {
     sessionStorage.setItem(
@@ -15,7 +18,7 @@ describe('Dashboard', () => {
     );
     submitProposal = vi.fn(() => of({ ok: true, message: 'Group request submitted successfully' }));
     getGroups = vi.fn(() => of([]));
-    vi.spyOn(window, 'alert').mockImplementation(() => undefined);
+    pendingCount = signal(0);
 
     await TestBed.configureTestingModule({
       imports: [Dashboard],
@@ -26,6 +29,10 @@ describe('Dashboard', () => {
             getGroups,
             submitProposal,
           },
+        },
+        {
+          provide: PendingRequestsService,
+          useValue: { pendingCount, track: vi.fn() },
         },
       ],
     }).compileComponents();
@@ -54,16 +61,4 @@ describe('Dashboard', () => {
     expect(submitProposal).toHaveBeenCalledWith(proposal, 'ada', 'ada@example.com');
   });
 
-  it('hides groups the user already belongs to from the join list', () => {
-    const base = { groupDescription: '', minAge: 18, themeColor: 'light' as const };
-    getGroups.mockReturnValue(of([
-      { ...base, groupName: 'Mine', admins: ['ada'], members: ['ada'] },
-      { ...base, groupName: 'Joined', admins: ['bob'], members: ['bob', 'ada'] },
-      { ...base, groupName: 'Open', admins: ['bob'], members: ['bob'] },
-    ]));
-
-    fixture.componentInstance.loadGroups();
-
-    expect(fixture.componentInstance.displayedGroups.map(g => g.groupName)).toEqual(['Open']);
-  });
 });

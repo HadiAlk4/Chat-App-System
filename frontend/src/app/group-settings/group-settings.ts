@@ -6,6 +6,8 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../services/auth';
 import { GroupService } from '../services/group';
 import { SocketService } from '../services/socket';
+import { DialogService } from '../services/dialog';
+import { ToastService } from '../services/toast';
 import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
 import { GroupBanRequest } from '../models/group-ban-request';
@@ -42,6 +44,8 @@ export class GroupSettings implements OnInit, OnDestroy {
     private authService: AuthService,
     private groupService: GroupService,
     private socketService: SocketService,
+    private toast: ToastService,
+    private dialog: DialogService,
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -130,11 +134,11 @@ export class GroupSettings implements OnInit, OnDestroy {
     const groupName = this.groupName.trim();
     const groupDescription = this.groupDescription.trim();
     if (!groupName || !groupDescription) {
-      alert('Group name and description are required');
+      this.toast.error('Group name and description are required');
       return;
     }
     if (groupDescription.length > 250) {
-      alert('Group description must be 250 characters or fewer');
+      this.toast.error('Group description must be 250 characters or fewer');
       return;
     }
 
@@ -153,7 +157,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       changes.push(`Theme color: ${this.themeLabel(this.savedTheme)} → ${this.themeLabel(this.groupThemeColor)}`);
     }
     if (!changes.length) {
-      alert('Nothing has changed.');
+      this.toast.info('Nothing has changed.');
       return;
     }
 
@@ -180,7 +184,7 @@ export class GroupSettings implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (!res.ok || !res.group) {
-            alert(res.message || 'Failed to save group settings.');
+            this.toast.error(res.message || 'Failed to save group settings.');
             return;
           }
           this.applyGroup(res.group);
@@ -191,9 +195,9 @@ export class GroupSettings implements OnInit, OnDestroy {
               queryParamsHandling: 'merge',
             });
           }
-          alert(res.message || 'Group settings saved');
+          this.toast.success(res.message || 'Group settings saved');
         },
-        error: (err) => alert(err.error?.message || 'Failed to save group settings.'),
+        error: (err) => this.toast.error(err.error?.message || 'Failed to save group settings.'),
       });
   }
 
@@ -303,13 +307,13 @@ export class GroupSettings implements OnInit, OnDestroy {
 
     this.groupService.approveJoinRequest(request._id).subscribe({
       next: (res) => {
-        alert(res.message || 'Request approved');
+        this.toast.fromResponse(res, 'Request approved');
         if (res.ok) {
           this.loadJoinRequests();
           this.loadGroup();
         }
       },
-      error: () => alert('Failed to approve request.'),
+      error: () => this.toast.error('Failed to approve request.'),
     });
   }
 
@@ -317,16 +321,16 @@ export class GroupSettings implements OnInit, OnDestroy {
     const request = this.joinRequests[index];
     const reason = request?.rejectReason?.trim();
     if (!request?._id || !reason) {
-      alert('A rejection reason is required');
+      this.toast.error('A rejection reason is required');
       return;
     }
 
     this.groupService.rejectJoinRequest(request._id, reason).subscribe({
       next: (res) => {
-        alert(res.message || 'Request rejected');
+        this.toast.fromResponse(res, 'Request rejected');
         if (res.ok) this.loadJoinRequests();
       },
-      error: () => alert('Failed to reject request.'),
+      error: () => this.toast.error('Failed to reject request.'),
     });
   }
 
@@ -336,13 +340,13 @@ export class GroupSettings implements OnInit, OnDestroy {
 
     this.groupService.approveRoomRequest(request._id).subscribe({
       next: (res) => {
-        alert(res.message);
+        this.toast.fromResponse(res);
         if (res.ok) {
           this.loadGroup();
           this.loadRoomRequests();
         }
       },
-      error: () => alert('Failed to approve room proposal.'),
+      error: () => this.toast.error('Failed to approve room proposal.'),
     });
   }
 
@@ -350,16 +354,16 @@ export class GroupSettings implements OnInit, OnDestroy {
     const request = this.roomRequests[index];
     const reason = request?.rejectReason?.trim();
     if (!request?._id || !reason) {
-      alert('A rejection reason is required');
+      this.toast.error('A rejection reason is required');
       return;
     }
 
     this.groupService.rejectRoomRequest(request._id, reason).subscribe({
       next: (res) => {
-        alert(res.message);
+        this.toast.fromResponse(res);
         if (res.ok) this.loadRoomRequests();
       },
-      error: () => alert('Failed to reject room proposal.'),
+      error: () => this.toast.error('Failed to reject room proposal.'),
     });
   }
 
@@ -369,13 +373,13 @@ export class GroupSettings implements OnInit, OnDestroy {
 
     this.groupService.approveGroupBanRequest(request._id).subscribe({
       next: (res) => {
-        alert(res.message || 'Ban request approved');
+        this.toast.fromResponse(res, 'Ban request approved');
         if (res.ok) {
           this.loadBanRequests();
           this.loadGroup();
         }
       },
-      error: (err) => alert(err.error?.message || 'Failed to approve ban request.'),
+      error: (err) => this.toast.error(err.error?.message || 'Failed to approve ban request.'),
     });
   }
 
@@ -383,16 +387,16 @@ export class GroupSettings implements OnInit, OnDestroy {
     const request = this.banRequests[index];
     const reason = request?.rejectReason?.trim();
     if (!request?._id || !reason) {
-      alert('A rejection reason is required');
+      this.toast.error('A rejection reason is required');
       return;
     }
 
     this.groupService.rejectGroupBanRequest(request._id, reason).subscribe({
       next: (res) => {
-        alert(res.message || 'Ban request rejected');
+        this.toast.fromResponse(res, 'Ban request rejected');
         if (res.ok) this.loadBanRequests();
       },
-      error: (err) => alert(err.error?.message || 'Failed to reject ban request.'),
+      error: (err) => this.toast.error(err.error?.message || 'Failed to reject ban request.'),
     });
   }
 
@@ -408,43 +412,43 @@ export class GroupSettings implements OnInit, OnDestroy {
   allowedMembers: { username: string; role: string }[] = [];
   bannedMembers: { username: string }[] = [];
 
-  addRoom(): void {
-    const roomName = prompt('Enter New Room Name: ')?.trim();
+  async addRoom(): Promise<void> {
+    const roomName = await this.dialog.prompt('Enter a name for the new room.', { title: 'Add room', confirmLabel: 'Add', placeholder: 'e.g. Book Club' });
     if (!roomName) return;
 
     this.groupService.addRoomDirect(this.originalGroupName || this.groupName, roomName).subscribe({
       next: (res) => {
         if (res.ok) this.rooms = res.rooms;
-        else alert(res.message || 'Failed to add room.');
+        else this.toast.error(res.message || 'Failed to add room.');
       },
-      error: (err) => alert(err.error?.message || 'Failed to add room.'),
+      error: (err) => this.toast.error(err.error?.message || 'Failed to add room.'),
     });
   }
 
-  editRoom(index: number): void {
+  async editRoom(index: number): Promise<void> {
     const oldName = this.rooms[index];
-    const newName = prompt('Edit Room Name: ', oldName)?.trim();
+    const newName = await this.dialog.prompt(`Rename #${oldName} to:`, { title: 'Rename room', confirmLabel: 'Rename', initialValue: oldName });
     if (!newName || newName === oldName) return;
 
     this.groupService.renameRoom(this.originalGroupName || this.groupName, oldName, newName).subscribe({
       next: (res) => {
         if (res.ok) this.rooms = res.rooms;
-        else alert(res.message || 'Failed to rename room.');
+        else this.toast.error(res.message || 'Failed to rename room.');
       },
-      error: (err) => alert(err.error?.message || 'Failed to rename room.'),
+      error: (err) => this.toast.error(err.error?.message || 'Failed to rename room.'),
     });
   }
 
-  deleteRoom(index: number): void {
+  async deleteRoom(index: number): Promise<void> {
     const roomName = this.rooms[index];
-    if (!confirm(`Are you sure you want to delete #${roomName}?`)) return;
+    if (!(await this.dialog.confirm(`Are you sure you want to delete #${roomName}?`, { title: 'Delete room', confirmLabel: 'Delete' }))) return;
 
     this.groupService.deleteRoom(this.originalGroupName || this.groupName, roomName).subscribe({
       next: (res) => {
         if (res.ok) this.rooms = res.rooms;
-        else alert(res.message || 'Failed to delete room.');
+        else this.toast.error(res.message || 'Failed to delete room.');
       },
-      error: (err) => alert(err.error?.message || 'Failed to delete room.'),
+      error: (err) => this.toast.error(err.error?.message || 'Failed to delete room.'),
     });
   }
 
@@ -457,14 +461,14 @@ export class GroupSettings implements OnInit, OnDestroy {
         if (res.ok) {
           this.allowedMembers[index].role = 'group-admin';
         } else {
-          alert(res.message || 'Failed to promote member.');
+          this.toast.error(res.message || 'Failed to promote member.');
         }
       },
-      error: (err) => alert(err.error?.message || 'Failed to promote member.'),
+      error: (err) => this.toast.error(err.error?.message || 'Failed to promote member.'),
     });
   }
 
-  banMember(index: number): void {
+  async banMember(index: number): Promise<void> {
     const user = this.allowedMembers[index];
     if (!user) return;
 
@@ -473,14 +477,14 @@ export class GroupSettings implements OnInit, OnDestroy {
     const confirmText = escalateToSuperAdmin
       ? `Send a Super Admin request to ban ${user.username} from this group?`
       : `Permanently ban ${user.username} from this group?`;
-    if (!confirm(confirmText)) return;
+    if (!(await this.dialog.confirm(confirmText, { title: 'Ban member', confirmLabel: escalateToSuperAdmin ? 'Send request' : 'Ban' }))) return;
 
     if (escalateToSuperAdmin) {
       this.groupService.submitGroupBanRequest(groupKey, user.username, this.username).subscribe({
         next: (res) => {
-          alert(res.message || 'Ban request submitted to Super Admin.');
+          this.toast.fromResponse(res, 'Ban request submitted to Super Admin.');
         },
-        error: (err) => alert(err.error?.message || 'Failed to submit ban request.'),
+        error: (err) => this.toast.error(err.error?.message || 'Failed to submit ban request.'),
       });
       return;
     }
@@ -494,21 +498,21 @@ export class GroupSettings implements OnInit, OnDestroy {
           });
           this.bannedMembers = (res.bannedMembers ?? []).map((username) => ({ username }));
         } else {
-          alert(res.message || 'Failed to ban member.');
+          this.toast.error(res.message || 'Failed to ban member.');
         }
       },
-      error: (err) => alert(err.error?.message || 'Failed to ban member.'),
+      error: (err) => this.toast.error(err.error?.message || 'Failed to ban member.'),
     });
   }
 
-  stepDownAsGA(): void {
-    if (!confirm('Are you sure you want to step down as Group Admin?')) return;
+  async stepDownAsGA(): Promise<void> {
+    if (!(await this.dialog.confirm('Are you sure you want to step down as Group Admin?', { title: 'Step down', confirmLabel: 'Step down' }))) return;
 
     const groupKey = this.originalGroupName || this.groupName;
     this.groupService.stepDownAsAdmin(groupKey, this.username).subscribe({
       next: (res) => {
         if (!res.ok) {
-          alert(res.message || 'Failed to step down.');
+          this.toast.error(res.message || 'Failed to step down.');
           return;
         }
         if (res.role) {
@@ -523,23 +527,23 @@ export class GroupSettings implements OnInit, OnDestroy {
           }
           this.userRole = res.role;
         }
-        alert(res.message || 'You have stepped down.');
+        this.toast.success(res.message || 'You have stepped down.');
         this.router.navigate(['/my-memberships'], { queryParams: { groupName: groupKey } });
       },
-      error: (err) => alert(err.error?.message || 'Failed to step down.'),
+      error: (err) => this.toast.error(err.error?.message || 'Failed to step down.'),
     });
   }
 
-  requestGroupDeletion(): void {
-    const reason = prompt('Please enter a reason for the Super Admin:')?.trim();
+  async requestGroupDeletion(): Promise<void> {
+    const reason = await this.dialog.prompt('Please enter a reason for the Super Admin:', { title: 'Request group deletion', confirmLabel: 'Send request', danger: true, placeholder: 'Reason...' });
     if (!reason) return;
 
     const groupKey = this.originalGroupName || this.groupName;
     this.groupService.submitGroupDeletionRequest(groupKey, this.username, reason).subscribe({
       next: (res) => {
-        alert(res.message || (res.ok ? 'Deletion request submitted to Super Admin.' : 'Request failed.'));
+        this.toast.fromResponse(res, res.ok ? 'Deletion request submitted to Super Admin.' : 'Request failed.');
       },
-      error: (err) => alert(err.error?.message || 'Failed to submit group deletion request.'),
+      error: (err) => this.toast.error(err.error?.message || 'Failed to submit group deletion request.'),
     });
   }
 }

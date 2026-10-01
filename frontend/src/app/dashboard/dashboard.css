@@ -19,6 +19,21 @@ aside .torn-notepad p {
 
 
 
+.pending-badge {
+  margin-left: 0.4rem;
+  display: inline-block;
+  animation: badge-pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.5);
+}
+
+@keyframes badge-pop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pending-badge { animation: none; }
+}
+
 .dashboard-container {
   display: flex;
   min-height: 100vh;

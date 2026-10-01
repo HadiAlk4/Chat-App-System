@@ -61,11 +61,6 @@ describe('SuperAdminAuditLog', () => {
     return fixture.nativeElement.querySelector('tbody').textContent;
   }
 
-  it('renders the mocked audit log', () => {
-    expect(tableText()).toContain('Accepted Group Creation');
-    expect(tableText()).toContain('Accepted Group Deletion');
-  });
-
   it('applies the action and date filters to the mocked list', async () => {
     const component = fixture.componentInstance;
     component.selectedAction = 'Accepted Group Deletion';

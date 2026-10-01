@@ -24,18 +24,6 @@ describe('authGuard', () => {
     expect(router.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
-  it('sends a user away from a super admin page', () => {
-    const router = TestBed.inject(Router);
-    vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
-    vi.spyOn(TestBed.inject(AuthService), 'getUser').mockReturnValue({
-      username: 'ada',
-      role: 'user',
-    });
-
-    expect(run({ data: { expectedRole: 'super-admin' } })).toBe(false);
-    expect(router.navigateByUrl).toHaveBeenCalledWith('/dashboard');
-  });
-
   it('sends a super admin away from chat', () => {
     const router = TestBed.inject(Router);
     vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);

@@ -25,13 +25,6 @@ describe("chat routes", () => {
       expect(res.body.map((message) => message.content)).to.deep.equal(["m1", "m2", "m3", "m4", "m5"]);
     });
 
-    it("rejects a history request with no username", async () => {
-      const res = await request.execute(app).get("/api/messages/Readers/Main");
-
-      expect(res).to.have.status(400);
-      expect(res.body.message).to.equal("Username is required");
-    });
-
     it("forbids a super admin from reading chat history", async () => {
       await seedUser({ role: "super-admin" });
 

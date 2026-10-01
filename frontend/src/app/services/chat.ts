@@ -43,6 +43,17 @@ export class ChatService {
     this.socket?.emit('delete-message', { groupName, roomName, messageId });
   }
 
+  emitTyping(groupName: string, roomName: string, username: string, isTyping: boolean): void {
+    this.socket?.emit('typing', { groupName, roomName, username, isTyping });
+  }
+
+  onTyping(): Observable<{ username: string; roomName: string; isTyping: boolean }> {
+    return new Observable((observer) => {
+      this.socket?.on('typing', (data) => observer.next(data));
+      return () => this.socket?.off('typing');
+    });
+  }
+
   onNewMessage(): Observable<ChatMessage> {
     return new Observable<ChatMessage>((observer) => {
       this.socket?.on('new-message', (msg: ChatMessage) => observer.next(msg));
