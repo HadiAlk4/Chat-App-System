@@ -1,0 +1,20 @@
+/* Demo build: runs the backend in the browser by pointing its Node packages at browser shims. */
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "paths": {
+      "socket.io-client": ["./src/demo/socket-io-client.ts"],
+      "mongodb": ["./src/demo/shims/mongodb.ts"],
+      "express": ["./src/demo/shims/express.ts"],
+      "cors": ["./src/demo/shims/cors.ts"],
+      "bcrypt": ["./src/demo/shims/bcrypt.ts"],
+      "multer": ["./src/demo/shims/multer.ts"],
+      "dotenv": ["./src/demo/shims/dotenv.ts"],
+      "node:fs": ["./src/demo/shims/node-fs.ts"],
+      "node:path": ["./src/demo/shims/node-path.ts"],
+      "node:url": ["./src/demo/shims/node-url.ts"]
+    }
+  },
+  "files": ["src/main.demo.ts"],
+  "include": ["src/demo/**/*.ts"]
+}

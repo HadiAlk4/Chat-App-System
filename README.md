@@ -1,14 +1,14 @@
 # Chat-App-System
 chat app system with smthn ig 
 
-## Live demo deployment
+## Live demo (`demo` branch)
 
-The live demo deploys from the `demo` branch as a single service: the backend serves the built Angular app, the API and Socket.io from one URL.
+**https://hadialk4.github.io/Chat-App-System/**
 
-1. **Database:** create a free cluster on [MongoDB Atlas](https://www.mongodb.com/cloud/atlas). Add a database user, allow network access from `0.0.0.0/0`, and copy the `mongodb+srv://...` connection string.
-2. **Hosting:** on [Render](https://render.com), choose **New → Blueprint**, select this repo and the `demo` branch. `render.yaml` sets up everything; when asked, paste the Atlas string as `MONGO_URI`.
-3. Open the URL Render gives you and **sign up straight away**, because the first account becomes the super admin.
+A frontend-only demo with sample data: no server or database needed. The real backend route code runs inside the browser on an in-memory database (`frontend/src/demo/`), so every feature behaves as it does in the full app.
 
-Notes for the free tier: the service sleeps after ~15 min idle (first visit then takes ~30–60 s), and uploaded files are lost when it restarts or redeploys.
+- Use the **Demo accounts** panel (bottom left) to log in as the super admin, a group admin or a member. Everyone's password is `Demo1234`.
+- Open a second tab as another user to see live chat and request notifications.
+- Changes are saved in your browser; **Reset demo data** in the panel starts over.
 
-Local development is unchanged: `ng serve` in `frontend/` still talks to the backend on `localhost:3000`.
+Run it locally: `cd frontend && npm run start:demo`. Every push to `demo` redeploys it via `.github/workflows/demo-pages.yml`.
