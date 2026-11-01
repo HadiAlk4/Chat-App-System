@@ -4,6 +4,7 @@ services:
   - type: web
     name: fabulari-chat
     runtime: node
+    branch: demo # the live demo deploys from this branch; main is left alone
     plan: free
     buildCommand: cd frontend && npm ci && npm run build && cd ../backend && npm ci
     startCommand: cd backend && npm start
