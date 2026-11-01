@@ -8,7 +8,7 @@ import { ObjectId } from './shims/mongodb';
  */
 
 type Doc = Record<string, any>;
-const STORAGE_KEY = 'fabulari-demo-db-v1';
+const STORAGE_KEY = 'fabulari-demo-db-v2';
 
 // ---------- value helpers ----------
 

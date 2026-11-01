@@ -3,7 +3,7 @@
  * The backend still hands out "/uploads/<file>" URLs; resolveUploads() swaps them for the stored image
  * on the way to the UI, so components render them unchanged.
  */
-const STORAGE_KEY = 'fabulari-demo-uploads-v1';
+const STORAGE_KEY = 'fabulari-demo-uploads-v2';
 let store: Record<string, string> = load();
 
 function load(): Record<string, string> {
