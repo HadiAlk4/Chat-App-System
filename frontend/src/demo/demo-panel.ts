@@ -31,27 +31,27 @@ const CHOICES = [
   },
 ];
 
-/** A fountain pen cursor drawn pointing down-left; the nib tip is the click point. */
+/** A yellow fountain pen cursor drawn pointing down-left; the nib tip is the click point. */
 function penCursor(body: string, ink: boolean): string {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
     <g transform="rotate(45 16 16)" stroke="#fff" stroke-width="1" stroke-linejoin="round">
       <rect x="12" y="0.5" width="8" height="5" rx="2" fill="#2b2b2b"/>
       <rect x="12" y="5.5" width="8" height="12" fill="${body}"/>
-      <rect x="11.5" y="17.5" width="9" height="3" fill="#c9a227"/>
+      <rect x="11.5" y="17.5" width="9" height="3" fill="#2b2b2b"/>
       <path d="M12 20.5 L20 20.5 L16 31 Z" fill="#d9d4c4"/>
       <path d="M16 23.5 L16 30" stroke="#2b2b2b" stroke-width="0.8"/>
     </g>
-    ${ink ? '<circle cx="3" cy="29" r="2" fill="#3b5bdb"/>' : ''}
+    ${ink ? '<circle cx="3" cy="29" r="2" fill="#2b2b2b" stroke="#fff" stroke-width="0.8"/>' : ''}
   </svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}") 5 27`;
 }
 
 const PEN_CSS = `
 @media (hover: hover) and (pointer: fine) {
-  html, body, body * { cursor: ${penCursor('#2b2b2b', false)}, auto !important; }
+  html, body, body * { cursor: ${penCursor('#f5c518', false)}, auto !important; }
   a, button, label, select, summary, [role="button"], [routerLink], [ng-reflect-router-link],
   input[type="checkbox"], input[type="radio"], input[type="file"], input[type="submit"],
-  a *, button *, label * { cursor: ${penCursor('#3b5bdb', true)}, pointer !important; }
+  a *, button *, label * { cursor: ${penCursor('#f5c518', true)}, pointer !important; }
   button:disabled, button:disabled * { cursor: ${penCursor('#9a9a9a', false)}, not-allowed !important; }
 }
 `;
