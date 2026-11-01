@@ -4,8 +4,9 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../services/auth';
+import { environment } from '../../environments/environment';
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = environment.backendUrl;
 
 // Module state resets on a full page load, so the splash plays on refresh but not on in-app navigation
 let splashPlayed = false;

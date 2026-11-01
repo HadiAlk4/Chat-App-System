@@ -7,8 +7,9 @@ import { RoomRequest } from '../models/room-request';
 import { AccountDeletionRequest } from '../models/account-deletion-request';
 import { GroupBanRequest } from '../models/group-ban-request';
 import { GroupDeletionRequest } from '../models/group-deletion-request';
+import { environment } from '../../environments/environment';
 
-const SOCKET_URL = 'http://localhost:3000';
+const SOCKET_URL = environment.backendUrl || undefined;
 
 interface GroupRequestResolved {
   requestId: string;

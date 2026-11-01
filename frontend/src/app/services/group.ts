@@ -7,8 +7,9 @@ import { JoinRequest } from '../models/join-request';
 import { RoomRequest } from '../models/room-request';
 import { GroupBanRequest } from '../models/group-ban-request';
 import { GroupDeletionRequest } from '../models/group-deletion-request';
+import { environment } from '../../environments/environment';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = `${environment.backendUrl}/api`;
 
 @Injectable({
     providedIn: 'root'

@@ -6,7 +6,8 @@ dotenv.config();
 const MONGO_URL = process.env.MONGO_URL || "mongodb://localhost";
 const MONGO_PORT = process.env.MONGO_PORT || 27017;
 const MONGO_DB_NAME = process.env.MONGO_DB_NAME || "chat-app";
-const mongo_url = `${MONGO_URL}:${MONGO_PORT}`;
+// MONGO_URI takes a full connection string (e.g. MongoDB Atlas "mongodb+srv://...").
+const mongo_url = process.env.MONGO_URI || `${MONGO_URL}:${MONGO_PORT}`;
 
 const client = new MongoClient(mongo_url);
 let db;

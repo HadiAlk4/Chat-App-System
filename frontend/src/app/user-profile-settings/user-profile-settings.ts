@@ -5,8 +5,9 @@ import { AuthService } from '../services/auth';
 import { UploadService } from '../services/upload';
 import { AccountService } from '../services/account';
 import { FormMessage, isValidPassword, PASSWORD_RULE_MESSAGE } from '../validators';
+import { environment } from '../../environments/environment';
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = environment.backendUrl;
 
 @Component({
   imports: [RouterLink, FormsModule],

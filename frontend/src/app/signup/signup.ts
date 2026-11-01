@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../services/auth';
 import { UploadService } from '../services/upload';
 import { isValidEmail, isValidPassword, PASSWORD_RULE_MESSAGE } from '../validators';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-signup',
@@ -36,7 +37,7 @@ export class Signup implements OnInit
     // Skip during prerender so the result is not baked into the static page
     if (typeof window === 'undefined') return;
 
-    this.http.get<{ ok: boolean; firstUser: boolean }>('http://localhost:3000/api/signup/first-user').subscribe({
+    this.http.get<{ ok: boolean; firstUser: boolean }>(`${environment.backendUrl}/api/signup/first-user`).subscribe({
       next: (res) => this.isFirstUser.set(res.ok && res.firstUser),
       error: () => this.isFirstUser.set(false),
     });
@@ -106,7 +107,7 @@ export class Signup implements OnInit
       age: calculatedAge,
     };
 
-    this.http.post<any>('http://localhost:3000/api/signup', payload).subscribe({
+    this.http.post<any>(`${environment.backendUrl}/api/signup`, payload).subscribe({
       next: (res) => 
         {
         if (res.ok) 

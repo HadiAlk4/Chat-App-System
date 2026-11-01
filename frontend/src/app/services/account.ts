@@ -3,8 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AccountDeletionRequest } from '../models/account-deletion-request';
 import { BannedEmail } from '../models/banned-email';
+import { environment } from '../../environments/environment';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = `${environment.backendUrl}/api`;
 
 @Injectable({
   providedIn: 'root',

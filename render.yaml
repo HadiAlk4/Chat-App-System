@@ -1,0 +1,17 @@
+# Render Blueprint: one free web service that runs the backend and serves the built Angular app.
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo, then paste your MongoDB Atlas URI.
+services:
+  - type: web
+    name: fabulari-chat
+    runtime: node
+    plan: free
+    buildCommand: cd frontend && npm ci && npm run build && cd ../backend && npm ci
+    startCommand: cd backend && npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: CYPRESS_INSTALL_BINARY # skip the e2e test browser download during build
+        value: "0"
+      - key: MONGO_URI # full Atlas connection string, e.g. mongodb+srv://user:pass@cluster.../
+        sync: false

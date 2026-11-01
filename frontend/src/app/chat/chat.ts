@@ -12,8 +12,9 @@ import { UploadService } from '../services/upload';
 import { DialogService } from '../services/dialog';
 import { ToastService } from '../services/toast';
 import { ChatMessage } from '../models/message';
+import { environment } from '../../environments/environment';
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = environment.backendUrl;
 const TYPING_IDLE_MS = 2000;
 
 @Component({

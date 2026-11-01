@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuditLog } from '../models/audit-log';
+import { environment } from '../../environments/environment';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = `${environment.backendUrl}/api`;
 
 @Injectable({
   providedIn: 'root',

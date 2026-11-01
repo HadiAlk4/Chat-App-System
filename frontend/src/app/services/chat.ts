@@ -3,9 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { ChatMessage } from '../models/message';
+import { environment } from '../../environments/environment';
 
-const API_URL = 'http://localhost:3000/api';
-const SOCKET_URL = 'http://localhost:3000';
+const API_URL = `${environment.backendUrl}/api`;
+const SOCKET_URL = environment.backendUrl || undefined;
 
 @Injectable({
   providedIn: 'root'

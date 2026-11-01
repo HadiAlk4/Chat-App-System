@@ -1,4 +1,5 @@
 import express from "express";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import cors from "cors";
@@ -38,7 +39,8 @@ export function createApp(io = createIoStub()) {
   app.use(express.json());
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-  app.get("/", (_req, res) => res.send({ ok: true }));
+  app.get("/api/health", (_req, res) => res.send({ ok: true }));
+  if (!serveFrontend(app)) app.get("/", (_req, res) => res.send({ ok: true }));
 
   authRoutes(app);
   userRoutes(app);
@@ -56,4 +58,18 @@ export function createApp(io = createIoStub()) {
   auditRoutes(app);
 
   return app;
+}
+
+// In production the backend also serves the built Angular app, so the whole
+// system runs as one service on one URL. Skipped when no build exists (local dev, tests).
+function serveFrontend(app) {
+  const browserDir = path.join(__dirname, "..", "frontend", "dist", "frontend", "browser");
+  const shell = ["index.csr.html", "index.html"]
+    .map((f) => path.join(browserDir, f))
+    .find((f) => fs.existsSync(f));
+  if (!shell) return false;
+
+  app.use(express.static(browserDir, { index: false, redirect: false }));
+  app.get(/^(?!\/(api|uploads|socket\.io)\/).*/, (_req, res) => res.sendFile(shell));
+  return true;
 }
